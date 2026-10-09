@@ -1,0 +1,204 @@
+import { StyleSheet } from 'react-native';
+import colors from './colors';
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    paddingBottom: 28,
+  },
+  header: {
+    height: 82,
+    paddingHorizontal: 12,
+    paddingTop: 18,
+    overflow: 'hidden',
+    backgroundColor: colors.header,
+  },
+  headerCopy: {
+    zIndex: 1,
+  },
+  title: {
+    color: colors.white,
+    fontSize: 23,
+    fontWeight: '900',
+  },
+  subtitle: {
+    marginTop: 3,
+    color: colors.mutedLight,
+    fontSize: 13,
+  },
+  headerRing: {
+    position: 'absolute',
+    top: -31,
+    right: -18,
+    width: 101,
+    height: 101,
+    borderWidth: 15,
+    borderColor: '#2E2810',
+    borderRadius: 60,
+  },
+  balanceCard: {
+    marginHorizontal: 12,
+    marginTop: 0,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.goldDark,
+    borderRadius: 18,
+    backgroundColor: colors.cardDark,
+  },
+  balanceLabel: {
+    color: colors.gold,
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.4,
+  },
+  balanceValue: {
+    marginTop: 4,
+    color: colors.gold,
+    fontSize: 39,
+    fontWeight: '900',
+    letterSpacing: -1,
+  },
+  payoutText: {
+    marginTop: 2,
+    color: colors.gold,
+    fontSize: 12,
+  },
+  withdrawButton: {
+    height: 53,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 14,
+    borderRadius: 16,
+    backgroundColor: colors.gold,
+  },
+  withdrawText: {
+    color: '#070707',
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  periodTabs: {
+    flexDirection: 'row',
+    height: 58,
+    alignItems: 'center',
+    marginTop: 24,
+    padding: 5,
+    borderRadius: 15,
+    backgroundColor: '#242426',
+  },
+  periodTab: {
+    flex: 1,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 11,
+  },
+  periodTabActive: {
+    backgroundColor: '#303033',
+  },
+  periodText: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  periodTextActive: {
+    color: colors.gold,
+  },
+  metricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 10,
+    marginTop: 12,
+    paddingHorizontal: 8,
+  },
+  metricCard: {
+    width: '48.5%',
+    height: 72,
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    backgroundColor: colors.card,
+  },
+  metricCardGold: {
+    borderLeftWidth: 3,
+    borderLeftColor: colors.gold,
+  },
+  metricCardGreen: {
+    borderLeftWidth: 3,
+    borderLeftColor: colors.green,
+  },
+  metricValue: {
+    color: colors.white,
+    fontSize: 23,
+    fontWeight: '900',
+  },
+  metricValueGold: {
+    color: colors.gold,
+    fontSize: 23,
+    fontWeight: '900',
+  },
+  metricValueGreen: {
+    color: colors.green,
+    fontSize: 23,
+    fontWeight: '900',
+  },
+  metricLabel: {
+    marginTop: 2,
+    color: colors.muted,
+    fontSize: 11,
+  },
+  sectionTitle: {
+    marginTop: 28,
+    marginBottom: 10,
+    paddingHorizontal: 12,
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  chartCard: {
+    height: 210,
+    marginHorizontal: 8,
+    paddingHorizontal: 18,
+    paddingTop: 15,
+    paddingBottom: 12,
+    borderRadius: 17,
+    backgroundColor: colors.card,
+  },
+  chartArea: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+  },
+  chartColumn: {
+    flex: 1,
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+  },
+  barTrack: {
+    width: 22,
+    height: '78%',
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+    borderRadius: 6,
+    backgroundColor: '#2E2E30',
+  },
+  bar: {
+    width: '100%',
+    borderRadius: 6,
+    backgroundColor: colors.gold,
+  },
+  dayLabel: {
+    marginTop: 9,
+    color: colors.mutedLight,
+    fontSize: 10,
+  },
+});
+
+export default styles;

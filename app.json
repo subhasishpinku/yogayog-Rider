@@ -1,25 +1,48 @@
 {
   "expo": {
-    "name": "yogayog-rider",
+    "name": "YogaYog-Rider",
     "slug": "yogayog-rider",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/yogayoglogo.png",
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/yogayoglogo.png"
       },
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.yogayog.rider"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/splash.png",
+          "imageWidth": 200
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "androidGoogleMapsApiKey": "AIzaSyC6atqg-XZ8SVzSlLrt5W5mhCgkG-8h6Lo",
+          "iosGoogleMapsApiKey": "AIzaSyC6atqg-XZ8SVzSlLrt5W5mhCgkG-8h6Lo"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "26156609-8bd6-4c3f-b78b-ab3d840e518b"
+      }
+    },
+    "owner": "lokeash_agarwal"
   }
 }
