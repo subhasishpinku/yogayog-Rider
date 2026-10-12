@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 
 import navigationStrings from '../constants/navigationStrings';
 import colors from './styles/colors';
 import styles from './styles/styles';
 
-const HomeScreen = () => {
-  const navigation = useNavigation();
+const HomeScreen = ({ navigation }) => {
   const [isOnline, setIsOnline] = useState(true);
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.ring} />
-        <View style={styles.avatar}><Text style={styles.avatarText}>SK</Text></View>
+      <Pressable
+      style={styles.avatar}
+      onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}>
+      <Text style={styles.avatarText}>SK</Text>
+    </Pressable>
         <Text style={styles.greeting}>Good morning 👋</Text>
         <Text style={styles.name}>Suresh Kumar</Text>
         <Text style={styles.vehicle}>🏍️ Bike · KA 01 AB 1234</Text>
@@ -63,3 +65,6 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
+
+

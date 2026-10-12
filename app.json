@@ -33,10 +33,11 @@
       [
         "react-native-maps",
         {
-          "androidGoogleMapsApiKey": "AIzaSyC6atqg-XZ8SVzSlLrt5W5mhCgkG-8h6Lo",
-          "iosGoogleMapsApiKey": "AIzaSyC6atqg-XZ8SVzSlLrt5W5mhCgkG-8h6Lo"
+          "androidGoogleMapsApiKey": "AIzaSyBzySPQYl8UIK_7Rb-EQkHkRrV3_sO74Gs",
+          "iosGoogleMapsApiKey": "AIzaSyBzySPQYl8UIK_7Rb-EQkHkRrV3_sO74Gs"
         }
-      ]
+      ],
+      "expo-location"
     ],
     "extra": {
       "eas": {

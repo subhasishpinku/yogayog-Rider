@@ -6,4 +6,11 @@ export default {
   WITHDRAWEARNINGS: 'WithdrawEarnings',
   EDITPROFILESCREEN: 'EditProfileScreen',
   ACCEPTREJECTORDER: 'AcceptRejectOrder',
+  ACTIVEDELIVERY: 'ActiveDelivery',
+  ALLPROFILESCREEN: 'AllProfileScreen',
+  DOCUMENTSUPLOADSECTION: 'DocumentsUploadSection',
+  KYCVERIFICATION: 'KYCPageVerification',
+  KYCAPPROVED: 'KYCApproved',
+  LIVELOCATIONMAP: 'LiveLocationMap'
 };
+

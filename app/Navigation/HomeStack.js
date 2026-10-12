@@ -9,6 +9,12 @@ import DashboardScreen from '../DashboardScreen/DashboardScreen';
 import WithdrawEarnings from '../EarningsScreen/WithdrawEarnings';
 import EditProfileScreen from '../ProfileScreen/EditProfileScreen';
 import AcceptRejectOrder from '../AcceptRejectOrder/AcceptRejectOrder';
+import ActiveDelivery from '../ActiveScreen/ActiveDelivery';
+import AllProfileScreen from '../ALLProfileScreen/AllProfileScreen';
+import DocumentsUploadSection from '../DocumentsUploadSection/DocumentsUploadSection';
+import KYCPageVerification from '../KYCPageVerification/KYCPageVerification';
+import KYCApproved from '../KYCApproved/KYCApproved';
+import LiveLocationMap from '../LiveLocationMap/LiveLocationMap';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -42,8 +48,36 @@ const HomeStack = () => {
         name={navigationStrings.ACCEPTREJECTORDER}
         component={AcceptRejectOrder}
       />
+      
+       <Stack.Screen
+        name={navigationStrings.ACTIVEDELIVERY}
+        component={ActiveDelivery}
+      />
+      <Stack.Screen
+        name={navigationStrings.ALLPROFILESCREEN}
+        component={AllProfileScreen}
+      />
+       <Stack.Screen
+        name={navigationStrings.DOCUMENTSUPLOADSECTION}
+        component={DocumentsUploadSection}
+      />
+        <Stack.Screen
+        name={navigationStrings.KYCVERIFICATION}
+        component={KYCPageVerification}
+      />
+         <Stack.Screen
+        name={navigationStrings.KYCAPPROVED}
+        component={KYCApproved}
+      />
+         <Stack.Screen
+        name={navigationStrings.LIVELOCATIONMAP}
+        component={LiveLocationMap}
+      />
     </Stack.Navigator>
   );
 };
 
 export default HomeStack;
+
+
+

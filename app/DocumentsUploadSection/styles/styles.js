@@ -1,0 +1,41 @@
+import { StyleSheet } from 'react-native';
+import colors from './colors';
+const styles = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: colors.background },
+  content: { paddingBottom: 24 },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 8, backgroundColor: colors.header },
+  backButton: { width: 37, height: 37, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#262628' },
+  backText: { color: colors.white, fontSize: 25, lineHeight: 26 },
+  headerCopy: { flex: 1, marginLeft: 12 },
+  title: { color: colors.white, fontSize: 21, fontWeight: '900' },
+  subtitle: { marginTop: 3, color: colors.mutedLight, fontSize: 13 },
+  documentCard: { marginHorizontal: 9, marginTop: 8, padding: 12, borderRadius: 17, backgroundColor: colors.card },
+  documentHeader: { flexDirection: 'row', alignItems: 'center' },
+  documentIcon: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center', borderRadius: 13, backgroundColor: '#303033' },
+  greenDocumentIcon: { backgroundColor: colors.greenDark },
+  goldDocumentIcon: { backgroundColor: '#443A15' },
+  redDocumentIcon: { backgroundColor: '#472728' },
+  documentIconText: { fontSize: 22 },
+  documentCopy: { flex: 1, marginLeft: 12 },
+  documentTitle: { color: colors.white, fontSize: 14, fontWeight: '900' },
+  documentSubtitle: { marginTop: 3, color: colors.muted, fontSize: 11 },
+  status: { maxWidth: 105, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20 },
+  statusLabel: { fontSize: 11, fontWeight: '900' },
+  uploadedStatus: { color: colors.green, backgroundColor: colors.greenDark },
+  reviewStatus: { color: colors.gold, backgroundColor: '#4B4016' },
+  requiredStatus: { color: colors.red, backgroundColor: colors.redDark },
+  fileRow: { minHeight: 49, flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingHorizontal: 12, borderRadius: 11, backgroundColor: colors.cardInner },
+  fileIcon: { fontSize: 21 },
+  filePreview: { width: 32, height: 32, borderRadius: 7 },
+  fileName: { flex: 1, marginLeft: 10, color: colors.white, fontSize: 13, fontWeight: '800' },
+  replace: { color: colors.gold, fontSize: 11, fontWeight: '900' },
+  uploadButton: { height: 49, alignItems: 'center', justifyContent: 'center', marginTop: 10, borderWidth: 2, borderColor: '#665127', borderStyle: 'dashed', borderRadius: 12, backgroundColor: colors.purple },
+  uploadText: { color: colors.gold, fontSize: 13, fontWeight: '900' },
+  warning: { marginTop: 10, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 13, backgroundColor: '#382022' },
+  warningText: { color: colors.red, fontSize: 12, fontWeight: '800', lineHeight: 18 },
+  saveButton: { height: 58, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginHorizontal: 1, borderRadius: 17, backgroundColor: colors.gold },
+  saveText: { color: '#080808', fontSize: 16, fontWeight: '900' },
+});
+export default styles;
+
+

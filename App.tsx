@@ -34,3 +34,6 @@ export default function App() {
 //npx eas build --platform android --profile production
 //.\gradlew.bat :app:bundleRelease --stacktrace
 //npx expo start -c
+// cd android
+ //.\gradlew signingReport
+ //72:97:2D:20:34:A0:1D:33:C0:F8:E2:94:F8:40:6F:27:68:18:AE:F8

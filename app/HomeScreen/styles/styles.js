@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 100 },
   header: { height: 111, paddingHorizontal: 12, paddingTop: 17, backgroundColor: colors.header },
   ring: { position: 'absolute', top: -30, right: -27, width: 118, height: 118, borderWidth: 14, borderColor: '#302812', borderRadius: 999 },
-  avatar: { position: 'absolute', top: 27, right: 21, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: '#473E17' },
+  avatar: { position: 'absolute', top: 27, right: 21, zIndex: 10, elevation: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: '#473E17' },
   avatarText: { color: colors.gold, fontSize: 18, fontWeight: '900' },
   greeting: { color: colors.mutedLight, fontSize: 13 },
   name: { marginTop: 2, color: colors.white, fontSize: 21, fontWeight: '900' },
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
   offlineText: { marginTop: 5, color: colors.muted, fontSize: 12 },
 });
 export default styles;
+
 
 
 
