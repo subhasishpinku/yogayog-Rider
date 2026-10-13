@@ -11,6 +11,7 @@ export default {
   DOCUMENTSUPLOADSECTION: 'DocumentsUploadSection',
   KYCVERIFICATION: 'KYCPageVerification',
   KYCAPPROVED: 'KYCApproved',
-  LIVELOCATIONMAP: 'LiveLocationMap'
+  LIVELOCATIONMAP: 'LiveLocationMap',
+  LIVELOCATIONSHOW: 'LiveLocationShow'
 };
 

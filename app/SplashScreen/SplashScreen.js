@@ -10,6 +10,7 @@ import navigationStrings from '../constants/navigationStrings';
 const bikeLogo = require('../../assets/bike_logo.png');
 
 const SplashScreen = ({ navigation }) => {
+  // eslint-disable-next-line react-hooks/refs
   const progress = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

@@ -15,6 +15,8 @@ import DocumentsUploadSection from '../DocumentsUploadSection/DocumentsUploadSec
 import KYCPageVerification from '../KYCPageVerification/KYCPageVerification';
 import KYCApproved from '../KYCApproved/KYCApproved';
 import LiveLocationMap from '../LiveLocationMap/LiveLocationMap';
+import LiveLocationShow from '../LiveLocationMap/LiveLocationShow';
+
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -72,6 +74,10 @@ const HomeStack = () => {
          <Stack.Screen
         name={navigationStrings.LIVELOCATIONMAP}
         component={LiveLocationMap}
+      />
+          <Stack.Screen
+        name={navigationStrings.LIVELOCATIONSHOW}
+        component={LiveLocationShow}
       />
     </Stack.Navigator>
   );

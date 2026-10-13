@@ -24,7 +24,7 @@ export default function App() {
     </>
   );
 }
-
+//http://192.168.23.135:8082
 //npx expo run:android
 //npx expo run:ios
 //npx expo prebuild --clean
@@ -36,4 +36,10 @@ export default function App() {
 //npx expo start -c
 // cd android
  //.\gradlew signingReport
- //72:97:2D:20:34:A0:1D:33:C0:F8:E2:94:F8:40:6F:27:68:18:AE:F8
+ // Debug SHA-1 for this project's android/app/debug.keystore:
+ // 5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25
+//npx expo install --check
+// npx expo prebuild --clean
+// npx expo run:android
+//npx eas-cli@latest build --platform android --profile development
+//gradlew.bat app:assembleDebug --stacktrace

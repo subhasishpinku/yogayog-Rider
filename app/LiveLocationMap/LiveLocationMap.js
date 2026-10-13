@@ -66,6 +66,8 @@ const LiveLocationMap = () => {
         showsCompass={false}
         toolbarEnabled={false}
         rotateEnabled={false}
+        onMapReady={() => console.log('Google Map is ready')}
+        onMapLoaded={() => console.log('Map tiles loaded')}
       >
         <Marker coordinate={riderLocation} anchor={{ x: 0.5, y: 0.5 }}>
           <View style={styles.markerRider}>
