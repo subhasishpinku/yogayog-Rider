@@ -1,6 +1,6 @@
 const colors = {
   background: '#080812',
-  panel: '#15151F',
+  panel: '#12121C',
   panelSoft: '#20202A',
   white: '#FFFFFF',
   muted: '#858590',
@@ -10,5 +10,12 @@ const colors = {
   red: '#FF3B30',
   purple: '#24213A',
   grid: '#191925',
+  mapSurface: '#080812',
+  mapRoad: '#151526',
+  mapRoadOutline: '#24243A',
+  mapRoadLabel: '#77778A',
+  mapLabel: '#5D5D70',
+  mapBoundary: '#222238',
+  mapWater: '#060611',
 };
 export default colors;

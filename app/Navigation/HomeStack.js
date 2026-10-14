@@ -16,7 +16,15 @@ import KYCPageVerification from '../KYCPageVerification/KYCPageVerification';
 import KYCApproved from '../KYCApproved/KYCApproved';
 import LiveLocationMap from '../LiveLocationMap/LiveLocationMap';
 import LiveLocationShow from '../LiveLocationMap/LiveLocationShow';
-
+import CodAmountCollect from '../CodAmountCollect/CodAmountCollect';
+import QRPayment from '../QRPayment/QRPayment';
+import CollectedCash from '../CollectedCash/CollectedCash';
+import CashCollection from '../CashCollection/CashCollection';
+import NonDeliveryReport from '../NonDeliveryReport/NonDeliveryReport';
+import RTODetails from '../RTODetails/RTODetails';
+import RescheduleDelivery from '../RescheduleDelivery/RescheduleDelivery';
+import CODHandover from '../CODHandover/CODHandover';
+import CallCustomer from '../CallCustomers/CallCustomers';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -78,6 +86,42 @@ const HomeStack = () => {
           <Stack.Screen
         name={navigationStrings.LIVELOCATIONSHOW}
         component={LiveLocationShow}
+      />
+         <Stack.Screen
+        name={navigationStrings.CODAMOUNTCOLLECT}
+        component={CodAmountCollect}
+      />
+         <Stack.Screen
+        name={navigationStrings.QRPAYMENT}
+        component={QRPayment}
+      />
+      <Stack.Screen
+        name={navigationStrings.CASHCOLLECTION}
+        component={CashCollection}
+      />
+      <Stack.Screen
+        name={navigationStrings.COLLECTEDCASH}
+        component={CollectedCash}
+      />
+      <Stack.Screen
+        name={navigationStrings.NONDELIVERYREPORT}
+        component={NonDeliveryReport}
+      />
+        <Stack.Screen
+        name={navigationStrings.RTODETAILS}
+        component={RTODetails}
+      />
+       <Stack.Screen
+        name={navigationStrings.RESCHEDULEDELIVERY}
+        component={RescheduleDelivery}
+      />
+       <Stack.Screen
+        name={navigationStrings.CODHANDOVER}
+        component={CODHandover}
+      />
+       <Stack.Screen
+        name={navigationStrings.CALLCUSTOMER}
+        component={CallCustomer}
       />
     </Stack.Navigator>
   );

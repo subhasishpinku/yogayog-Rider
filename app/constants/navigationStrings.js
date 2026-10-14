@@ -12,6 +12,15 @@ export default {
   KYCVERIFICATION: 'KYCPageVerification',
   KYCAPPROVED: 'KYCApproved',
   LIVELOCATIONMAP: 'LiveLocationMap',
-  LIVELOCATIONSHOW: 'LiveLocationShow'
+  LIVELOCATIONSHOW: 'LiveLocationShow',
+  CODAMOUNTCOLLECT: 'CodAmountCollect',
+  QRPAYMENT: 'QRPayment',
+  CASHCOLLECTION: 'CashCollection',
+  COLLECTEDCASH: 'CollectedCash',
+  NONDELIVERYREPORT: 'NonDeliveryReport',
+  RTODETAILS: 'RTODetails',
+  RESCHEDULEDELIVERY: 'RescheduleDelivery',
+  CODHANDOVER: 'CODHandover',
+  CALLCUSTOMER: 'CallCustomer',
 };
 

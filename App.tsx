@@ -43,3 +43,5 @@ export default function App() {
 // npx expo run:android
 //npx eas-cli@latest build --platform android --profile development
 //gradlew.bat app:assembleDebug --stacktrace
+//adb logcat -v color | findstr /I "Google Maps API key authorization AndroidRuntime"
+//adb logcat -c

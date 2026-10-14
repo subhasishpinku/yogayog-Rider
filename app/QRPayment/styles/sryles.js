@@ -1,0 +1,181 @@
+import { StyleSheet } from 'react-native';
+import colors from './colors';
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  content: {
+    flexGrow: 1,
+    paddingHorizontal: 8,
+    paddingTop: 12,
+    paddingBottom: 28,
+  },
+  header: {
+    paddingHorizontal: 4,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    borderRadius: 11,
+    backgroundColor: '#29292B',
+  },
+  backText: {
+    color: colors.white,
+    fontSize: 24,
+    lineHeight: 26,
+  },
+  title: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  subtitle: {
+    marginTop: 3,
+    color: colors.muted,
+    fontSize: 13,
+  },
+  paymentCard: {
+    alignItems: 'center',
+    marginTop: 7,
+    paddingTop: 20,
+    paddingBottom: 18,
+    borderRadius: 16,
+    backgroundColor: colors.card,
+  },
+  merchantName: {
+    color: '#25252B',
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  qrFrame: {
+    width: 160,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    borderRadius: 12,
+    backgroundColor: colors.qrBackground,
+  },
+  qrPlaceholder: {
+    width: 72,
+    height: 72,
+    borderWidth: 5,
+    borderColor: colors.black,
+    backgroundColor: '#444444',
+  },
+  amount: {
+    marginTop: 9,
+    color: colors.black,
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  awb: {
+    marginTop: 7,
+    color: '#73737B',
+    fontSize: 12,
+  },
+  upiRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  upiBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 7,
+    backgroundColor: colors.badgeBackground,
+  },
+  upiText: {
+    color: '#3C3C45',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  upiId: {
+    marginTop: 11,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  validity: {
+    marginTop: 3,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  waitingCard: {
+    alignItems: 'center',
+    marginTop: 12,
+    paddingVertical: 17,
+    borderRadius: 16,
+    backgroundColor: colors.darkCard,
+  },
+  loadingRing: {
+    width: 42,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 4,
+    borderColor: '#303034',
+    borderRadius: 22,
+  },
+  loadingArc: {
+    position: 'absolute',
+    top: -4,
+    left: 17,
+    width: 22,
+    height: 22,
+    borderTopWidth: 4,
+    borderColor: colors.gold,
+    borderRadius: 12,
+    transform: [{ rotate: '-25deg' }],
+  },
+  waitingTitle: {
+    marginTop: 9,
+    color: colors.white,
+    fontSize: 14,
+    fontWeight: '900',
+  },
+  waitingSubtitle: {
+    marginTop: 3,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+  },
+  cashButton: {
+    flex: 1,
+    minHeight: 69,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: '#2B2B2E',
+  },
+  cashButtonText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '900',
+    lineHeight: 17,
+    textAlign: 'center',
+  },
+  doneButton: {
+    flex: 1,
+    minHeight: 69,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 16,
+    backgroundColor: colors.gold,
+  },
+  doneButtonText: {
+    color: colors.black,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+});
+
+export default styles;

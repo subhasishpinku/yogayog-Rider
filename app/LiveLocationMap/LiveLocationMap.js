@@ -5,20 +5,29 @@ import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 
 import styles from './styles/styles';
+import colors from './styles/colors';
 
 const fallbackLocation = { latitude: 22.5186, longitude: 88.3477 };
 const destination = { latitude: 22.5257, longitude: 88.3420 };
 
-const mapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#080812' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#77777D' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#080812' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#191925' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#252535' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#080812' }] },
+const darkMapStyle = [
+  { elementType: 'geometry', stylers: [{ color: colors.mapSurface }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: colors.mapLabel }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: colors.mapSurface }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: colors.mapBoundary }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: colors.mapRoad }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: colors.mapRoadOutline }] },
+  { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: colors.mapRoadLabel }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: colors.mapWater }] },
 ];
+
+const describeError = (error) => ({
+  name: error?.name,
+  message: error?.message || String(error),
+  code: error?.code,
+});
 
 const LiveLocationMap = () => {
   const mapRef = useRef(null);
@@ -29,23 +38,48 @@ const LiveLocationMap = () => {
     let locationSubscription;
 
     const startLocationTracking = async () => {
+      console.log('[LiveLocationMap] Requesting foreground location permission');
       const permission = await Location.requestForegroundPermissionsAsync();
-      if (permission.status !== 'granted') return;
+      console.log('[LiveLocationMap] Permission result:', {
+        status: permission.status,
+        canAskAgain: permission.canAskAgain,
+      });
+
+      if (permission.status !== 'granted') {
+        console.warn('[LiveLocationMap] Location permission was not granted');
+        return;
+      }
 
       setHasLocationPermission(true);
+      console.log('[LiveLocationMap] Reading current position');
       const current = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
       const currentCoordinate = { latitude: current.coords.latitude, longitude: current.coords.longitude };
+      console.log('[LiveLocationMap] Current position:', currentCoordinate);
       setRiderLocation(currentCoordinate);
       mapRef.current?.animateToRegion({ ...currentCoordinate, latitudeDelta: 0.012, longitudeDelta: 0.012 }, 500);
 
+      console.log('[LiveLocationMap] Starting location watch');
       locationSubscription = await Location.watchPositionAsync(
         { accuracy: Location.Accuracy.Balanced, distanceInterval: 10, timeInterval: 5000 },
-        (location) => setRiderLocation({ latitude: location.coords.latitude, longitude: location.coords.longitude }),
+        (location) => {
+          const nextCoordinate = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+          };
+          console.log('[LiveLocationMap] Location update:', nextCoordinate);
+          setRiderLocation(nextCoordinate);
+        },
       );
+      console.log('[LiveLocationMap] Location watch started');
     };
 
-    startLocationTracking().catch(() => {});
-    return () => locationSubscription?.remove();
+    startLocationTracking().catch((error) => {
+      console.error('[LiveLocationMap] Location tracking failed:', describeError(error));
+    });
+    return () => {
+      console.log('[LiveLocationMap] Cleaning up location watch');
+      locationSubscription?.remove();
+    };
   }, []);
 
   const navigateToCustomer = () => {
@@ -58,16 +92,17 @@ const LiveLocationMap = () => {
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
+        mapType="standard"
+        customMapStyle={darkMapStyle}
         style={styles.map}
         initialRegion={{ ...fallbackLocation, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
-        customMapStyle={mapStyle}
         showsUserLocation={hasLocationPermission}
         showsMyLocationButton={false}
         showsCompass={false}
         toolbarEnabled={false}
         rotateEnabled={false}
-        onMapReady={() => console.log('Google Map is ready')}
-        onMapLoaded={() => console.log('Map tiles loaded')}
+        onMapReady={() => console.log('[LiveLocationMap] Google Map is ready')}
+        onMapLoaded={() => console.log('[LiveLocationMap] Google Map tiles loaded')}
       >
         <Marker coordinate={riderLocation} anchor={{ x: 0.5, y: 0.5 }}>
           <View style={styles.markerRider}>

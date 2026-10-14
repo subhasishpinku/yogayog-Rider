@@ -16,7 +16,8 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.yogayog.rider"
+      "package": "com.yogayog.rider",
+      "googleMapsApiKey": "AIzaSyBzySPQYl8UIK_7Rb-EQkHkRrV3_sO74Gs"
     },
     "web": {
       "favicon": "./assets/favicon.png"
