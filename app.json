@@ -33,7 +33,13 @@
       ],
       "expo-location",
       "./plugins/withNoNativeSplash",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-ocr-kit",
+        {
+          "cameraPermission": "Allow YogaYog Rider to capture document images for OCR verification."
+        }
+      ]
     ],
     "extra": {
       "eas": {

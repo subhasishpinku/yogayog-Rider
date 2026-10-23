@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import { recognizeText } from 'expo-ocr-kit';
 import { StatusBar } from 'expo-status-bar';
 
+import navigationStrings from '../constants/navigationStrings';
+import { useAuth } from '../contexts/AuthContext';
 import styles from './styles/styles';
 
 const logo = require('../image/rider-YogaYog.png');
@@ -14,11 +17,20 @@ const accountTypes = [
 
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setFullName] = useState('');
+  const [secondaryPhone, setSecondaryPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date(1990, 0, 1));
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [email, setEmail] = useState('');
-  const [accountType, setAccountType] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailOtpError, setEmailOtpError] = useState('');
+  const [isEmailOtpOpen, setIsEmailOtpOpen] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [accountType, setAccountType] = useState(() => (
+    route?.params?.role === 'truck' || route?.params?.role === 'bike'
+      ? route.params.role
+      : ''
+  ));
   const [isAccountTypeOpen, setIsAccountTypeOpen] = useState(false);
   const [pincode, setPincode] = useState('');
   const [city, setCity] = useState('');
@@ -38,6 +50,15 @@ const RegisterScreen = ({ navigation, route }) => {
   const [aadhaarImage, setAadhaarImage] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const {
+    authError,
+    isRegistering,
+    isSendingEmailOtp,
+    isVerifyingEmailOtp,
+    registerRider,
+    sendEmailOtp,
+    verifyEmailOtp,
+  } = useAuth();
 
   const phone = route?.params?.phone || '';
 
@@ -61,7 +82,28 @@ const RegisterScreen = ({ navigation, route }) => {
     if (Platform.OS === 'android') setIsDatePickerOpen(false);
   };
 
-  const pickDocument = async (setImage) => {
+  const checkDocumentWithOcr = async (uri, documentType) => {
+    const result = await recognizeText(uri);
+    const ocrText = String(result?.text || '').toUpperCase();
+    const compactText = ocrText.replace(/[^A-Z0-9]/g, '');
+    let isValid = false;
+
+    if (documentType === 'pan') {
+      isValid = /[A-Z]{5}\d{4}[A-Z]/.test(compactText);
+    } else if (documentType === 'aadhaar') {
+      isValid = /\d{12}/.test(compactText);
+    } else if (documentType === 'drivingLicence') {
+      isValid = /[A-Z]{2}\d{13,17}/.test(compactText) || /DRIVING|LICEN[CS]E/.test(ocrText);
+    }
+
+    console.log(`[RegisterScreen] ${documentType} OCR response:`, result);
+
+    if (!isValid) {
+      throw new Error(`Could not verify the ${documentType} image. Please upload a clear document.`);
+    }
+  };
+
+  const pickDocument = async (setImage, documentType) => {
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         allowsEditing: true,
@@ -69,13 +111,17 @@ const RegisterScreen = ({ navigation, route }) => {
         quality: 0.8,
       });
 
-      if (!result.canceled) setImage(result.assets[0].uri);
-    } catch {
-      Alert.alert('Upload failed', 'Unable to select this document image.');
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        if (documentType) await checkDocumentWithOcr(uri, documentType);
+        setImage(uri);
+      }
+    } catch (error) {
+      Alert.alert('Document check failed', error.message || 'Unable to verify this document image.');
     }
   };
 
-  const takeDocumentPhoto = async (setImage) => {
+  const takeDocumentPhoto = async (setImage, documentType) => {
     try {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
 
@@ -90,21 +136,57 @@ const RegisterScreen = ({ navigation, route }) => {
         quality: 0.8,
       });
 
-      if (!result.canceled) setImage(result.assets[0].uri);
-    } catch {
-      Alert.alert('Camera failed', 'Unable to take this document image.');
+      if (!result.canceled) {
+        const uri = result.assets[0].uri;
+        if (documentType) await checkDocumentWithOcr(uri, documentType);
+        setImage(uri);
+      }
+    } catch (error) {
+      Alert.alert('Document check failed', error.message || 'Unable to verify this document image.');
     }
   };
 
-  const chooseDocumentSource = (setImage) => {
+  const chooseDocumentSource = (setImage, documentType) => {
     Alert.alert('Upload document', 'Choose an image source', [
-      { text: 'Gallery', onPress: () => pickDocument(setImage) },
-      { text: 'Camera', onPress: () => takeDocumentPhoto(setImage) },
+      { text: 'Gallery', onPress: () => pickDocument(setImage, documentType) },
+      { text: 'Camera', onPress: () => takeDocumentPhoto(setImage, documentType) },
       { text: 'Cancel', style: 'cancel' },
     ]);
   };
 
   const handleCreateAccount = () => {
+    const requiredFields = [
+      [profileImage, 'Upload Photo'],
+      [drivingLicenceImage, 'Upload Driving Licence'],
+      [panImage, 'Upload PAN Image'],
+      [aadhaarImage, 'Upload Aadhaar Image'],
+      [fullName, 'Full Name'],
+      [phone, 'Primary No'],
+      [secondaryPhone, 'Secondary No'],
+      [dateOfBirth, 'Date of Birth'],
+      [accountType, 'Select Account Type'],
+      [email, 'Email'],
+      [pincode, 'Pin Code'],
+      [city, 'City'],
+      [state, 'State'],
+      [address, 'Address'],
+      [bankAccountNumber, 'Bank Account Number'],
+      [bankIfscCode, 'IFSC Code'],
+      [secondaryAccountNumber, 'Secondary Account Number'],
+      [secondaryIfscCode, 'Secondary IFSC Code'],
+      [upiId, 'UPI ID'],
+      [vehicleNumber, 'Vehicle Number'],
+      [drivingLicenceNumber, 'Driving Licence Number'],
+      [panNumber, 'PAN Number'],
+      [aadhaarNumber, 'Aadhaar Number'],
+    ];
+    const missingField = requiredFields.find(([value]) => !String(value || '').trim());
+
+    if (missingField) {
+      Alert.alert('Required field missing', `Please complete: ${missingField[1]}`);
+      return;
+    }
+
     if (!fullName || !dateOfBirth || !email || !accountType || !pincode || !city || !state || !address) {
       Alert.alert('Required details missing', 'Please complete your basic and address details.');
       return;
@@ -113,7 +195,81 @@ const RegisterScreen = ({ navigation, route }) => {
       Alert.alert('Terms required', 'Please accept the terms and conditions to continue.');
       return;
     }
-    Alert.alert('Registration details saved', 'Your profile is ready for verification.');
+
+    if (!isEmailVerified) {
+      Alert.alert('Verify email', 'Please verify your email before creating an account.');
+      return;
+    }
+    const [day, month, year] = dateOfBirth.split('/');
+    const payload = {
+      name: fullName.trim(),
+      address: address.trim(),
+      city: city.trim(),
+      pincode: pincode.trim(),
+      state: state.trim(),
+      mobile: phone.replace(/\D/g, ''),
+      sec_mobile: secondaryPhone.replace(/\D/g, ''),
+      email: email.trim(),
+      veh_type: accountType === 'truck' ? 'Truck' : 'Bike',
+      veh_number: vehicleNumber.trim(),
+      upi: upiId.trim(),
+      ac_numb: bankAccountNumber.trim(),
+      ifsc_c: bankIfscCode.trim().toUpperCase(),
+      second_acc: secondaryAccountNumber.trim(),
+      second_ifsc: secondaryIfscCode.trim().toUpperCase(),
+      aadhar_no: aadhaarNumber.trim(),
+      pan_no: panNumber.trim().toUpperCase(),
+      dl_no: drivingLicenceNumber.trim().toUpperCase(),
+      dob: `${year}-${month}-${day}`,
+      profile_pic: profileImage,
+      dl_pic: drivingLicenceImage,
+      pan_pic: panImage,
+      aadaar_pic: aadhaarImage,
+    };
+
+    registerRider(payload)
+      .then(() => navigation.replace(navigationStrings.DASHBOARDSCREEN))
+      .catch(() => {
+        // The registration error is exposed by AuthContext and rendered below.
+      });
+  };
+
+  const handleEmailChange = (value) => {
+    setEmail(value);
+    setIsEmailVerified(false);
+    setAcceptedTerms(false);
+  };
+
+  const handleSendEmailOtp = async () => {
+    if (!email.trim()) {
+      Alert.alert('Email required', 'Please enter your email address first.');
+      return;
+    }
+
+    try {
+      await sendEmailOtp(email, fullName);
+      setEmailOtp('');
+      setEmailOtpError('');
+      setIsEmailOtpOpen(true);
+    } catch (error) {
+      Alert.alert('Email verification', error.message);
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (emailOtp.trim().length !== 6) {
+      setEmailOtpError('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    try {
+      await verifyEmailOtp(email, emailOtp);
+      setIsEmailVerified(true);
+      setIsEmailOtpOpen(false);
+      setEmailOtpError('');
+    } catch (error) {
+      setEmailOtpError(error.message);
+    }
   };
 
   const renderInput = (placeholder, value, onChangeText, options = {}) => {
@@ -167,6 +323,14 @@ const RegisterScreen = ({ navigation, route }) => {
 
           <View style={styles.form}>
             {renderInput('Enter Full Name', fullName, setFullName, { autoCapitalize: 'words' })}
+            <TextInput
+              editable={false}
+              placeholder="Primary No"
+              placeholderTextColor="#777777"
+              style={[styles.input, styles.readOnlyInput]}
+              value={phone}
+            />
+            {renderInput('Secondary No', secondaryPhone, setSecondaryPhone, { keyboardType: 'phone-pad', maxLength: 10 })}
             <Pressable accessibilityRole="button" onPress={() => setIsDatePickerOpen(true)} style={styles.dateInput}>
               <Text style={[styles.dateText, !dateOfBirth && styles.placeholderText]}>
                 {dateOfBirth || 'Date of Birth (DD/MM/YYYY)'}
@@ -214,10 +378,33 @@ const RegisterScreen = ({ navigation, route }) => {
               </Pressable>
             </Modal>
 
-            {renderInput('Enter Email', email, setEmail, { keyboardType: 'email-address', autoCapitalize: 'none' })}
-            <Pressable accessibilityRole="button" onPress={() => Alert.alert('Verify Mail', 'Email verification will be connected to the registration API.')} style={styles.verifyButton}>
-              <Text style={styles.verifyButtonText}>Verify Mail</Text>
+            {renderInput('Enter Email', email, handleEmailChange, { keyboardType: 'email-address', autoCapitalize: 'none' })}
+            <Pressable accessibilityRole="button" disabled={isSendingEmailOtp || isEmailVerified} onPress={handleSendEmailOtp} style={[styles.verifyButton, isEmailVerified && styles.verifiedButton]}>
+              <Text style={styles.verifyButtonText}>{isEmailVerified ? 'Verified ✓' : isSendingEmailOtp ? 'Sending...' : 'Verify Mail'}</Text>
             </Pressable>
+
+            <Modal animationType="fade" transparent visible={isEmailOtpOpen} onRequestClose={() => setIsEmailOtpOpen(false)}>
+              <Pressable style={styles.modalBackdrop} onPress={() => setIsEmailOtpOpen(false)}>
+                <View style={styles.otpDialog}>
+                  <Text style={styles.dropdownTitle}>Verify Your Email</Text>
+                  <Text style={styles.otpDescription}>Enter the OTP sent to {email}</Text>
+                  <TextInput
+                    autoFocus
+                    keyboardType="number-pad"
+                    maxLength={6}
+                    onChangeText={(value) => { setEmailOtp(value.replace(/\D/g, '')); setEmailOtpError(''); }}
+                    placeholder="Enter OTP"
+                    placeholderTextColor="#777777"
+                    style={styles.otpInput}
+                    value={emailOtp}
+                  />
+                  {!!emailOtpError && <Text style={styles.errorText}>{emailOtpError}</Text>}
+                  <Pressable accessibilityRole="button" disabled={isVerifyingEmailOtp} onPress={handleVerifyEmailOtp} style={styles.otpVerifyButton}>
+                    <Text style={styles.dateDoneText}>{isVerifyingEmailOtp ? 'Verifying...' : 'Verify OTP'}</Text>
+                  </Pressable>
+                </View>
+              </Pressable>
+            </Modal>
 
             <Text style={styles.sectionTitle}>⌖  Address Details</Text>
             {renderInput('Enter Pin Code', pincode, setPincode, { keyboardType: 'number-pad', maxLength: 6 })}
@@ -239,20 +426,27 @@ const RegisterScreen = ({ navigation, route }) => {
             <Text style={styles.sectionTitle}>▱  Vehicle Details</Text>
             {renderInput('Vehicle Number', vehicleNumber, setVehicleNumber, { autoCapitalize: 'characters' })}
             {renderInput('Driving Licence Number', drivingLicenceNumber, setDrivingLicenceNumber, { autoCapitalize: 'characters' })}
-            {renderUpload('Upload Driving Licence', drivingLicenceImage, () => chooseDocumentSource(setDrivingLicenceImage))}
+            {renderUpload('Upload Driving Licence', drivingLicenceImage, () => chooseDocumentSource(setDrivingLicenceImage, 'drivingLicence'))}
 
             <Text style={styles.sectionTitle}>▤  KYC Details</Text>
             {renderInput('PAN Number', panNumber, setPanNumber, { autoCapitalize: 'characters', maxLength: 10 })}
             {renderInput('Aadhaar Number', aadhaarNumber, setAadhaarNumber, { keyboardType: 'number-pad', maxLength: 12 })}
-            {renderUpload('Upload PAN Image', panImage, () => chooseDocumentSource(setPanImage))}
-            {renderUpload('Upload Aadhaar Image', aadhaarImage, () => chooseDocumentSource(setAadhaarImage))}
+            {renderUpload('Upload PAN Image', panImage, () => chooseDocumentSource(setPanImage, 'pan'))}
+            {renderUpload('Upload Aadhaar Image', aadhaarImage, () => chooseDocumentSource(setAadhaarImage, 'aadhaar'))}
 
-            <Pressable onPress={() => setAcceptedTerms((value) => !value)} style={styles.termsRow}>
-              <View style={[styles.checkbox, acceptedTerms && styles.checkboxSelected]}>{acceptedTerms && <Text style={styles.checkmark}>✓</Text>}</View>
+            <Pressable onPress={() => {
+              if (!isEmailVerified) {
+                Alert.alert('Verify email', 'Please verify your email before accepting the terms.');
+                return;
+              }
+              setAcceptedTerms((value) => !value);
+            }} style={styles.termsRow}>
+              <View style={[styles.checkbox, acceptedTerms && styles.checkboxSelected, !isEmailVerified && styles.checkboxDisabled]}>{acceptedTerms && <Text style={styles.checkmark}>✓</Text>}</View>
               <Text style={styles.termsText}>I accept the terms and conditions</Text>
             </Pressable>
-            <Pressable accessibilityRole="button" onPress={handleCreateAccount} style={[styles.createButton, acceptedTerms && styles.createButtonActive]}>
-              <Text style={[styles.createButtonText, acceptedTerms && styles.createButtonTextActive]}>Create Account</Text>
+            {!!authError && <Text style={styles.errorText}>{authError}</Text>}
+            <Pressable accessibilityRole="button" disabled={isRegistering} onPress={handleCreateAccount} style={[styles.createButton, acceptedTerms && styles.createButtonActive, isRegistering && styles.createButtonDisabled]}>
+              <Text style={[styles.createButtonText, acceptedTerms && styles.createButtonTextActive]}>{isRegistering ? 'Creating Account...' : 'Create Account'}</Text>
             </Pressable>
             {!!phone && <Text style={styles.phoneHint}>Registered mobile: +91 {phone}</Text>}
           </View>

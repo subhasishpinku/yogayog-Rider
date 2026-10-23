@@ -13,6 +13,9 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
+  const [isVerifyingEmailOtp, setIsVerifyingEmailOtp] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -126,6 +129,137 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const sendEmailOtp = useCallback(async (email, name) => {
+    setIsSendingEmailOtp(true);
+    setAuthError('');
+
+    try {
+      const response = await axiosInstance.post('mail/send-otp', {
+        email: email.trim(),
+        name: name.trim(),
+      });
+
+      console.log('[AuthContext] mail/send-otp response:', response.data);
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to send email OTP.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[AuthContext] mail/send-otp error:',
+        error.response?.data || error.message
+      );
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Unable to send email OTP. Please try again.';
+
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setIsSendingEmailOtp(false);
+    }
+  }, []);
+
+  const verifyEmailOtp = useCallback(async (email, otp) => {
+    setIsVerifyingEmailOtp(true);
+    setAuthError('');
+
+    try {
+      const response = await axiosInstance.post('mail/verify-otp', {
+        email: email.trim(),
+        otp: otp.trim(),
+      });
+
+      console.log('[AuthContext] mail/verify-otp response:', response.data);
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Email verification failed.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[AuthContext] mail/verify-otp error:',
+        error.response?.data || error.message
+      );
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Email verification failed. Please try again.';
+
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setIsVerifyingEmailOtp(false);
+    }
+  }, []);
+
+  const registerRider = useCallback(async (payload) => {
+    setIsRegistering(true);
+    setAuthError('');
+
+    try {
+      const formData = new FormData();
+      const fileFields = ['profile_pic', 'dl_pic', 'pan_pic', 'aadaar_pic'];
+
+      Object.entries(payload).forEach(([key, value]) => {
+        if (value === null || value === undefined || value === '') return;
+
+        if (fileFields.includes(key)) {
+          const uri = String(value);
+          const extension = uri.split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
+          const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+
+          formData.append(key, {
+            uri,
+            name: `${key}.${extension}`,
+            type: mimeType,
+          });
+          return;
+        }
+
+        formData.append(key, String(value));
+      });
+
+      const response = await axiosInstance.post('auth/register-rider', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('[AuthContext] auth/register-rider response:', response.data);
+
+      if (!response.data?.success || !response.data?.token) {
+        throw new Error(response.data?.message || 'Registration failed.');
+      }
+
+      await AsyncStorage.multiSet([
+        ['authToken', response.data.token],
+        ['authUser', JSON.stringify(response.data.user || {})],
+      ]);
+      setIsAuthenticated(true);
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[AuthContext] register-rider error:',
+        error.response?.data || error.message
+      );
+      const message =
+        error.response?.data?.message ||
+        error.message ||
+        'Registration failed. Please try again.';
+
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setIsRegistering(false);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     const token = await AsyncStorage.getItem('authToken');
     setIsLoggingOut(true);
@@ -160,10 +294,16 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         isAuthLoading,
         isLoggingOut,
+        isRegistering,
+        isSendingEmailOtp,
         isSendingOtp,
+        isVerifyingEmailOtp,
         isVerifyingOtp,
         logout,
+        registerRider,
+        sendEmailOtp,
         sendOtp,
+        verifyEmailOtp,
         verifyOtp,
         clearAuthError: () => setAuthError(''),
       }}
