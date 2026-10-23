@@ -2,30 +2,40 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { NavigationContainer } from '@react-navigation/native';
+import * as SplashScreen from 'expo-splash-screen';
 
 import HomeStack from './app/Navigation/HomeStack';
+import { AuthProvider } from "./app/contexts/AuthContext"; // adjust path
+// Hide the native splash screen before the React tree renders.
+SplashScreen.hideAsync().catch(() => {});
 
 export default function App() {
   useEffect(() => {
-    const fullscreen = async () => {
-      await NavigationBar.setVisibilityAsync('hidden');
+    const initializeApp = async () => {
+      try {
+        await NavigationBar.setVisibilityAsync('hidden');
+      } catch (error) {
+        console.log('Initialization error:', error);
+      }
     };
 
-    fullscreen();
+    initializeApp();
   }, []);
 
   return (
     <>
       <StatusBar hidden />
-
+      <AuthProvider >
       <NavigationContainer>
         <HomeStack />
       </NavigationContainer>
+      </AuthProvider>
     </>
   );
 }
 //http://192.168.23.135:8082
 //npx expo run:android
+//npx expo start
 //npx expo run:ios
 //npx expo prebuild --clean
 //npx expo prebuild
@@ -45,3 +55,5 @@ export default function App() {
 //gradlew.bat app:assembleDebug --stacktrace
 //adb logcat -v color | findstr /I "Google Maps API key authorization AndroidRuntime"
 //adb logcat -c
+//npx expo run:android --variant release
+//npx eas-cli@latest build --platform android --profile preview

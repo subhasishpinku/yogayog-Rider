@@ -1,33 +1,63 @@
-import React from 'react';
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Image, View, Text } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
-import colors from './styles/colors';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import imagePath from '../constants/imagePath';
+import { useAuth } from '../contexts/AuthContext';
 
 const bikeLogo = require('../../assets/bike_logo.png');
 
 const SplashScreen = ({ navigation }) => {
-  // eslint-disable-next-line react-hooks/refs
   const progress = useRef(new Animated.Value(0)).current;
+  const wordmarkScale = useRef(new Animated.Value(0.96)).current;
+  const [splashFinished, setSplashFinished] = useState(false);
+  const { isAuthenticated, isAuthLoading } = useAuth();
 
   useEffect(() => {
     const animation = Animated.timing(progress, {
       toValue: 1,
-      duration: 30000,
+      duration: 5000,
       useNativeDriver: true,
     });
+    const wordmarkAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(wordmarkScale, {
+          toValue: 1.04,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+        Animated.timing(wordmarkScale, {
+          toValue: 0.96,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      ])
+    );
 
     animation.start(({ finished }) => {
       if (finished) {
-        navigation.replace(navigationStrings.LOGINSCREEN);
+        setSplashFinished(true);
       }
     });
+    wordmarkAnimation.start();
 
-    return () => animation.stop();
-  }, [navigation, progress]);
+    return () => {
+      animation.stop();
+      wordmarkAnimation.stop();
+    };
+  }, [navigation, progress, wordmarkScale]);
+
+  useEffect(() => {
+    if (splashFinished && !isAuthLoading) {
+      navigation.replace(
+        isAuthenticated
+          ? navigationStrings.DASHBOARDSCREEN
+          : navigationStrings.LOGINSCREEN
+      );
+    }
+  }, [isAuthenticated, isAuthLoading, navigation, splashFinished]);
 
   return (
     <View style={styles.screen}>
@@ -45,10 +75,17 @@ const SplashScreen = ({ navigation }) => {
             accessibilityLabel="Yogayog rider"
           />
 
-          <Text style={styles.wordmark} accessibilityRole="header">
-            <Text style={styles.wordmarkWhite}>YOGA</Text>
-            <Text style={styles.wordmarkGold}>YOG</Text>
-          </Text>
+          <View style={styles.wordmarkFrame}>
+            <Animated.Image
+              source={imagePath.splashscreen}
+              style={[
+                styles.wordmarkImage,
+                { transform: [{ scale: wordmarkScale }] },
+              ]}
+              resizeMode="contain"
+              accessibilityLabel="Yogayog"
+            />
+          </View>
 
           <Text style={styles.subtitle}>RIDER PARTNER APP</Text>
         </View>

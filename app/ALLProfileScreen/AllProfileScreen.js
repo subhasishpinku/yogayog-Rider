@@ -1,10 +1,11 @@
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import { useAuth } from '../contexts/AuthContext';
 const profileItems = [
   { icon: '✓', title: 'KYC Page & Verification', subtitle: 'Verify your identity and rider account', badge: 'New', tone: 'gold',route: navigationStrings.KYCVERIFICATION  },
   { icon: '▣', title: 'Documents Upload Section', subtitle: 'Upload licence, RC, insurance and ID proof', route: navigationStrings.DOCUMENTSUPLOADSECTION },
@@ -18,6 +19,21 @@ const profileItems = [
 
 const AllProfileScreen = () => {
   const navigation = useNavigation();
+  const { isLoggingOut, logout } = useAuth();
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: async () => {
+          await logout();
+          navigation.replace(navigationStrings.LOGINSCREEN);
+        },
+      },
+    ]);
+  };
 
   return (
   <View style={styles.screen}>
@@ -47,6 +63,19 @@ const AllProfileScreen = () => {
           <Text style={styles.chevron}>›</Text>
         </Pressable>
       ))}
+      <Pressable
+        accessibilityRole="button"
+        disabled={isLoggingOut}
+        onPress={handleLogout}
+        style={[styles.logoutCard, isLoggingOut && styles.logoutCardDisabled]}
+      >
+        <View style={styles.logoutIcon}>
+          <Text style={styles.logoutIconText}>↪</Text>
+        </View>
+        <Text style={styles.logoutText}>
+          {isLoggingOut ? 'Logging out...' : 'Logout'}
+        </Text>
+      </Pressable>
     </ScrollView>
   </View>
   );

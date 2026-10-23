@@ -71,6 +71,12 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     textAlign: 'center',
   },
+  errorText: {
+    marginTop: 12,
+    color: '#FF6B6B',
+    fontSize: 12,
+    textAlign: 'center',
+  },
   resendText: {
     marginTop: 20,
     color: colors.muted,
@@ -91,6 +97,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 16,
     backgroundColor: colors.gold,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#080808',

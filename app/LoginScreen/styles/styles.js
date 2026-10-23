@@ -134,6 +134,11 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '700',
   },
+  errorText: {
+    marginTop: 8,
+    color: '#FF6B6B',
+    fontSize: 12,
+  },
   terms: {
     position: 'absolute',
     right: 20,
@@ -157,6 +162,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 16,
     backgroundColor: colors.gold,
+  },
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: '#080808',

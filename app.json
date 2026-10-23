@@ -3,6 +3,7 @@
     "name": "YogaYog-Rider",
     "slug": "yogayog-rider",
     "version": "1.0.0",
+    "jsEngine": "hermes",
     "orientation": "portrait",
     "icon": "./assets/yogayoglogo.png",
     "userInterfaceStyle": "light",
@@ -24,21 +25,15 @@
     },
     "plugins": [
       [
-        "expo-splash-screen",
-        {
-          "backgroundColor": "#FFFFFF",
-          "image": "./assets/splash.png",
-          "imageWidth": 200
-        }
-      ],
-      [
         "react-native-maps",
         {
           "androidGoogleMapsApiKey": "AIzaSyBzySPQYl8UIK_7Rb-EQkHkRrV3_sO74Gs",
           "iosGoogleMapsApiKey": "AIzaSyBzySPQYl8UIK_7Rb-EQkHkRrV3_sO74Gs"
         }
       ],
-      "expo-location"
+      "expo-location",
+      "./plugins/withNoNativeSplash",
+      "@react-native-community/datetimepicker"
     ],
     "extra": {
       "eas": {

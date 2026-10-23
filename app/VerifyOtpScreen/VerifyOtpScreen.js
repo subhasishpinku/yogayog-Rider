@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import { useAuth } from '../contexts/AuthContext';
 
 const VerifyOtpScreen = ({ navigation, route }) => {
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -11,6 +12,7 @@ const VerifyOtpScreen = ({ navigation, route }) => {
   const inputRefs = useRef([]);
   const phone = route?.params?.phone || '98765 43210';
   const role = route?.params?.role === 'truck' ? 'Truck Driver' : 'Bike Rider';
+  const { authError, clearAuthError, isVerifyingOtp, verifyOtp } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -37,6 +39,15 @@ const VerifyOtpScreen = ({ navigation, route }) => {
       index > 0
     ) {
       inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      await verifyOtp(phone, otp.join(''));
+      navigation.replace(navigationStrings.DASHBOARDSCREEN);
+    } catch {
+      // The error is exposed by AuthContext and rendered below the OTP fields.
     }
   };
 
@@ -75,11 +86,14 @@ const VerifyOtpScreen = ({ navigation, route }) => {
               maxLength={1}
               onChangeText={(text) => updateOtp(text, index)}
               onKeyPress={(event) => handleKeyPress(event, index)}
+              onFocus={clearAuthError}
               style={styles.otpInput}
               value={value}
             />
           ))}
           </View>
+
+          {!!authError && <Text style={styles.errorText}>{authError}</Text>}
 
           <Text style={styles.resendText}>
           Didn&apos;t receive?{' '}
@@ -91,10 +105,13 @@ const VerifyOtpScreen = ({ navigation, route }) => {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() => navigation.replace(navigationStrings.DASHBOARDSCREEN)}
-          style={styles.button}
+          disabled={isVerifyingOtp}
+          onPress={handleVerifyOtp}
+          style={[styles.button, isVerifyingOtp && styles.buttonDisabled]}
         >
-          <Text style={styles.buttonText}>Verify &amp; Start Riding →</Text>
+          <Text style={styles.buttonText}>
+            {isVerifyingOtp ? 'Verifying...' : 'Verify & Start Riding →'}
+          </Text>
         </Pressable>
       </View>
     </View>

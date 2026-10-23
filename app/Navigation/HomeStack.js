@@ -25,6 +25,7 @@ import RTODetails from '../RTODetails/RTODetails';
 import RescheduleDelivery from '../RescheduleDelivery/RescheduleDelivery';
 import CODHandover from '../CODHandover/CODHandover';
 import CallCustomer from '../CallCustomers/CallCustomers';
+import RegisterScreen from '../RegisterScreen/RegisterScreen';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -122,6 +123,10 @@ const HomeStack = () => {
        <Stack.Screen
         name={navigationStrings.CALLCUSTOMER}
         component={CallCustomer}
+      />
+         <Stack.Screen
+        name={navigationStrings.REGISTERSCREEN}
+        component={RegisterScreen}
       />
     </Stack.Navigator>
   );

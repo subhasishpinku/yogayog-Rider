@@ -41,17 +41,16 @@ const styles = StyleSheet.create({
     height: 72,
     marginBottom: 24,
   },
-  wordmark: {
-    fontSize: 40,
-    lineHeight: 44,
-    fontWeight: '900',
-    letterSpacing: -1.5,
+  wordmarkFrame: {
+    width: 220,
+    height: 72,
+    borderRadius: 24,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
   },
-  wordmarkWhite: {
-    color: colors.white,
-  },
-  wordmarkGold: {
-    color: colors.gold,
+  wordmarkImage: {
+    width: '100%',
+    height: '100%',
   },
   subtitle: {
     marginTop: 9,

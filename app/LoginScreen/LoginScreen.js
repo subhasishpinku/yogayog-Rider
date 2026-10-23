@@ -5,13 +5,38 @@ import { StatusBar } from 'expo-status-bar';
 import colors from './styles/colors';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import { useAuth } from '../contexts/AuthContext';
 
 const bikeLogo = require('../../assets/bike_logo.png');
 const yogayogLogo = require('../../assets/yogayoglogo.png');
 
 const LoginScreen = ({ navigation }) => {
-  const [phone, setPhone] = useState('98765 43210');
+  const [phone, setPhone] = useState('');
   const [role, setRole] = useState('bike');
+  const { authError, clearAuthError, isSendingOtp, sendOtp } = useAuth();
+
+  const handleSendOtp = async () => {
+    try {
+      const response = await sendOtp(phone);
+
+      navigation.navigate(navigationStrings.VERIFYOTP, {
+        phone: phone.replace(/\D/g, ''),
+        role,
+        otpSent: response.message,
+      });
+    } catch (error) {
+      if (error?.message?.toLowerCase().includes('user not found')) {
+        clearAuthError();
+        navigation.navigate(navigationStrings.REGISTERSCREEN, {
+          phone: phone.replace(/\D/g, ''),
+          role,
+        });
+        return;
+      }
+
+      // Other errors are exposed by AuthContext and rendered below the input.
+    }
+  };
 
   return (
     <View style={styles.screen}>
@@ -74,8 +99,11 @@ const LoginScreen = ({ navigation }) => {
             placeholderTextColor={colors.mutedLight}
             style={styles.phoneInput}
             value={phone}
+            onFocus={clearAuthError}
           />
         </View>
+
+        {!!authError && <Text style={styles.errorText}>{authError}</Text>}
 
         <Text style={styles.terms}>
           By continuing you agree to Yogayog&apos;s{' '}
@@ -85,15 +113,13 @@ const LoginScreen = ({ navigation }) => {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() =>
-            navigation.navigate(navigationStrings.VERIFYOTP, {
-              phone,
-              role,
-            })
-          }
-          style={styles.button}
+          disabled={isSendingOtp}
+          onPress={handleSendOtp}
+          style={[styles.button, isSendingOtp && styles.buttonDisabled]}
         >
-          <Text style={styles.buttonText}>Send OTP  →</Text>
+          <Text style={styles.buttonText}>
+            {isSendingOtp ? 'Sending OTP...' : 'Send OTP  →'}
+          </Text>
         </Pressable>
       </View>
     </View>

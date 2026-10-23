@@ -21,6 +21,11 @@ const styles = StyleSheet.create({
   badge: { marginLeft: 8, paddingHorizontal: 7, paddingVertical: 3, borderRadius: 8, color: colors.gold, backgroundColor: colors.goldDark, fontSize: 9, fontWeight: '900' },
   itemSubtitle: { marginTop: 5, color: colors.muted, fontSize: 11, lineHeight: 15 },
   chevron: { marginLeft: 6, color: colors.mutedLight, fontSize: 26, fontWeight: '300' },
+  logoutCard: { minHeight: 60, flexDirection: 'row', alignItems: 'center', marginHorizontal: 10, marginTop: 12, paddingHorizontal: 13, borderWidth: 1, borderColor: '#6B2525', borderRadius: 16, backgroundColor: '#321A1A' },
+  logoutCardDisabled: { opacity: 0.6 },
+  logoutIcon: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#542323' },
+  logoutIconText: { color: '#FF6B6B', fontSize: 22, fontWeight: '900' },
+  logoutText: { marginLeft: 12, color: '#FF6B6B', fontSize: 14, fontWeight: '900' },
 });
 
 export default styles;

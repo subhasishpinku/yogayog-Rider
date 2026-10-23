@@ -22,5 +22,6 @@ export default {
   RESCHEDULEDELIVERY: 'RescheduleDelivery',
   CODHANDOVER: 'CODHandover',
   CALLCUSTOMER: 'CallCustomer',
+  REGISTERSCREEN: 'RegisterScreen',
 };
 
