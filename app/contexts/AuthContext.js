@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [authError, setAuthError] = useState('');
+  const [riderProfile, setRiderProfile] = useState(null);
 
   useEffect(() => {
     const restoreSession = async () => {
@@ -260,6 +261,28 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchRiderProfile = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/profile', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load rider profile.');
+      }
+
+      setRiderProfile(response.data.rider || null);
+      return response.data.rider;
+    } catch (error) {
+      console.error(
+        '[AuthContext] rider/profile error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     const token = await AsyncStorage.getItem('authToken');
     setIsLoggingOut(true);
@@ -299,6 +322,8 @@ export const AuthProvider = ({ children }) => {
         isSendingOtp,
         isVerifyingEmailOtp,
         isVerifyingOtp,
+        riderProfile,
+        fetchRiderProfile,
         logout,
         registerRider,
         sendEmailOtp,

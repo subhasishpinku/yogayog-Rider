@@ -6,6 +6,10 @@ import { StatusBar } from 'expo-status-bar';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from '../Services/BackgroundLocation';
 const profileItems = [
   { icon: '✓', title: 'KYC Page & Verification', subtitle: 'Verify your identity and rider account', badge: 'New', tone: 'gold',route: navigationStrings.KYCVERIFICATION  },
   { icon: '▣', title: 'Documents Upload Section', subtitle: 'Upload licence, RC, insurance and ID proof', route: navigationStrings.DOCUMENTSUPLOADSECTION },
@@ -28,13 +32,21 @@ const AllProfileScreen = () => {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
+          stopTracking();
           await logout();
           navigation.replace(navigationStrings.LOGINSCREEN);
         },
       },
     ]);
   };
-
+ const stopTracking = async () => {
+    try {
+      await stopBackgroundLocation();
+      console.log('Background tracking stopped');
+    } catch (error) {
+      console.log('Stop error:', error.message);
+    }
+  };
   return (
   <View style={styles.screen}>
     <StatusBar style="light" />

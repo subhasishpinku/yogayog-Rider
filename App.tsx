@@ -6,6 +6,7 @@ import * as SplashScreen from 'expo-splash-screen';
 
 import HomeStack from './app/Navigation/HomeStack';
 import { AuthProvider } from "./app/contexts/AuthContext"; // adjust path
+import {HomeProvider} from './app/contexts/HomeContext'; // adjust path
 // Hide the native splash screen before the React tree renders.
 SplashScreen.hideAsync().catch(() => {});
 
@@ -26,9 +27,11 @@ export default function App() {
     <>
       <StatusBar hidden />
       <AuthProvider >
+        <HomeProvider>
       <NavigationContainer>
         <HomeStack />
       </NavigationContainer>
+      </HomeProvider>
       </AuthProvider>
     </>
   );
@@ -57,3 +60,5 @@ export default function App() {
 //adb logcat -c
 //npx expo run:android --variant release
 //npx eas-cli@latest build --platform android --profile preview
+//26156609-8bd6-4c3f-b78b-ab3d840e518b
+//"lokeash_agarwal"

@@ -5,6 +5,10 @@ import { StatusBar } from 'expo-status-bar';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from '../Services/BackgroundLocation';
 
 const VerifyOtpScreen = ({ navigation, route }) => {
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -45,12 +49,20 @@ const VerifyOtpScreen = ({ navigation, route }) => {
   const handleVerifyOtp = async () => {
     try {
       await verifyOtp(phone, otp.join(''));
+      startTracking();
       navigation.replace(navigationStrings.DASHBOARDSCREEN);
     } catch {
       // The error is exposed by AuthContext and rendered below the OTP fields.
     }
   };
-
+  const startTracking = async () => {
+    try {
+      await startBackgroundLocation();
+      console.log('Background tracking started');
+    } catch (error) {
+      console.log('Tracking error:', error.message);
+    }
+  };
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
