@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState,
 } from 'react';
+import { ToastAndroid } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import axiosInstance from './axiosInstance';
@@ -64,12 +65,26 @@ export const AuthProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[AuthContext] send-otp error:',
-        error.response?.data || error.message
-      );
+      const errorData = error.response?.data;
+      const errorMessage = errorData?.message || error.message || '';
+      const normalizedErrorMessage = errorMessage.toLowerCase();
+      const isExpectedOtpError =
+        normalizedErrorMessage.includes('user not found') ||
+        normalizedErrorMessage.includes('can not use this number') ||
+        normalizedErrorMessage.includes('cannot use this number');
+
+      if (isExpectedOtpError) {
+        ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+      } else {
+        console.error(
+          '[AuthContext] send-otp error:',
+          errorData || error.message
+        );
+        ToastAndroid.show(errorMessage, ToastAndroid.SHORT);
+      }
+
       const message =
-        error.response?.data?.message ||
+        errorData?.message ||
         error.message ||
         'Unable to send OTP. Please try again.';
 

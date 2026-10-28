@@ -14,21 +14,35 @@ const LoginScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('bike');
   const { authError, clearAuthError, isSendingOtp, sendOtp } = useAuth();
+  const isUserNotFoundError = authError?.toLowerCase().includes('user not found');
 
   const handleSendOtp = async () => {
+    const normalizedPhone = phone.replace(/\D/g, '');
+
     try {
       const response = await sendOtp(phone);
 
-      navigation.navigate(navigationStrings.VERIFYOTP, {
-        phone: phone.replace(/\D/g, ''),
-        role,
-        otpSent: response.message,
-      });
+      if (response?.success && response?.already_in_use) {
+        navigation.navigate(navigationStrings.VERIFYOTP, {
+          phone: normalizedPhone,
+          role,
+          otpSent: response.message,
+        });
+        return;
+      }
+
+      if (!response?.success && !response?.already_in_use) {
+        clearAuthError();
+        navigation.navigate(navigationStrings.REGISTERSCREEN, {
+          phone: normalizedPhone,
+          role,
+        });
+      }
     } catch (error) {
       if (error?.message?.toLowerCase().includes('user not found')) {
         clearAuthError();
         navigation.navigate(navigationStrings.REGISTERSCREEN, {
-          phone: phone.replace(/\D/g, ''),
+          phone: normalizedPhone,
           role,
         });
         return;
@@ -103,7 +117,9 @@ const LoginScreen = ({ navigation }) => {
           />
         </View>
 
-        {!!authError && <Text style={styles.errorText}>{authError}</Text>}
+        {!!authError && !isUserNotFoundError && (
+          <Text style={styles.errorText}>{authError}</Text>
+        )}
 
         <Text style={styles.terms}>
           By continuing you agree to Yogayog&apos;s{' '}

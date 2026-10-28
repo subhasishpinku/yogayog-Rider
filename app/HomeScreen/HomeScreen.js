@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -12,6 +12,15 @@ import { startLiveLocation } from '../Services/LocationService';
 
 const fallbackLocation = { latitude: 22.5186, longitude: 88.3477 };
 
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
+};
+
 const HomeScreen = ({ navigation }) => {
   const riderMarkerRef = useRef(null);
   const [latitude, setLatitude] = useState(null);
@@ -19,13 +28,20 @@ const HomeScreen = ({ navigation }) => {
   const [riderAddress, setRiderAddress] = useState('');
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  const assignedBlinkOpacity = useRef(new Animated.Value(1)).current;
 
   const [isOnline, setIsOnline] = useState(true);
   const {
     fetchRiderProfile,
     riderProfile,
   } = useAuth();
-  const { fetchRiderOrders, riderOrders } = useHome();
+  const {
+    fetchRiderOrders,
+    fetchRiderTodaysEarnings,
+    riderOrders,
+    todayEarnings,
+    todayDelivered,
+  } = useHome();
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -34,6 +50,10 @@ const HomeScreen = ({ navigation }) => {
   useEffect(() => {
     fetchRiderOrders().catch(() => {});
   }, [fetchRiderOrders]);
+
+  useEffect(() => {
+    fetchRiderTodaysEarnings().catch(() => {});
+  }, [fetchRiderTodaysEarnings]);
   useEffect(() => {
     let subscription;
     let mounted = true;
@@ -79,6 +99,34 @@ const HomeScreen = ({ navigation }) => {
   const riderLocation = latitude !== null && longitude !== null
     ? { latitude, longitude }
     : fallbackLocation;
+  const hasAssignedOrder = riderOrders.some(
+    (order) => String(order.status || '').toLowerCase() === 'assigned'
+  );
+
+  useEffect(() => {
+    if (!hasAssignedOrder) {
+      assignedBlinkOpacity.setValue(1);
+      return undefined;
+    }
+
+    const blinkAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(assignedBlinkOpacity, {
+          toValue: 0.2,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(assignedBlinkOpacity, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    blinkAnimation.start();
+    return () => blinkAnimation.stop();
+  }, [assignedBlinkOpacity, hasAssignedOrder]);
 
   const loadRiderAddress = async () => {
     setIsAddressLoading(true);
@@ -118,7 +166,7 @@ const HomeScreen = ({ navigation }) => {
       onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}>
       <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
     </Pressable>
-        <Text style={styles.greeting}>Good morning 👋</Text>
+        <Text style={styles.greeting}>{getTimeBasedGreeting()} 👋</Text>
         <Text style={styles.name}>{riderName}</Text>
         <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>
       </View>
@@ -133,10 +181,10 @@ const HomeScreen = ({ navigation }) => {
 
       <Text style={styles.sectionTitle}>Today&apos;s Working Details</Text>
       <View style={styles.metrics}>
-        <View style={styles.metricCard}><Text style={styles.earnings}>₹847</Text><Text style={styles.metricLabel}>Today&apos;s Earnings</Text></View>
-        <View style={styles.metricCard}><Text style={styles.deliveries}>6</Text><Text style={styles.metricLabel}>Deliveries Done</Text></View>
-        <View style={styles.metricCard}><Text style={styles.metricValue}>⭐ 4.8</Text><Text style={styles.metricLabel}>Avg Rating</Text></View>
-        <View style={styles.metricCard}><Text style={styles.metricValue}>42 km</Text><Text style={styles.metricLabel}>Distance Today</Text></View>
+        <View style={styles.metricCard}><Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text><Text style={styles.metricLabel}>Today&apos;s Earnings</Text></View>
+        <View style={styles.metricCard}><Text style={styles.deliveries}>{todayDelivered}</Text><Text style={styles.metricLabel}>Deliveries Done</Text></View>
+        {/* <View style={styles.metricCard}><Text style={styles.metricValue}>⭐ 4.8</Text><Text style={styles.metricLabel}>Avg Rating</Text></View> */}
+        {/* <View style={styles.metricCard}><Text style={styles.metricValue}>42 km</Text><Text style={styles.metricLabel}>Distance Today</Text></View> */}
       </View>
 
       <Text style={styles.sectionTitle}>Your Location</Text>
@@ -179,11 +227,25 @@ const HomeScreen = ({ navigation }) => {
       {isOnline ? (
         <>
           <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{riderOrders.length} orders</Text></View>
-          {riderOrders.length > 0 ? riderOrders.map((order) => (
+          {riderOrders.length > 0 ? riderOrders.map((order) => {
+            const isAssigned = String(order.status || '').toLowerCase() === 'assigned';
+            const statusText = order.status ? order.status.replace(/_/g, ' ') : 'Order';
+            const statusStyle = [
+              styles.orderStatus,
+              order.status === 'delivered' && styles.deliveredStatus,
+              isAssigned && styles.assignedStatus,
+            ];
+
+            return (
             <Pressable
               key={order.id}
               style={styles.orderCard}
-              onPress={() => navigation.navigate(navigationStrings.ACCEPTREJECTORDER)}
+              onPress={() => {
+                // if (String(order.status || '').toLowerCase() === 'assigned') {
+                //   navigation.navigate(navigationStrings.ACCEPTREJECTORDER, { order });
+                // }
+                 navigation.navigate(navigationStrings.ACCEPTREJECTORDER, { order });
+              }}
             > 
               <Text style={styles.orderMeta}>Order #{order.code} · {order.customer_name || 'Customer'}</Text>
               <Text style={styles.orderDetail}>📞 {order.customer_phone || 'Phone unavailable'}</Text>
@@ -193,14 +255,17 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.fareLabel}>{order.status || 'Order'}</Text>
               <Text style={styles.orderDate}>
                 {order.created_at || ''}
-                {order.status ? (
-                  <Text style={[styles.orderStatus, order.status === 'delivered' && styles.deliveredStatus]}>
-                    {'  '}{order.status.replace(/_/g, ' ')}
-                  </Text>
-                ) : null}
+                {order.status ? (isAssigned ? (
+                  <Animated.Text style={[statusStyle, { opacity: assignedBlinkOpacity }]}>
+                    {'  '}{statusText}
+                  </Animated.Text>
+                ) : (
+                  <Text style={statusStyle}>{'  '}{statusText}</Text>
+                )) : null}
               </Text>
             </Pressable>
-          )) : (
+            );
+          }) : (
             <View style={styles.offlineCard}>
               <Text style={styles.offlineTitle}>No orders available</Text>
             </View>

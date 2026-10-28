@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
   fareLabel: { position: 'absolute', top: 40, right: 14, color: colors.muted, fontSize: 11 },
   orderDate: { marginTop: 8, color: colors.muted, fontSize: 10 },
   orderStatus: { color: '#FF4D4D' },
+  assignedStatus: { fontWeight: '900' },
   deliveredStatus: { color: colors.green },
   bottomTabs: { position: 'absolute', right: 0, bottom: 0, left: 0, height: 82, flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#333336', backgroundColor: '#151517' },
   tab: { alignItems: 'center', width: '25%' },

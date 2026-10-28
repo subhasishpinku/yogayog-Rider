@@ -15,6 +15,42 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: colors.map,
   },
+  fullMapScreen: {
+    flex: 1,
+    backgroundColor: colors.map,
+  },
+  fullMap: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  fullMapHeader: {
+    position: 'absolute',
+    top: 48,
+    left: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  fullMapTitle: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    color: colors.white,
+    backgroundColor: 'rgba(18, 18, 29, 0.9)',
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  fullMapCloseButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: colors.gold,
+  },
+  fullMapCloseText: {
+    color: '#080808',
+    fontSize: 14,
+    fontWeight: '900',
+  },
   map: {
     ...StyleSheet.absoluteFillObject,
   },
