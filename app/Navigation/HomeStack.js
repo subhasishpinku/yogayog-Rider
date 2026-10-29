@@ -26,6 +26,9 @@ import RescheduleDelivery from '../RescheduleDelivery/RescheduleDelivery';
 import CODHandover from '../CODHandover/CODHandover';
 import CallCustomer from '../CallCustomers/CallCustomers';
 import RegisterScreen from '../RegisterScreen/RegisterScreen';
+import DeactivateScreen from '../ActiveScreen/DeactivateScreen';
+import ActiveList from '../ActiveScreen/ActiveList';
+import ActiveScreen from '../ActiveScreen/ActiveScreen';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -127,6 +130,18 @@ const HomeStack = () => {
          <Stack.Screen
         name={navigationStrings.REGISTERSCREEN}
         component={RegisterScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.DEACTIVATESCREEN}
+        component={DeactivateScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.ACTIVELIST}
+        component={ActiveList}
+      />
+       <Stack.Screen
+        name={navigationStrings.ACTIVESCREEN}
+        component={ActiveScreen}
       />
     </Stack.Navigator>
   );

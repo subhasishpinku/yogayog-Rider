@@ -65,6 +65,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '800',
   },
+  readOnlyInput: {
+    opacity: 0.65,
+  },
   highlightedInput: {
     borderColor: colors.gold,
   },

@@ -23,5 +23,8 @@ export default {
   CODHANDOVER: 'CODHandover',
   CALLCUSTOMER: 'CallCustomer',
   REGISTERSCREEN: 'RegisterScreen',
+  DEACTIVATESCREEN: 'DeactivateScreen',
+  ACTIVESCREEN: 'ActiveScreen',
+  ACTIVELIST: 'ActiveList',
 };
 

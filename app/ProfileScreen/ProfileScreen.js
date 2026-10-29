@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 
 import navigationStrings from '../constants/navigationStrings';
 import { useHome } from '../contexts/HomeContext';
-
+import imagePath from '../constants/imagePath';
 import styles from './styles/styles';
 
 const DetailSection = ({ title, rows }) => (
@@ -25,20 +25,20 @@ const DetailSection = ({ title, rows }) => (
 const ProfileScreen = () => {
   const navigation = useNavigation();
   const { fetchRiderProfile, riderProfile } = useHome();
+  const [profileImageFailed, setProfileImageFailed] = useState(false);
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
   }, [fetchRiderProfile]);
 
   const profile = riderProfile || {};
+  const profileImageUrl = profile.profile_picture;
+
+  useEffect(() => {
+    setProfileImageFailed(false);
+  }, [profileImageUrl]);
+
   const riderName = profile.name || 'Suresh Kumar';
-  const riderInitials = riderName
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase();
   const formattedDob = profile.dob
     ? new Date(`${profile.dob}T00:00:00`).toLocaleDateString('en-IN', {
         day: '2-digit',
@@ -90,7 +90,12 @@ const ProfileScreen = () => {
         <View style={styles.header}>
           <View style={styles.headerRing} />
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
+            <Image
+              source={profileImageUrl && !profileImageFailed ? { uri: profileImageUrl } : imagePath.demoImage}
+              style={styles.avatarImage}
+              resizeMode="cover"
+              onError={() => setProfileImageFailed(true)}
+            />
           </View>
           <Text style={styles.name}>{riderName}</Text>
           <Text style={styles.role}>🛵 {profile.veh_type || 'Bike'} · {profile.rider_code || 'YCG-RDR-0042'}</Text>

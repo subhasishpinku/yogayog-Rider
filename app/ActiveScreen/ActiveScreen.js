@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -7,6 +7,7 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import colors from './styles/colors';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings'; 
+import { useHome } from '../contexts/HomeContext';
 const pickup = { latitude: 22.5096, longitude: 88.3456 };
 const drop = { latitude: 22.5198, longitude: 88.3469 };
 
@@ -20,8 +21,22 @@ const mapStyle = [
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
 ];
 
-const ActiveScreen = () => {
+const ActiveScreen = ({ route }) => {
   const navigation = useNavigation();
+  const { fetchRiderOrderById } = useHome();
+  const orderId = route?.params?.orderId;
+  const [order, setOrder] = useState(null);
+
+  useEffect(() => {
+    if (!orderId) return;
+
+    fetchRiderOrderById(orderId)
+      .then(setOrder)
+      .catch(() => {});
+  }, [fetchRiderOrderById, orderId]);
+
+  const orderCode = order?.order_id || orderId || '1222000010';
+  const orderStatus = order?.status === 'delivered' ? 'Delivered' : 'Heading to Drop Point';
 
   return (
     <View style={styles.screen}>
@@ -61,23 +76,42 @@ const ActiveScreen = () => {
         </MapView>
 
         <View style={styles.etaCard}>
-          <Text style={styles.etaLabel}>ETA to Drop</Text>
-          <Text style={styles.etaValue}>~12 min</Text>
+          <Text style={styles.etaLabel}>{order?.payment_method || 'Order'} · {order?.payment_status || 'Pending'}</Text>
+          <Text style={styles.etaValue}>₹{Number(order?.amount || 0).toFixed(2)}</Text>
         </View>
         <Pressable style={styles.navigateButton}>
           <Text style={styles.navigateText}>🛵 Navigate</Text>
         </Pressable>
-        <View style={styles.herePill}>
+        {/* <View style={styles.herePill}>
           <Text style={styles.hereText}>🛵 You are here</Text>
           <View style={styles.hereArrow} />
-        </View>
+        </View> */}
       </View>
 
       <View style={styles.orderPanel}>
+        <View style={styles.orderActionRow}>
+          <Pressable
+            style={[styles.orderActionButton, styles.codButton]}
+            onPress={() => navigation.navigate(navigationStrings.CODAMOUNTCOLLECT)}
+          >
+            <Text style={styles.orderActionText}>COD</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.orderActionButton, styles.nonDeliveryButton]}
+            onPress={() => navigation.navigate(navigationStrings.NONDELIVERYREPORT)}
+          >
+            <Text style={styles.orderActionText}>Non-delivery</Text>
+          </Pressable>
+          <Pressable style={[styles.orderActionButton, styles.prepaidButton]}>
+            <Text style={styles.orderActionText}>Prepaid</Text>
+          </Pressable>
+        
+        </View>
+
         <View style={styles.orderHeader}>
           <View>
-            <Text style={styles.orderId}>Order #1222000010</Text>
-            <Text style={styles.orderTitle}>Heading to Drop Point</Text>
+            <Text style={styles.orderId}>Order #{orderCode}</Text>
+            <Text style={styles.orderTitle}>{orderStatus}</Text>
           </View>
           <View style={styles.activeBadge}>
             <Text style={styles.activeText}>• Active</Text>
@@ -89,7 +123,7 @@ const ActiveScreen = () => {
             <Text style={styles.pickupDot}>●</Text>
             <View style={styles.routeCopy}>
               <Text style={styles.routeLabel}>PICKED UP ✓</Text>
-              <Text style={styles.routeAddress}>15, Chandra Nath Chatterjee St</Text>
+              <Text style={styles.routeAddress}>{order?.pickup_area || 'Pickup address unavailable'}</Text>
             </View>
           </View>
           <View style={styles.routeDivider} />
@@ -97,7 +131,7 @@ const ActiveScreen = () => {
             <Text style={styles.dropDot}>●</Text>
             <View style={styles.routeCopy}>
               <Text style={styles.routeLabel}>DROPPING AT</Text>
-              <Text style={styles.routeAddress}>Kalighat Kali Mandir, Anami Sangha</Text>
+              <Text style={styles.routeAddress}>{order?.drop_area || 'Drop address unavailable'}</Text>
             </View>
           </View>
         </View>
@@ -105,10 +139,13 @@ const ActiveScreen = () => {
         <View style={styles.customerRow}>
           <View style={styles.customerAvatar}><Text style={styles.customerIcon}>♟</Text></View>
           <View style={styles.customerCopy}>
-            <Text style={styles.customerName}>Saheli Das</Text>
-            <Text style={styles.customerPhone}>8975989667</Text>
+            <Text style={styles.customerName}>{order?.customer_name || 'Customer'}</Text>
+            <Text style={styles.customerPhone}>{order?.customer_phone || 'Phone unavailable'}</Text>
           </View>
-          <Pressable style={styles.callButton}>
+          <Pressable
+            style={styles.callButton}
+            onPress={() => navigation.navigate(navigationStrings.CALLCUSTOMER)}
+          >
             <Text style={styles.callText}>📞 Call</Text>
           </Pressable>
         </View>
@@ -116,11 +153,11 @@ const ActiveScreen = () => {
         <View style={styles.summaryRow}>
           <View>
             <Text style={styles.summaryLabel}>Est. Earning</Text>
-            <Text style={styles.summaryValueGold}>₹57.75</Text>
+            <Text style={styles.summaryValueGold}>₹{Number(order?.amount || 0).toFixed(2)}</Text>
           </View>
           <View>
-            <Text style={styles.summaryLabel}>Distance Left</Text>
-            <Text style={styles.summaryValue}>4.2 km</Text>
+            <Text style={styles.summaryLabel}>Package Weight</Text>
+            <Text style={styles.summaryValue}>{order?.pack_weight || 0} kg</Text>
           </View>
         </View>
 

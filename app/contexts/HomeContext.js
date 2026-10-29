@@ -5,6 +5,32 @@ import axiosInstance from './axiosInstance';
 
 const HomeContext = createContext(null);
 
+const resolveRiderAssetUrl = (assetPath) => {
+  if (!assetPath) {
+    return null;
+  }
+
+  if (/^https?:\/\//i.test(assetPath)) {
+    return assetPath;
+  }
+
+  const apiBaseUrl = axiosInstance.defaults.baseURL || '';
+  const publicBaseUrl = apiBaseUrl.replace(/api\/?$/, '');
+  return `${publicBaseUrl.replace(/\/$/, '')}/${String(assetPath).replace(/^\/+/, '')}`;
+};
+
+const normalizeRiderProfile = (rider) => (
+  rider
+    ? {
+        ...rider,
+        profile_picture: resolveRiderAssetUrl(rider.profile_picture),
+        profile_image_url: resolveRiderAssetUrl(
+          rider.profile_picture || rider.photo || rider.aadhar_file
+        ),
+      }
+    : null
+);
+
 export const HomeProvider = ({ children }) => {
   const [riderOrders, setRiderOrders] = useState([]);
   const [riderProfile, setRiderProfile] = useState(null);
@@ -28,6 +54,33 @@ export const HomeProvider = ({ children }) => {
     } catch (error) {
       console.error(
         '[HomeContext] rider/orders error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const fetchRiderOrderById = useCallback(async (orderId) => {
+    if (!orderId) {
+      throw new Error('Order ID is required to load order details.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/order-by-id', {
+        params: { order_id: orderId },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load order details.');
+      }
+
+      console.log('[HomeContext] rider/order-by-id response:', response.data);
+      return response.data.order || null;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/order-by-id error:',
         error.response?.data || error.message
       );
       throw error;
@@ -131,7 +184,8 @@ export const HomeProvider = ({ children }) => {
         throw new Error(response.data?.message || 'Unable to load rider profile.');
       }
 
-      const profile = response.data.rider || null;
+      const profile = normalizeRiderProfile(response.data.rider);
+
       setRiderProfile(profile);
       return profile;
     } catch (error) {
@@ -154,7 +208,7 @@ export const HomeProvider = ({ children }) => {
         throw new Error(response.data?.message || 'Unable to update rider profile.');
       }
 
-      const profile = response.data.rider || response.data.profile || null;
+      const profile = normalizeRiderProfile(response.data.rider || response.data.profile);
       if (profile) {
         setRiderProfile(profile);
       }
@@ -169,15 +223,66 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const uploadRiderDocument = useCallback(async (asset, documentType) => {
+    if (!asset?.uri || !documentType) {
+      throw new Error('A document image and document type are required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const uri = String(asset.uri);
+      const extension = uri.split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
+      const mimeType = extension === 'png' ? 'image/png' : 'image/jpeg';
+      const formData = new FormData();
+
+      formData.append('document_type', documentType);
+      formData.append('file', {
+        uri,
+        name: asset.fileName || `${documentType}.${extension}`,
+        type: asset.mimeType || mimeType,
+      });
+
+      const response = await axiosInstance.post('rider/upload-document', formData, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('[HomeContext] rider/upload-document response:', response.data);
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to upload document.');
+      }
+
+      const uploadedProfile = normalizeRiderProfile(
+        response.data.rider || response.data.profile
+      );
+      if (uploadedProfile) {
+        setRiderProfile(uploadedProfile);
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/upload-document error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   return (
     <HomeContext.Provider
       value={{
         fetchRiderOrders,
+        fetchRiderOrderById,
         fetchRiderTodaysEarnings,
         fetchRiderTripDetails,
         acceptRiderOrder,
         fetchRiderProfile,
         updateRiderProfile,
+        uploadRiderDocument,
         riderOrders,
         riderProfile,
         todayEarnings,

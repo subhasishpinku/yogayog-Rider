@@ -2,12 +2,63 @@ import { StyleSheet } from 'react-native';
 import colors from './colors';
 
 const styles = StyleSheet.create({
+  tabScreen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  statusTabs: {
+    flexDirection: 'row',
+    marginHorizontal: 8,
+    marginTop: 20,
+    padding: 4,
+    borderRadius: 14,
+    backgroundColor: colors.card,
+  },
+  statusTab: {
+    flex: 1,
+    height: 42,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 11,
+  },
+  selectedStatusTab: {
+    backgroundColor: colors.gold,
+  },
+  statusTabText: {
+    color: colors.mutedLight,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  selectedStatusTabText: {
+    color: '#080808',
+  },
+  tabContent: {
+    flex: 1,
+    marginTop: 8,
+  },
+  deactivateScreen: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: colors.background,
+  },
+  deactivateTitle: {
+    color: colors.white,
+    fontSize: 22,
+    fontWeight: '900',
+  },
+  deactivateText: {
+    marginTop: 8,
+    color: colors.mutedLight,
+    fontSize: 14,
+  },
   screen: {
     flex: 1,
     backgroundColor: colors.background,
   },
   mapArea: {
-    height: '48%',
+    height: '38%',
     overflow: 'hidden',
     backgroundColor: colors.map,
   },
@@ -104,6 +155,42 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 23,
     borderTopRightRadius: 23,
     backgroundColor: colors.background,
+  },
+  orderActionRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 7,
+    marginBottom: 13,
+  },
+  orderActionButton: {
+    minHeight: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderRadius: 16,
+  },
+  codButton: {
+    backgroundColor: '#4A3910',
+  },
+  nonDeliveryButton: {
+    backgroundColor: '#472728',
+  },
+  prepaidButton: {
+    backgroundColor: '#104A25',
+  },
+  headingButton: {
+    flexGrow: 1,
+    backgroundColor: colors.gold,
+  },
+  orderActionText: {
+    color: colors.gold,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  headingButtonText: {
+    color: '#080808',
+    fontSize: 11,
+    fontWeight: '900',
   },
   orderHeader: {
     flexDirection: 'row',

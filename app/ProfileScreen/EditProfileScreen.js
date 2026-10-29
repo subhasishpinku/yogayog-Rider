@@ -14,13 +14,15 @@ import { useHome } from '../contexts/HomeContext';
 import colors from './styles/EditProfileColors';
 import styles from './styles/EditProfilestyles';
 
-const Field = ({ label, value, onChangeText, highlighted = false }) => (
+const Field = ({ label, value, onChangeText, highlighted = false, editable = false }) => (
   <View style={styles.fieldGroup}>
     <Text style={styles.fieldLabel}>{label}</Text>
     <TextInput
       value={value}
       onChangeText={onChangeText}
-      style={[styles.input, highlighted && styles.highlightedInput]}
+      editable={editable}
+      selectTextOnFocus={editable}
+      style={[styles.input, !editable && styles.readOnlyInput, highlighted && styles.highlightedInput]}
       placeholderTextColor={colors.mutedLight}
     />
   </View>
@@ -71,21 +73,8 @@ const EditProfileScreen = ({ route }) => {
 
     try {
       await updateRiderProfile({
-        name: valueOrEmpty(form.fullName),
-        address: valueOrEmpty(form.address),
-        city: valueOrEmpty(form.city),
         phone: normalizePhone(form.primaryMobile),
-        email: valueOrEmpty(form.email),
-        veh_type: valueOrEmpty(form.vehicleType),
-        veh_number: valueOrEmpty(form.vehicleNumber),
-        phone_pay: valueOrEmpty(form.phonePay),
-        dl_no: valueOrEmpty(form.drivingLicense),
-        pan_no: valueOrEmpty(form.panNumber),
-        dob: valueOrEmpty(form.dateOfBirth),
-        ac_numb: valueOrEmpty(form.accountNumber),
-        ifsc_c: valueOrEmpty(form.ifscCode),
-        second_acc: valueOrEmpty(form.secondAccount),
-        second_ifsc: valueOrEmpty(form.secondIfsc),
+        sec_phone: valueOrEmpty(form.alternateMobile),
       });
 
       Alert.alert('Profile updated', 'Your profile has been updated successfully.');
@@ -132,8 +121,8 @@ const EditProfileScreen = ({ route }) => {
         <Field label="STATE" value={form.state} onChangeText={updateField('state')} />
 
         <Text style={styles.sectionTitle}>CONTACT</Text>
-        <Field label="PRIMARY MOBILE" value={form.primaryMobile} onChangeText={updateField('primaryMobile')} highlighted />
-        <Field label="ALTERNATE MOBILE" value={form.alternateMobile} onChangeText={updateField('alternateMobile')} />
+        <Field label="PRIMARY MOBILE" value={form.primaryMobile} onChangeText={updateField('primaryMobile')} highlighted editable />
+        <Field label="ALTERNATE MOBILE" value={form.alternateMobile} onChangeText={updateField('alternateMobile')} editable />
         <Field label="EMAIL" value={form.email} onChangeText={updateField('email')} />
 
         <Text style={styles.sectionTitle}>VEHICLE</Text>

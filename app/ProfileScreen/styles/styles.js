@@ -41,6 +41,11 @@ const styles = StyleSheet.create({
     fontSize: 31,
     fontWeight: '900',
   },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
   name: {
     marginTop: 13,
     color: colors.white,
