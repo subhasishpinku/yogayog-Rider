@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 
+
 const paymentMethods = [
   {
     id: 'qr',
@@ -23,9 +24,22 @@ const paymentMethods = [
   },
 ];
 
-const CodAmountCollect = () => {
-  const navigation = useNavigation();
-  const [selectedMethod, setSelectedMethod] = useState('qr');
+const CodAmountCollect = ({route}) => {
+    const navigation = useNavigation();
+    const orderId = route?.params?.orderId || 'Order';
+    const id = route?.params?.id;
+    const amount = Number(route?.params?.amount || 0);
+    const customerName = route?.params?.customerName || 'Customer';
+    const pickupArea = route?.params?.pickupArea || 'Pickup address unavailable';
+    const [selectedMethod, setSelectedMethod] = useState('qr');
+    const paymentParams = {
+      orderId,
+      id,
+      amount,
+      customerName,
+      pickupArea,
+      dropArea: route?.params?.dropArea,
+    };
 
   return (
     <View style={styles.screen}>
@@ -44,13 +58,13 @@ const CodAmountCollect = () => {
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title}>Collect Payment</Text>
-          <Text style={styles.orderMeta}>YCG-2025-00921 · Priya Mehta</Text>
+          <Text style={styles.orderMeta}>Order #{orderId} · {customerName}</Text>
         </View>
 
         <View style={styles.amountCard}>
           <Text style={styles.amountLabel}>COD AMOUNT TO COLLECT</Text>
-          <Text style={styles.amount}>₹250</Text>
-          <Text style={styles.amountMeta}>From: Priya Mehta · Kalighat</Text>
+          <Text style={styles.amount}>₹{amount}</Text>
+          <Text style={styles.amountMeta} numberOfLines={2}>From: {pickupArea}</Text>
         </View>
 
         <Text style={styles.sectionTitle}>Choose Payment Method</Text>
@@ -67,7 +81,7 @@ const CodAmountCollect = () => {
                 style={[styles.methodCard, isSelected && styles.methodCardSelected]}
                 onPress={() => {
                   setSelectedMethod(method.id);
-                  navigation.navigate(method.route);
+                  navigation.navigate(method.route, paymentParams);
                 }}
               >
                 <View style={[styles.methodIcon, method.id === 'cash' && styles.cashIcon]}>

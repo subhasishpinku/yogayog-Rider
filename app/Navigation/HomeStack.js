@@ -29,6 +29,8 @@ import RegisterScreen from '../RegisterScreen/RegisterScreen';
 import DeactivateScreen from '../ActiveScreen/DeactivateScreen';
 import ActiveList from '../ActiveScreen/ActiveList';
 import ActiveScreen from '../ActiveScreen/ActiveScreen';
+import WalletScreen from '../WalletScreen/WalletScreen';
+import OnlinePayment from '../OnlinePayment/OnlinePayment';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -142,6 +144,14 @@ const HomeStack = () => {
        <Stack.Screen
         name={navigationStrings.ACTIVESCREEN}
         component={ActiveScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.WALLETSCREEN}
+        component={WalletScreen}
+      />
+       <Stack.Screen
+        name={navigationStrings.ONLINEPAYMENT}
+        component={OnlinePayment}
       />
     </Stack.Navigator>
   );

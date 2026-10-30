@@ -40,6 +40,7 @@ export const HomeProvider = ({ children }) => {
   const fetchRiderOrders = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
+      console.log("ttttttttttt",{token})
       const response = await axiosInstance.get('rider/orders', {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
@@ -81,6 +82,81 @@ export const HomeProvider = ({ children }) => {
     } catch (error) {
       console.error(
         '[HomeContext] rider/order-by-id error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const fetchRiderOrderPaymentDetails = useCallback(async (orderId) => {
+    if (!orderId) {
+      throw new Error('Order ID is required to load payment details.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/get-order-payment-details', {
+        params: { order_id: orderId },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load payment details.');
+      }
+
+      return response.data.order || null;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/get-order-payment-details error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const fetchRiderWalletLedger = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/wallet-ledger', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load wallet ledger.');
+      }
+
+      return Array.isArray(response.data.wallet_transactions)
+        ? response.data.wallet_transactions
+        : [];
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/wallet-ledger error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const collectRiderCod = useCallback(async (orderId) => {
+    if (!orderId) {
+      throw new Error('Order ID is required to collect COD.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/collect-cod', null, {
+        params: { order_id: orderId },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to collect COD.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/collect-cod error:',
         error.response?.data || error.message
       );
       throw error;
@@ -277,6 +353,9 @@ export const HomeProvider = ({ children }) => {
       value={{
         fetchRiderOrders,
         fetchRiderOrderById,
+        fetchRiderOrderPaymentDetails,
+        fetchRiderWalletLedger,
+        collectRiderCod,
         fetchRiderTodaysEarnings,
         fetchRiderTripDetails,
         acceptRiderOrder,

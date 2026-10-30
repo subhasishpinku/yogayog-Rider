@@ -37,6 +37,35 @@ const ActiveScreen = ({ route }) => {
 
   const orderCode = order?.order_id || orderId || '1222000010';
   const orderStatus = order?.status === 'delivered' ? 'Delivered' : 'Heading to Drop Point';
+  const paymentMethod = String(order?.payment_method || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, '');
+  const isCodOrder = ['cod', 'cashondelivery', 'cash'].includes(paymentMethod);
+  const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
+  const isWalletOrder = paymentMethod === 'wallet';
+  const deliveryParams = {
+    orderId: orderCode,
+    id: order?.id || order?.order_pk_id || orderId,
+    amount: Number(order?.amount || 0),
+    customerName: order?.customer_name,
+    pickupArea: order?.pickup_area,
+    dropArea: order?.drop_area,
+  };
+
+  const handleDeliveryAction = () => {
+    if (isCodOrder) {
+      navigation.navigate(navigationStrings.CODAMOUNTCOLLECT, deliveryParams);
+      return;
+    }
+
+    if (isWalletOrder) {
+      navigation.navigate(navigationStrings.WALLETSCREEN, deliveryParams);
+      return;
+    }
+
+    navigation.navigate(navigationStrings.ONLINEPAYMENT, deliveryParams);
+  };
 
   return (
     <View style={styles.screen}>
@@ -90,22 +119,36 @@ const ActiveScreen = ({ route }) => {
 
       <View style={styles.orderPanel}>
         <View style={styles.orderActionRow}>
-          <Pressable
-            style={[styles.orderActionButton, styles.codButton]}
-            onPress={() => navigation.navigate(navigationStrings.CODAMOUNTCOLLECT)}
-          >
-            <Text style={styles.orderActionText}>COD</Text>
-          </Pressable>
-          <Pressable
+          {isCodOrder && (
+            <Pressable
+              style={[styles.orderActionButton, styles.codButton]}
+              onPress={() => navigation.navigate(navigationStrings.CODAMOUNTCOLLECT, deliveryParams)}
+            >
+              <Text style={styles.orderActionText}>COD</Text>
+            </Pressable>
+          )}
+          {/* <Pressable
             style={[styles.orderActionButton, styles.nonDeliveryButton]}
-            onPress={() => navigation.navigate(navigationStrings.NONDELIVERYREPORT)}
+            onPress={() => navigation.navigate(navigationStrings.NONDELIVERYREPORT, deliveryParams)}
           >
             <Text style={styles.orderActionText}>Non-delivery</Text>
-          </Pressable>
-          <Pressable style={[styles.orderActionButton, styles.prepaidButton]}>
-            <Text style={styles.orderActionText}>Prepaid</Text>
-          </Pressable>
-        
+          </Pressable> */}
+          {isWalletOrder && (
+            <Pressable
+              style={[styles.orderActionButton, styles.prepaidButton]}
+              onPress={() => navigation.navigate(navigationStrings.WALLETSCREEN, deliveryParams)}
+            >
+              <Text style={styles.orderActionText}>Wallet</Text>
+            </Pressable>
+          )}
+          {isPrepaidOrder && (
+            <Pressable
+              style={[styles.orderActionButton, styles.prepaidButton]}
+              onPress={() => navigation.navigate(navigationStrings.ONLINEPAYMENT, deliveryParams)}
+            >
+              <Text style={styles.orderActionText}>Online</Text>
+            </Pressable>
+          )}
         </View>
 
         <View style={styles.orderHeader}>
@@ -160,13 +203,20 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.summaryValue}>{order?.pack_weight || 0} kg</Text>
           </View>
         </View>
-
-        <Pressable
-          style={styles.deliveredButton}
-          onPress={() => navigation.navigate(navigationStrings.ACTIVEDELIVERY)}
-        >
-          <Text style={styles.deliveredText}>Mark as Delivered ✓</Text>
-        </Pressable>
+        <View style={styles.deliveryButtonRow}>
+          <Pressable
+            style={[styles.deliveredButton, styles.deliveryActionButton, styles.nonDeliveryActionButton]}
+            onPress={() => navigation.navigate(navigationStrings.NONDELIVERYREPORT, deliveryParams)}
+          >
+            <Text style={styles.deliveredText}>Non-delivery</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.deliveredButton, styles.deliveryActionButton]}
+            onPress={handleDeliveryAction}
+          >
+            <Text style={styles.deliveredText}>Mark as Delivered ✓</Text>
+          </Pressable>
+        </View>
       </View>
     </View>
   );

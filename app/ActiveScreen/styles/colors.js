@@ -7,7 +7,9 @@ const colors = {
   mutedLight: '#A6A6AC',
   gold: '#FFC800',
   green: '#2FD463',
+  red: '#E05A5A',
   border: '#333336',
+  deepRed: '#FF0000'
 };
 
 export default colors;

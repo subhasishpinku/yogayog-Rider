@@ -29,6 +29,28 @@ const HomeScreen = ({ navigation }) => {
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const assignedBlinkOpacity = useRef(new Animated.Value(1)).current;
+  const logoScale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const logoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoScale, {
+          toValue: 1.08,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+        Animated.timing(logoScale, {
+          toValue: 1,
+          duration: 900,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+
+    logoAnimation.start();
+
+    return () => logoAnimation.stop();
+  }, [logoScale]);
 
   const [isOnline, setIsOnline] = useState(true);
   const {
@@ -167,7 +189,20 @@ const HomeScreen = ({ navigation }) => {
       <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
     </Pressable>
         <Text style={styles.greeting}>{getTimeBasedGreeting()} 👋</Text>
-        <Text style={styles.name}>{riderName}</Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{riderName}</Text>
+          <Animated.Image
+            source={require('../../assets/yogayoglogo1.png')}
+            style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+            resizeMode="contain"
+          />
+          <Pressable
+            style={styles.walletButton}
+            onPress={() => navigation.navigate(navigationStrings.CODHANDOVER)}
+          >
+            <Text style={styles.walletButtonText}>Wallet</Text>
+          </Pressable>
+        </View>
         <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>
       </View>
 

@@ -1,3 +1,4 @@
+
 export default {
   SPLASHSCREEN: 'SplashScreen',
   LOGINSCREEN: 'LoginScreen',
@@ -26,5 +27,7 @@ export default {
   DEACTIVATESCREEN: 'DeactivateScreen',
   ACTIVESCREEN: 'ActiveScreen',
   ACTIVELIST: 'ActiveList',
+  WALLETSCREEN: 'WalletScreen',
+  ONLINEPAYMENT: 'OnlinePayment'
 };
 

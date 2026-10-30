@@ -4,20 +4,24 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import { useHome } from '../contexts/HomeContext';
 
-const amountToCollect = 250;
-
-const CashCollection = () => {
+const CashCollection = ({ route }) => {
   const navigation = useNavigation();
-  const [receivedAmount, setReceivedAmount] = useState('');
+  const { collectRiderCod } = useHome();
+  const orderId = route?.params?.orderId || 'Order';
+  const internalOrderId = route?.params?.id;
+  const amountToCollect = Number(route?.params?.amount || 250);
+  const [receivedAmount, setReceivedAmount] = useState(amountToCollect.toFixed(2));
   const [hasSignature, setHasSignature] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const changeToReturn = useMemo(() => {
     const received = Number(receivedAmount) || 0;
     return Math.max(received - amountToCollect, 0);
-  }, [receivedAmount]);
+  }, [amountToCollect, receivedAmount]);
 
-const confirmCashReceived = () => {
+const confirmCashReceived = async () => {
   if (Number(receivedAmount) < amountToCollect || receivedAmount.trim() === '') {
     Alert.alert(
       'Amount incomplete',
@@ -26,19 +30,36 @@ const confirmCashReceived = () => {
     return;
   }
 
-  Alert.alert(
-    'Cash received',
-    'The cash payment has been recorded.',
-    [
-      {
-        text: 'OK',
-        onPress: () => {
-          navigation.navigate(navigationStrings.COLLECTEDCASH);
-        },
-      },
-    ],
-    { cancelable: false }
-  );
+  if (!internalOrderId) {
+    Alert.alert('Order ID missing', 'Unable to collect COD for this order.');
+    return;
+  }
+
+  setSubmitting(true);
+  try {
+    const response = await collectRiderCod(internalOrderId);
+    const collectedOrder = response?.order || {};
+    const collectedParams = {
+      orderId,
+      id: internalOrderId,
+      amount: Number(collectedOrder.original_price || amountToCollect),
+      customerName: route?.params?.customerName,
+      paymentMethod: collectedOrder.payment_method || 'COD',
+      paymentStatus: collectedOrder.payment_status || 'Collected',
+      order: collectedOrder,
+      message: response?.message,
+    };
+    Alert.alert(
+      'Cash received',
+      'The cash payment has been recorded.',
+      [{ text: 'OK', onPress: () => navigation.navigate(navigationStrings.COLLECTEDCASH, collectedParams) }],
+      { cancelable: false }
+    );
+  } catch (error) {
+    Alert.alert('Collection failed', error.message || 'Unable to collect COD.');
+  } finally {
+    setSubmitting(false);
+  }
 };
 
   return (
@@ -50,12 +71,12 @@ const confirmCashReceived = () => {
             <Text style={styles.backText}>←</Text>
           </Pressable>
           <Text style={styles.title}>Cash Collection</Text>
-          <Text style={styles.subtitle}>Collect ₹250 from customer</Text>
+          <Text style={styles.subtitle}>Order #{orderId} · Collect from customer</Text>
         </View>
 
         <View style={styles.amountCard}>
           <Text style={styles.amountLabel}>AMOUNT TO COLLECT</Text>
-          <Text style={styles.amount}>₹250</Text>
+          <Text style={styles.amount}>₹{amountToCollect.toFixed(2)}</Text>
         </View>
 
         <Text style={styles.fieldLabel}>AMOUNT RECEIVED FROM CUSTOMER</Text>
@@ -85,8 +106,8 @@ const confirmCashReceived = () => {
           </Text>
         </Pressable>
 
-        <Pressable style={styles.confirmButton} onPress={confirmCashReceived}>
-          <Text style={styles.confirmText}>☑ Confirm Cash Received</Text>
+          <Pressable style={styles.confirmButton} onPress={confirmCashReceived} disabled={submitting}>
+            <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '☑ Confirm Cash Received'}</Text>
         </Pressable>
       </ScrollView>
     </View>

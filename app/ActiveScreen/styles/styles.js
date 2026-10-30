@@ -335,8 +335,20 @@ const styles = StyleSheet.create({
     borderRadius: 17,
     backgroundColor: colors.gold,
   },
+  deliveryButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  deliveryActionButton: {
+    flex: 1,
+  },
+  nonDeliveryActionButton: {
+    backgroundColor: colors.deepRed,
+    borderWidth: 1,
+    borderColor: colors.red,
+  },
   deliveredText: {
-    color: '#080808',
+    color: '#ECE7E7',
     fontSize: 16,
     fontWeight: '900',
   },

@@ -99,6 +99,31 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '900',
   },
+  loader: {
+    marginVertical: 28,
+  },
+  errorCard: {
+    alignItems: 'center',
+    padding: 18,
+    borderRadius: 13,
+    backgroundColor: colors.card,
+  },
+  errorText: {
+    color: colors.muted,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 9,
+    borderRadius: 9,
+    backgroundColor: colors.gold,
+  },
+  retryText: {
+    color: '#080808',
+    fontWeight: '900',
+  },
   handoverCard: {
     marginTop: 12,
     padding: 16,
