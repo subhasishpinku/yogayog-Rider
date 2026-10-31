@@ -22,6 +22,7 @@ const getTimeBasedGreeting = () => {
 };
 
 const HomeScreen = ({ navigation }) => {
+  const mapRef = useRef(null);
   const riderMarkerRef = useRef(null);
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
@@ -174,8 +175,24 @@ const HomeScreen = ({ navigation }) => {
     }
   };
 
+  const focusRiderLocation = () => {
+    mapRef.current?.animateToRegion(
+      {
+        ...riderLocation,
+        latitudeDelta: 0.012,
+        longitudeDelta: 0.012,
+      },
+      500
+    );
+  };
+
   const handleRiderMarkerPress = () => {
     riderMarkerRef.current?.showCallout();
+    loadRiderAddress();
+  };
+
+  const handleLocationPillPress = () => {
+    focusRiderLocation();
     loadRiderAddress();
   };
 
@@ -198,7 +215,7 @@ const HomeScreen = ({ navigation }) => {
           />
           <Pressable
             style={styles.walletButton}
-            onPress={() => navigation.navigate(navigationStrings.CODHANDOVER)}
+            onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
             <Text style={styles.walletButtonText}>Wallet</Text>
           </Pressable>
@@ -222,9 +239,15 @@ const HomeScreen = ({ navigation }) => {
         {/* <View style={styles.metricCard}><Text style={styles.metricValue}>42 km</Text><Text style={styles.metricLabel}>Distance Today</Text></View> */}
       </View>
 
-      <Text style={styles.sectionTitle}>Your Location</Text>
+      {/* <Text style={styles.sectionTitle}>Your Location</Text> */}
+       <Pressable style={styles.locationPill} onPress={handleLocationPillPress}>
+          <Text style={styles.locationText}>
+            📍 {latitude !== null && longitude !== null ? 'Live rider location' : 'Jodhpur Park, Kolkata'}
+          </Text>
+        </Pressable>
       <View style={styles.map}>
         <MapView
+          ref={mapRef}
           provider={PROVIDER_GOOGLE}
           style={styles.mapFill}
           initialRegion={{ ...fallbackLocation, latitudeDelta: 0.012, longitudeDelta: 0.012 }}
@@ -252,11 +275,11 @@ const HomeScreen = ({ navigation }) => {
             </Callout>
           </Marker>
         </MapView>
-        <Pressable style={styles.locationPill} onPress={handleRiderMarkerPress}>
+        {/* <Pressable style={styles.locationPill} onPress={handleRiderMarkerPress}>
           <Text style={styles.locationText}>
             📍 {latitude !== null && longitude !== null ? 'Live rider location' : 'Jodhpur Park, Kolkata'}
           </Text>
-        </Pressable>
+        </Pressable> */}
       </View>
 
       {isOnline ? (

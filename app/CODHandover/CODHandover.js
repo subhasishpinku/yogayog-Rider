@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
+import SignatureCanvas from 'react-native-signature-canvas';
 
 import styles from './styles/styles';
 import { useHome } from '../contexts/HomeContext';
@@ -15,6 +16,9 @@ const CODHandover = () => {
   const [staffName, setStaffName] = useState('');
   const [amount, setAmount] = useState('0.00');
   const [signatureAdded, setSignatureAdded] = useState(false);
+  const [signatureData, setSignatureData] = useState(null);
+  const [isSignatureModalVisible, setIsSignatureModalVisible] = useState(false);
+  const signatureRef = useRef(null);
 
   const loadLedger = useCallback(async () => {
     setLoading(true);
@@ -50,6 +54,26 @@ const CODHandover = () => {
     Alert.alert('Handover confirmed', `₹${amount} handed over to ${staffName}.`, [
       { text: 'OK', onPress: () => navigation.goBack() },
     ]);
+  };
+
+  const handleSignatureOK = (signature) => {
+    setSignatureData(signature);
+    setSignatureAdded(true);
+    setIsSignatureModalVisible(false);
+  };
+
+  const handleSignatureEmpty = () => {
+    Alert.alert('Signature required', 'Please draw your signature before saving.');
+  };
+
+  const saveSignature = () => {
+    signatureRef.current?.readSignature();
+  };
+
+  const clearSignature = () => {
+    signatureRef.current?.clearSignature();
+    setSignatureData(null);
+    setSignatureAdded(false);
   };
 
   return (
@@ -120,15 +144,73 @@ const CODHandover = () => {
             />
           </View>
 
-          <Pressable style={styles.signatureBox} onPress={() => setSignatureAdded(true)}>
-            <Text style={styles.signatureIcon}>✍️</Text>
-            <Text style={styles.signatureText}>{signatureAdded ? 'Branch Staff Signature Added' : 'Branch Staff Signature'}</Text>
+          <Pressable style={styles.signatureBox} onPress={() => setIsSignatureModalVisible(true)}>
+            {signatureData ? (
+              <Image source={{ uri: signatureData }} style={styles.signaturePreview} resizeMode="contain" />
+            ) : (
+              <Text style={styles.signatureIcon}>✍️</Text>
+            )}
+            <Text style={styles.signatureText}>
+              {signatureAdded ? 'Branch Staff Signature Added' : 'Tap to add Branch Staff Signature'}
+            </Text>
           </Pressable>
-
-          <Pressable style={styles.confirmButton} onPress={confirmHandover}>
-            <Text style={styles.confirmText}>☑ Confirm Handover</Text>
-          </Pressable>
+          <View style={styles.actionRow}>
+            {/* <Pressable
+              style={[styles.confirmButton, styles.actionButton]}
+              onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
+            >
+              <Text style={styles.actionText}>☑ Withdraw From Wallet</Text>
+            </Pressable> */}
+            <Pressable
+              style={[styles.confirmButton, styles.actionButton]}
+              onPress={confirmHandover}
+            >
+              <Text style={styles.actionText}>☑ Confirm Handover</Text>
+            </Pressable>
+          </View>
         </View>
+
+        <Modal
+          visible={isSignatureModalVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={() => setIsSignatureModalVisible(false)}
+        >
+          <View style={styles.signatureModalBackdrop}>
+            <View style={styles.signatureModalCard}>
+              <Text style={styles.signatureModalTitle}>Branch Staff Signature</Text>
+              <Text style={styles.signatureModalSubtitle}>Draw your signature below</Text>
+              <View style={styles.signatureCanvasWrap}>
+                <SignatureCanvas
+                  ref={signatureRef}
+                  onOK={handleSignatureOK}
+                  onEmpty={handleSignatureEmpty}
+                  onClear={() => {
+                    setSignatureData(null);
+                    setSignatureAdded(false);
+                  }}
+                  descriptionText="Sign here"
+                  clearText="Clear"
+                  confirmText="Save"
+                  autoClear={false}
+                  penColor="#111111"
+                  backgroundColor="#FFFFFF"
+                />
+              </View>
+              <View style={styles.signatureModalActions}>
+                <Pressable
+                  style={styles.signatureClearButton}
+                  onPress={saveSignature}
+                >
+                  <Text style={styles.signatureClearText}>Save</Text>
+                </Pressable>
+                <Pressable style={styles.signatureClearButton} onPress={clearSignature}>
+                  <Text style={styles.signatureClearText}>Clear</Text>
+                </Pressable>
+              </View>
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </View>
   );

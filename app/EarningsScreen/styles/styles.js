@@ -11,13 +11,32 @@ const styles = StyleSheet.create({
   },
   header: {
     height: 82,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingTop: 18,
     overflow: 'hidden',
     backgroundColor: colors.header,
   },
   headerCopy: {
+    flex: 1,
     zIndex: 1,
+  },
+  headerAction: {
+    zIndex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 10,
+    backgroundColor: colors.gold,
+  },
+  headerActionText: {
+    color: '#070707',
+    fontSize: 11,
+    fontWeight: '900',
   },
   title: {
     color: colors.white,

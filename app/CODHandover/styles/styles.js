@@ -197,6 +197,68 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '900',
   },
+  signaturePreview: {
+    width: '90%',
+    height: 48,
+    backgroundColor: colors.white,
+  },
+  signatureModalBackdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.78)',
+  },
+  signatureModalCard: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+  },
+  signatureModalTitle: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  signatureModalSubtitle: {
+    marginTop: 4,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  signatureCanvasWrap: {
+    height: 250,
+    marginTop: 14,
+    overflow: 'hidden',
+    borderRadius: 12,
+    backgroundColor: colors.white,
+  },
+  signatureModalActions: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+  },
+  signatureCancelButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#3A3A3D',
+  },
+  signatureCancelText: {
+    color: colors.white,
+    fontWeight: '800',
+  },
+  signatureClearButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: colors.gold,
+  },
+  signatureClearText: {
+    color: '#080808',
+    fontWeight: '900',
+  },
   confirmButton: {
     height: 57,
     alignItems: 'center',
@@ -204,6 +266,22 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 16,
     backgroundColor: colors.gold,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 12,
+  },
+  actionButton: {
+    flex: 1,
+    marginTop: 0,
+    paddingHorizontal: 6,
+  },
+  actionText: {
+    color: '#080808',
+    fontSize: 12,
+    fontWeight: '900',
+    textAlign: 'center',
   },
   confirmText: {
     color: '#080808',

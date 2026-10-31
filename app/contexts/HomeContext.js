@@ -34,8 +34,15 @@ const normalizeRiderProfile = (rider) => (
 export const HomeProvider = ({ children }) => {
   const [riderOrders, setRiderOrders] = useState([]);
   const [riderProfile, setRiderProfile] = useState(null);
+  const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [todayDelivered, setTodayDelivered] = useState(0);
+  const [earningsByPeriod, setEarningsByPeriod] = useState({
+    today: null,
+    week: null,
+    month: null,
+    year: null,
+  });
 
   const fetchRiderOrders = useCallback(async () => {
     try {
@@ -137,6 +144,57 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchRiderWalletBalance = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/wallet-balance', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load wallet balance.');
+      }
+
+      const balance = Number(response.data?.wallet_balance || 0);
+      setWalletBalance(balance);
+      return balance;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/wallet-balance error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const makeRiderWithdrawalRequest = useCallback(async (amount) => {
+    const withdrawalAmount = Number(amount);
+
+    if (!Number.isFinite(withdrawalAmount) || withdrawalAmount <= 0) {
+      throw new Error('A valid withdrawal amount is required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/make-withdrawal-request', null, {
+        params: { amount: withdrawalAmount },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to submit withdrawal request.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/make-withdrawal-request error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   const collectRiderCod = useCallback(async (orderId) => {
     if (!orderId) {
       throw new Error('Order ID is required to collect COD.');
@@ -163,28 +221,62 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
-  const fetchRiderTodaysEarnings = useCallback(async () => {
+  const fetchRiderEarnings = useCallback(async (period = 'today') => {
+    const normalizedPeriod = String(period).toLowerCase();
+    const endpointByPeriod = {
+      today: 'rider/today-earnings',
+      week: 'rider/weekly-earnings',
+      month: 'rider/monthly-earnings',
+      year: 'rider/yearly-earnings',
+    };
+    const endpoint = endpointByPeriod[normalizedPeriod];
+
+    if (!endpoint) {
+      throw new Error('Invalid earnings period. Use today, week, month, or year.');
+    }
+
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await axiosInstance.get('rider/todays-earnings', {
+      const response = await axiosInstance.get(endpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.data?.success) {
-        throw new Error(response.data?.message || 'Unable to load today\'s earnings.');
+        throw new Error(response.data?.message || 'Unable to load earnings.');
       }
 
-      setTodayEarnings(Number(response.data.total_earnings || 0));
-      setTodayDelivered(Number(response.data.total_delivered || 0));
-      return response.data;
+      const summary = response.data?.data || {};
+      const normalizedSummary = {
+        ...summary,
+        total_orders: Number(summary.total_orders || 0),
+        total_cod_amount: Number(summary.total_cod_amount || 0),
+        total_earnings: Number(summary.total_earnings || 0),
+      };
+
+      setEarningsByPeriod((previous) => ({
+        ...previous,
+        [normalizedPeriod]: normalizedSummary,
+      }));
+
+      if (normalizedPeriod === 'today') {
+        setTodayEarnings(normalizedSummary.total_earnings);
+        setTodayDelivered(normalizedSummary.total_orders);
+      }
+
+      return normalizedSummary;
     } catch (error) {
       console.error(
-        '[HomeContext] rider/todays-earnings error:',
+        `[HomeContext] ${endpoint} error:`,
         error.response?.data || error.message
       );
       throw error;
     }
   }, []);
+
+  const fetchRiderTodaysEarnings = useCallback(
+    () => fetchRiderEarnings('today'),
+    [fetchRiderEarnings]
+  );
 
   const fetchRiderTripDetails = useCallback(async (orderId) => {
     if (!orderId) {
@@ -355,7 +447,10 @@ export const HomeProvider = ({ children }) => {
         fetchRiderOrderById,
         fetchRiderOrderPaymentDetails,
         fetchRiderWalletLedger,
+        fetchRiderWalletBalance,
+        makeRiderWithdrawalRequest,
         collectRiderCod,
+        fetchRiderEarnings,
         fetchRiderTodaysEarnings,
         fetchRiderTripDetails,
         acceptRiderOrder,
@@ -364,8 +459,10 @@ export const HomeProvider = ({ children }) => {
         uploadRiderDocument,
         riderOrders,
         riderProfile,
+        walletBalance,
         todayEarnings,
         todayDelivered,
+        earningsByPeriod,
       }}
     >
       {children}

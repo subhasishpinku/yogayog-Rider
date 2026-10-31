@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   sectionTitle: { paddingHorizontal: 12, marginTop: 17, marginBottom: 10, color: colors.white, fontSize: 16, fontWeight: '900' },
   map: { height: 159, alignItems: 'center', justifyContent: 'center', marginHorizontal: 8, overflow: 'hidden', borderRadius: 16, backgroundColor: colors.blue },
   mapFill: { ...StyleSheet.absoluteFillObject },
-  locationPill: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 11, backgroundColor: colors.gold, elevation: 8 },
+  locationPill: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 11, backgroundColor: colors.gold, elevation: 8, width: 200, marginLeft: 10, marginBottom: 10 },
   locationText: { color: '#080808', fontSize: 14, fontWeight: '900' },
   locationCallout: { width: 220, padding: 4 },
   calloutTitle: { color: '#111111', fontSize: 13, fontWeight: '800' },

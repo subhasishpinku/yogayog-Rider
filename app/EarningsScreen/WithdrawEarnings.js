@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   Pressable,
   ScrollView,
   Text,
@@ -11,15 +12,84 @@ import { useNavigation } from '@react-navigation/native';
 
 import colors from './styles/colors';
 import styles from './styles/withdrawStyles';
-
-const quickAmounts = ['₹500', '₹1,000', '₹5,000', 'All'];
+import { useHome } from '../contexts/HomeContext';
+import navigationStrings from '../constants/navigationStrings';
 
 const WithdrawEarnings = () => {
   const navigation = useNavigation();
-  const [amount, setAmount] = useState('5000');
+  const [amount, setAmount] = useState('0');
+  const [isBalanceLoading, setIsBalanceLoading] = useState(true);
+  const [balanceError, setBalanceError] = useState('');
+  const { fetchRiderWalletBalance, makeRiderWithdrawalRequest, walletBalance } = useHome();
+  const availableBalance = Number(walletBalance || 0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const allAmount = Math.max(availableBalance - 2, 0);
+  const quickAmounts = [
+    { label: `₹${(availableBalance / 2).toFixed(2)}`, value: availableBalance / 2 },
+    { label: `₹${(availableBalance / 3).toFixed(2)}`, value: availableBalance / 3 },
+    { label: `₹${(availableBalance / 4).toFixed(2)}`, value: availableBalance / 4 },
+    { label: `All ₹${allAmount.toFixed(2)}`, value: allAmount },
+  ];
+
+  useEffect(() => {
+    let mounted = true;
+    setIsBalanceLoading(true);
+    setBalanceError('');
+
+    fetchRiderWalletBalance().catch((error) => {
+      if (mounted) {
+        setBalanceError(error.response?.data?.message || 'Unable to load wallet balance.');
+      }
+    }).finally(() => {
+      if (mounted) {
+        setIsBalanceLoading(false);
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, [fetchRiderWalletBalance]);
 
   const selectAmount = (value) => {
-    setAmount(value === 'All' ? '12450' : value.replace(/[^0-9]/g, ''));
+    setAmount(value.toFixed(2));
+  };
+
+  const handleWithdraw = async () => {
+    const withdrawalAmount = Number(amount);
+
+    if (!Number.isFinite(withdrawalAmount) || withdrawalAmount <= 0) {
+      Alert.alert('Invalid amount', 'Please enter a valid withdrawal amount.');
+      return;
+    }
+
+    if (withdrawalAmount > availableBalance) {
+      Alert.alert('Insufficient balance', 'Withdrawal amount cannot exceed your wallet balance.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await makeRiderWithdrawalRequest(withdrawalAmount);
+      Alert.alert(
+        'Withdrawal requested',
+        response.message || `Withdrawal request for ₹${withdrawalAmount.toFixed(2)} submitted successfully.`,
+        [
+          {
+            text: 'OK',
+            onPress: () => navigation.navigate(navigationStrings.DASHBOARDSCREEN),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Withdrawal failed',
+        error.response?.data?.message || error.message || 'Unable to submit withdrawal request.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,11 +106,15 @@ const WithdrawEarnings = () => {
         </Pressable>
 
         <Text style={styles.title}>Withdraw Earnings</Text>
-        <Text style={styles.available}>Available: ₹12,450</Text>
+        <Text style={styles.available}>
+          {balanceError || `Available: ₹${availableBalance.toFixed(2)}`}
+        </Text>
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>WITHDRAWABLE BALANCE</Text>
-          <Text style={styles.balanceValue}>₹12,450.00</Text>
+          <Text style={styles.balanceValue}>
+            {isBalanceLoading ? 'Loading...' : `₹${availableBalance.toFixed(2)}`}
+          </Text>
         </View>
 
         <Text style={styles.fieldLabel}>ENTER WITHDRAWAL AMOUNT</Text>
@@ -58,20 +132,17 @@ const WithdrawEarnings = () => {
         </View>
 
         <View style={styles.quickAmounts}>
-          {quickAmounts.map((quickAmount) => {
-            const normalized = quickAmount.replace(/[^0-9]/g, '');
-            const isSelected = quickAmount === 'All'
-              ? amount === '12450'
-              : amount === normalized;
+          {quickAmounts.map((quickAmount, index) => {
+            const isSelected = amount === quickAmount.value.toFixed(2);
 
             return (
               <Pressable
-                key={quickAmount}
-                onPress={() => selectAmount(quickAmount)}
+                key={`${quickAmount.label}-${index}`}
+                onPress={() => selectAmount(quickAmount.value)}
                 style={[styles.quickAmount, isSelected && styles.quickAmountSelected]}
               >
                 <Text style={[styles.quickAmountText, isSelected && styles.quickAmountTextSelected]}>
-                  {quickAmount}
+                  {quickAmount.label}
                 </Text>
               </Pressable>
             );
@@ -95,8 +166,10 @@ const WithdrawEarnings = () => {
           <Text style={styles.noticeText}>ⓘ Withdrawals processed within 24 hours on business days.</Text>
         </View>
 
-        <Pressable style={styles.withdrawAction}>
-          <Text style={styles.withdrawActionText}>Withdraw ₹{Number(amount || 0).toLocaleString('en-IN')} →</Text>
+        <Pressable style={styles.withdrawAction} onPress={handleWithdraw} disabled={isSubmitting}>
+          <Text style={styles.withdrawActionText}>
+            {isSubmitting ? 'Submitting...' : `Withdraw ₹${Number(amount || 0).toLocaleString('en-IN')} →`}
+          </Text>
         </Pressable>
       </ScrollView>
     </View>

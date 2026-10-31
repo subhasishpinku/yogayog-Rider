@@ -342,6 +342,9 @@ const styles = StyleSheet.create({
   deliveryActionButton: {
     flex: 1,
   },
+  disabledDeliveryActionButton: {
+    opacity: 0.45,
+  },
   nonDeliveryActionButton: {
     backgroundColor: colors.deepRed,
     borderWidth: 1,

@@ -36,7 +36,14 @@ const ActiveScreen = ({ route }) => {
   }, [fetchRiderOrderById, orderId]);
 
   const orderCode = order?.order_id || orderId || '1222000010';
-  const orderStatus = order?.status === 'delivered' ? 'Delivered' : 'Heading to Drop Point';
+  const rawOrderStatus = order?.status || order?.order_status || order?.delivery_status || order?.orderStatus || '';
+  const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase();
+  const isDelivered = normalizedOrderStatus === 'delivered';
+  const orderStatus = isDelivered
+    ? 'Delivered'
+    : normalizedOrderStatus
+      ? normalizedOrderStatus.replace(/[_-]+/g, ' ')
+      : 'Heading to Drop Point';
   const paymentMethod = String(order?.payment_method || '')
     .trim()
     .toLowerCase()
@@ -65,6 +72,10 @@ const ActiveScreen = ({ route }) => {
     }
 
     navigation.navigate(navigationStrings.ONLINEPAYMENT, deliveryParams);
+  };
+
+  const handleNonDeliveryAction = () => {
+    navigation.navigate(navigationStrings.NONDELIVERYREPORT, deliveryParams);
   };
 
   return (
@@ -205,14 +216,21 @@ const ActiveScreen = ({ route }) => {
         </View>
         <View style={styles.deliveryButtonRow}>
           <Pressable
-            style={[styles.deliveredButton, styles.deliveryActionButton, styles.nonDeliveryActionButton]}
-            onPress={() => navigation.navigate(navigationStrings.NONDELIVERYREPORT, deliveryParams)}
+            style={[
+              styles.deliveredButton,
+              styles.deliveryActionButton,
+              styles.nonDeliveryActionButton,
+              !isDelivered && styles.disabledDeliveryActionButton,
+            ]}
+            onPress={handleNonDeliveryAction}
+            disabled={!isDelivered}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
           </Pressable>
           <Pressable
-            style={[styles.deliveredButton, styles.deliveryActionButton]}
+            style={[styles.deliveredButton, styles.deliveryActionButton, !isDelivered && styles.disabledDeliveryActionButton]}
             onPress={handleDeliveryAction}
+            disabled={!isDelivered}
           >
             <Text style={styles.deliveredText}>Mark as Delivered ✓</Text>
           </Pressable>
