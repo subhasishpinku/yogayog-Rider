@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { recognizeText } from 'expo-ocr-kit';
@@ -7,21 +7,51 @@ import { useNavigation } from '@react-navigation/native';
 import { useHome } from '../contexts/HomeContext';
 import styles from './styles/styles';
 
-const documents = [
-  { icon: '▣', title: 'Aadhaar Card', documentType: 'aadhar_file', subtitle: 'Front + Back · Max 5MB', status: '✓ Uploaded', statusStyle: 'uploaded', files: ['aadhaar_front.jpg', 'aadhaar_back.jpg'] },
-  { icon: '💳', title: 'PAN Card', documentType: 'pan_file', subtitle: 'Front only · Max 5MB', status: '✓ Uploaded', statusStyle: 'uploaded', files: ['pan_card.jpg'] },
-  { icon: '🚘', title: 'Driving Licence', documentType: 'dl_file', subtitle: 'Front + Back · Must be valid', status: '⌛ Under Review', statusStyle: 'review', files: ['driving_licence.jpg'] },
-  { icon: '📋', title: 'RC Book (Vehicle)', documentType: 'rc_file', subtitle: 'Registration Certificate', status: '✕ Required', statusStyle: 'required', uploadLabel: 'Upload RC Book' },
-  { icon: '🛡️', title: 'Vehicle Insurance', documentType: 'vehicle_insurance', subtitle: 'Valid policy document', status: '✕ Required', statusStyle: 'required', uploadLabel: 'Upload Insurance' },
-  { icon: '🏢', title: 'Bank Passbook / Cheque', documentType: 'bank_passbook', subtitle: 'For payout verification', status: '✓ Uploaded', statusStyle: 'uploaded', files: ['bank_passbook.jpg'] },
-  { icon: '📸', title: 'Profile Photo', documentType: 'profile_picture', subtitle: 'Clear face photo · White background', status: '✓ Uploaded', statusStyle: 'uploaded', files: ['profile_photo.jpg'] },
+const documentDefinitions = [
+  { icon: '▣', title: 'Aadhaar Card', documentType: 'aadhar_file', subtitle: 'Front + Back · Max 5MB' },
+  { icon: '💳', title: 'PAN Card', documentType: 'pan_file', subtitle: 'Front only · Max 5MB' },
+  { icon: '🚘', title: 'Driving Licence', documentType: 'dl_file', subtitle: 'Front + Back · Must be valid' },
+  { icon: '📋', title: 'RC Book (Vehicle)', documentType: 'rc_file', subtitle: 'Registration Certificate', uploadLabel: 'Upload RC Book' },
+  { icon: '🛡️', title: 'Vehicle Insurance', documentType: 'vehicle_insurance', subtitle: 'Valid policy document', uploadLabel: 'Upload Insurance' },
+  { icon: '🏢', title: 'Bank Passbook / Cheque', documentType: 'bank_passbook', subtitle: 'For payout verification' },
+  { icon: '📸', title: 'Profile Photo', documentType: 'profile_picture', subtitle: 'Clear face photo · White background' },
 ];
+
+const getFileName = (fileUrl, fallback) => {
+  if (!fileUrl) return fallback;
+  return String(fileUrl).split('/').pop()?.split('?')[0] || fallback;
+};
 
 const DocumentsUploadSection = () => {
   const navigation = useNavigation();
-  const { uploadRiderDocument } = useHome();
+  const { fetchRiderDocuments, riderDocuments, uploadRiderDocument } = useHome();
   const [selectedFiles, setSelectedFiles] = useState({});
   const [uploading, setUploading] = useState({});
+  const [previewImage, setPreviewImage] = useState(null);
+
+  useEffect(() => {
+    fetchRiderDocuments().catch(() => {
+      Alert.alert('Unable to load documents', 'Please try again later.');
+    });
+  }, [fetchRiderDocuments]);
+
+  const documents = useMemo(() => documentDefinitions.map((definition) => {
+    const serverDocument = riderDocuments.find(
+      (document) => document.document_type === definition.documentType
+    );
+    const uploaded = Boolean(serverDocument?.uploaded && (serverDocument.file_url || serverDocument.file_path));
+    const fileUrl = serverDocument?.file_url || serverDocument?.file_path;
+
+    return {
+      ...definition,
+      status: uploaded ? '✓ Uploaded' : '✕ Required',
+      statusStyle: uploaded ? 'uploaded' : 'required',
+      files: uploaded ? [fileUrl] : [],
+    };
+  }), [riderDocuments]);
+
+  const pendingDocuments = documents.filter((document) => document.statusStyle === 'required');
+  const pendingDocumentNames = pendingDocuments.map((document) => document.title).join(' & ');
 
   const checkDocumentWithOcr = async (uri, documentType) => {
     if (documentType === 'profile_picture') {
@@ -113,7 +143,9 @@ const DocumentsUploadSection = () => {
 
         {documents.map((document) => {
           const pickedFiles = selectedFiles[document.title] || {};
-          const fileNames = document.files || (pickedFiles[0] ? [pickedFiles[0].fileName || 'selected_document.jpg'] : []);
+          const fileNames = document.files.length > 0
+            ? document.files
+            : (pickedFiles[0] ? [pickedFiles[0].fileName || 'selected_document.jpg'] : []);
 
           return (
             <View key={document.title} style={styles.documentCard}>
@@ -136,10 +168,22 @@ const DocumentsUploadSection = () => {
 
               {fileNames.map((file, fileIndex) => {
                 const asset = pickedFiles[fileIndex];
+                const imageUri = asset?.uri || (typeof file === 'string' && file.startsWith('http') ? file : null);
                 return (
                   <Pressable key={`${document.title}-${fileIndex}`} style={styles.fileRow} onPress={() => pickImage(document, fileIndex)}>
-                    {asset?.uri ? <Image source={{ uri: asset.uri }} style={styles.filePreview} /> : <Text style={styles.fileIcon}>▤</Text>}
-                    <Text style={styles.fileName}>{asset?.fileName || file}</Text>
+                    {imageUri ? (
+                      <Pressable
+                        onPress={(event) => {
+                          event.stopPropagation?.();
+                          setPreviewImage({ uri: imageUri, title: document.title });
+                        }}
+                        accessibilityRole="imagebutton"
+                        accessibilityLabel={`View ${document.title}`}
+                      >
+                        <Image source={{ uri: imageUri }} style={styles.filePreview} />
+                      </Pressable>
+                    ) : <Text style={styles.fileIcon}>▤</Text>}
+                    <Text style={styles.fileName}>{asset?.fileName || getFileName(file, 'selected_document.jpg')}</Text>
                     <Text style={styles.replace}>Replace</Text>
                   </Pressable>
                 );
@@ -154,13 +198,42 @@ const DocumentsUploadSection = () => {
           );
         })}
 
-        <View style={styles.warning}>
-          <Text style={styles.warningText}>⚠  2 documents pending: RC Book &amp; Insurance.{`\n`}    Upload to complete KYC.</Text>
-        </View>
+        {pendingDocuments.length > 0 && (
+          <View style={styles.warning}>
+            <Text style={styles.warningText}>
+              ⚠  {pendingDocuments.length} {pendingDocuments.length === 1 ? 'document' : 'documents'} pending: {pendingDocumentNames}.{`\n`}    Upload to complete KYC.
+            </Text>
+          </View>
+        )}
         <Pressable style={styles.saveButton} onPress={() => navigation.goBack()}>
           <Text style={styles.saveText}>Save &amp; Continue →</Text>
         </Pressable>
       </ScrollView>
+
+      <Modal
+        visible={Boolean(previewImage)}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setPreviewImage(null)}
+      >
+        <View style={styles.imagePreviewOverlay}>
+          <Pressable
+            style={styles.imagePreviewBackdrop}
+            onPress={() => setPreviewImage(null)}
+            accessibilityRole="button"
+            accessibilityLabel="Close document preview"
+          />
+          <View style={styles.imagePreviewDialog}>
+            <Text style={styles.imagePreviewTitle}>{previewImage?.title}</Text>
+            {previewImage?.uri && (
+              <Image source={{ uri: previewImage.uri }} style={styles.imagePreview} resizeMode="contain" />
+            )}
+            <Pressable style={styles.imagePreviewClose} onPress={() => setPreviewImage(null)}>
+              <Text style={styles.imagePreviewCloseText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

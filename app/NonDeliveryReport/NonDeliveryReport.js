@@ -1,30 +1,65 @@
-import React, { useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 
 import navigationStrings from '../constants/navigationStrings';
+import { useHome } from '../contexts/HomeContext';
 import styles from './styles/styles';
 
-const reasons = [
-  { id: 'rto', icon: '↩️', title: 'A · RTO – Return to Origin', subtitle: 'Send shipment back to sender', tone: 'blue' },
-  { id: 'address', icon: '🗺️', title: 'B · Address Not Found', subtitle: 'Could not locate delivery address', tone: 'olive' },
-  { id: 'refused', icon: '🧑‍🦱', title: 'C · Party Refused', subtitle: 'Receiver refused to accept shipment', tone: 'plum' , route: navigationStrings.RESCHEDULEDELIVERY},
-  { id: 'reschedule', icon: '🗓️', title: 'D · Reschedule Delivery', subtitle: 'Customer wants different date / time', tone: 'olive' },
-  { id: 'not-home', icon: '🏠', title: 'E · Customer Not at Home', subtitle: 'No one available at address', tone: 'blue' },
-  { id: 'cod-refused', icon: '💸', title: 'F · Refused to Pay COD', subtitle: 'Customer refused COD payment', tone: 'red' },
-  { id: 'damaged', icon: '⚠️', title: 'G · Shipment Damaged', subtitle: 'Package damaged, cannot deliver', tone: 'olive' },
-  { id: 'branch', icon: '🏢', title: 'H · Returned to Branch', subtitle: 'Taken back to Yogayog branch', tone: 'purple' },
-];
+const reasonPresentation = {
+  A: { tone: 'blue' },
+  B: { tone: 'olive' },
+  C: { tone: 'plum', },
+  D: { tone: 'olive' , route: navigationStrings.RESCHEDULEDELIVERY},
+  E: { tone: 'blue' },
+  F: { tone: 'red' },
+  G: { tone: 'olive' },
+  H: { tone: 'purple' },
+};
 
-const NonDeliveryReport = () => {
+const NonDeliveryReport = ({ route }) => {
   const navigation = useNavigation();
-  const [selectedReason, setSelectedReason] = useState('rto');
+  const { fetchNonDeliveryReasons, nonDeliveryReasons } = useHome();
+  const [selectedReason, setSelectedReason] = useState('A');
+  const orderId = route?.params?.id || route?.params?.orderId;
+  const orderCode = route?.params?.orderId || orderId || '1222000010';
+  const customerName = route?.params?.customerName || 'Priya Mehta';
+
+  useEffect(() => {
+    fetchNonDeliveryReasons().catch(() => {
+      Alert.alert('Unable to load reasons', 'Please try again later.');
+    });
+  }, [fetchNonDeliveryReasons]);
+
+  const reasons = useMemo(() => {
+    return nonDeliveryReasons.map((reason) => ({
+      ...reason,
+      id: reason.code,
+      reasonId: reason.id,
+      title: `${reason.code} · ${reason.title}`,
+      subtitle: reason.description,
+      tone: reasonPresentation[reason.code]?.tone || 'blue',
+      route: reasonPresentation[reason.code]?.route,
+    }));
+  }, [nonDeliveryReasons]);
+
+  useEffect(() => {
+    console.log('[NonDeliveryReport] reasons shown on screen:', reasons);
+  }, [reasons]);
 
   const continueWithReason = () => {
     const selected = reasons.find((reason) => reason.id === selectedReason);
     navigation.navigate(selected?.route || navigationStrings.RTODETAILS, {
+      id: orderId,
+      orderId: orderCode,
+      amount: route?.params?.amount,
+      customerName: route?.params?.customerName,
+      dropArea: route?.params?.dropArea,
+      paymentMethod: route?.params?.paymentMethod,
+      pickupArea: route?.params?.pickupArea,
       reason: selected?.id,
+      reasonId: selected?.reasonId,
       reasonTitle: selected?.title,
     });
   };
@@ -38,7 +73,7 @@ const NonDeliveryReport = () => {
           <Text style={styles.backText}>←</Text>
         </Pressable>
         <Text style={styles.title}>Non-Delivery Report</Text>
-        <Text style={styles.orderMeta}>YCG-2025-00921 · Priya Mehta</Text>
+        <Text style={styles.orderMeta}>{orderCode} · {customerName}</Text>
         <View style={styles.warningCard}>
           <Text style={styles.warningText}>Select the reason why this shipment could not be{ '\n' }delivered</Text>
         </View>

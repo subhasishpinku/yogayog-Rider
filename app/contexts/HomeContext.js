@@ -34,6 +34,8 @@ const normalizeRiderProfile = (rider) => (
 export const HomeProvider = ({ children }) => {
   const [riderOrders, setRiderOrders] = useState([]);
   const [riderProfile, setRiderProfile] = useState(null);
+  const [riderDocuments, setRiderDocuments] = useState([]);
+  const [nonDeliveryReasons, setNonDeliveryReasons] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
   const [todayEarnings, setTodayEarnings] = useState(0);
   const [todayDelivered, setTodayDelivered] = useState(0);
@@ -391,6 +393,153 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchRiderDocuments = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/document-list', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load rider documents.');
+      }
+
+      const documents = Array.isArray(response.data?.data?.documents)
+        ? response.data.data.documents
+        : [];
+      setRiderDocuments(documents);
+      return documents;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/document-list error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const fetchNonDeliveryReasons = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/non-delivery-reason-list', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/non-delivery-reason-list response:', response.data);
+
+      const responseData = response.data || {};
+      const reasons = Array.isArray(responseData.data) ? responseData.data : [];
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        reasons.length > 0;
+
+      console.log('[HomeContext] non-delivery reason API success value:', responseData.success);
+
+      if (!requestSucceeded) {
+        throw new Error(response.data?.message || 'Unable to load non-delivery reasons.');
+      }
+
+      console.log('[HomeContext] non-delivery reasons parsed:', reasons);
+      setNonDeliveryReasons(reasons);
+      return reasons;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/non-delivery-reason-list error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const cancelRiderDelivery = useCallback(async ({ orderId, reasonId, remarks = '' }) => {
+    if (!orderId || !reasonId) {
+      throw new Error('Order ID and non-delivery reason are required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/cancel-deliver', null, {
+        params: {
+          order_id: orderId,
+          reason_id: reasonId,
+          remarks,
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/cancel-deliver response:', response.data);
+
+      const responseData = response.data || {};
+      const successMessage = String(responseData.message || '').toLowerCase();
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        responseData.status === true ||
+        responseData.status === 'true' ||
+        successMessage.includes('successfully');
+
+      if (!requestSucceeded) {
+        throw new Error(response.data?.message || 'Unable to submit non-delivery report.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/cancel-deliver error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const rescheduleRiderOrder = useCallback(async ({
+    orderId,
+    requestedDeliveryDate,
+    requestedDeliveryTime,
+    reason,
+  }) => {
+    if (!orderId || !requestedDeliveryDate || !requestedDeliveryTime || !reason) {
+      throw new Error('Order ID, date, time, and reschedule reason are required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/reschedule-order', null, {
+        params: {
+          order_id: orderId,
+          requested_delivery_date: requestedDeliveryDate,
+          requested_delivery_time: requestedDeliveryTime,
+          reason,
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/reschedule-order response:', response.data);
+
+      const responseData = response.data || {};
+      const successMessage = String(responseData.message || '').toLowerCase();
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        responseData.status === true ||
+        responseData.status === 'true' ||
+        successMessage.includes('successfully');
+
+      if (!requestSucceeded) {
+        throw new Error(responseData.message || 'Unable to reschedule delivery.');
+      }
+
+      return responseData;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/reschedule-order error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   const uploadRiderDocument = useCallback(async (asset, documentType) => {
     if (!asset?.uri || !documentType) {
       throw new Error('A document image and document type are required.');
@@ -430,6 +579,8 @@ export const HomeProvider = ({ children }) => {
         setRiderProfile(uploadedProfile);
       }
 
+      await fetchRiderDocuments();
+
       return response.data;
     } catch (error) {
       console.error(
@@ -438,7 +589,7 @@ export const HomeProvider = ({ children }) => {
       );
       throw error;
     }
-  }, []);
+  }, [fetchRiderDocuments]);
 
   return (
     <HomeContext.Provider
@@ -455,10 +606,16 @@ export const HomeProvider = ({ children }) => {
         fetchRiderTripDetails,
         acceptRiderOrder,
         fetchRiderProfile,
+        fetchRiderDocuments,
+        fetchNonDeliveryReasons,
+        cancelRiderDelivery,
+        rescheduleRiderOrder,
         updateRiderProfile,
         uploadRiderDocument,
         riderOrders,
         riderProfile,
+        riderDocuments,
+        nonDeliveryReasons,
         walletBalance,
         todayEarnings,
         todayDelivered,

@@ -15,7 +15,7 @@ const steps = [
 ];
 
 const verificationSteps = [
-  { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.EDITPROFILESCREEN},
+  { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.PROFILESCREEN},
   { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
   { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
   { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },

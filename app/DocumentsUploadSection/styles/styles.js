@@ -35,6 +35,13 @@ const styles = StyleSheet.create({
   warningText: { color: colors.red, fontSize: 12, fontWeight: '800', lineHeight: 18 },
   saveButton: { height: 58, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginHorizontal: 1, borderRadius: 17, backgroundColor: colors.gold },
   saveText: { color: '#080808', fontSize: 16, fontWeight: '900' },
+  imagePreviewOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  imagePreviewBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.78)' },
+  imagePreviewDialog: { width: '92%', maxHeight: '82%', padding: 14, borderRadius: 18, backgroundColor: colors.card },
+  imagePreviewTitle: { marginBottom: 12, color: colors.white, fontSize: 16, fontWeight: '900', textAlign: 'center' },
+  imagePreview: { width: '100%', height: 420, borderRadius: 10 },
+  imagePreviewClose: { alignItems: 'center', justifyContent: 'center', height: 44, marginTop: 12, borderRadius: 11, backgroundColor: colors.gold },
+  imagePreviewCloseText: { color: '#080808', fontSize: 14, fontWeight: '900' },
 });
 export default styles;
 

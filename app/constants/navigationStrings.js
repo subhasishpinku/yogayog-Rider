@@ -6,6 +6,7 @@ export default {
   DASHBOARDSCREEN: 'DashboardScreen',
   WITHDRAWEARNINGS: 'WithdrawEarnings',
   EDITPROFILESCREEN: 'EditProfileScreen',
+  PROFILESCREEN: 'ProfileScreen',
   ACCEPTREJECTORDER: 'AcceptRejectOrder',
   ACTIVEDELIVERY: 'ActiveDelivery',
   ALLPROFILESCREEN: 'AllProfileScreen',

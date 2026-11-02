@@ -1,33 +1,61 @@
 import React, { useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
+import { useHome } from '../contexts/HomeContext';
 import styles from './styles/styles';
 
-const dates = [
-  { day: 'Today', date: '31' },
-  { day: 'Thu', date: '1' },
-  { day: 'Fri', date: '2' },
-  { day: 'Sat', date: '3' },
-];
+const formatDate = (date) => date.toISOString().split('T')[0];
+
+const dates = Array.from({ length: 4 }, (_, index) => {
+  const date = new Date();
+  date.setDate(date.getDate() + index);
+
+  return {
+    day: index === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' }),
+    date: String(date.getDate()),
+    value: formatDate(date),
+  };
+});
 
 const timeSlots = [
-  'Morning · 9 AM – 12 PM',
-  'Afternoon · 12 PM – 4 PM',
-  'Evening · 4 PM – 7 PM',
+  { label: 'Morning · 9 AM – 12 PM', value: '09:00' },
+  { label: 'Afternoon · 12 PM – 4 PM', value: '12:00' },
+  { label: 'Evening · 4 PM – 7 PM', value: '16:00' },
 ];
 
 const RescheduleDelivery = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const { rescheduleRiderOrder } = useHome();
   const [selectedDate, setSelectedDate] = useState(1);
   const [selectedSlot, setSelectedSlot] = useState(1);
   const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const confirmReschedule = () => {
-    Alert.alert('Delivery rescheduled', 'The customer delivery slot has been updated.', [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+  const confirmReschedule = async () => {
+    if (submitting) return;
+
+    setSubmitting(true);
+    try {
+      const response = await rescheduleRiderOrder({
+        orderId: route.params?.id || route.params?.orderId,
+        requestedDeliveryDate: dates[selectedDate].value,
+        requestedDeliveryTime: timeSlots[selectedSlot].value,
+        reason: route.params?.reasonTitle || route.params?.reason || note.trim(),
+      });
+
+      console.log('[RescheduleDelivery] rider/reschedule-order API response:', response);
+
+      Alert.alert('Delivery rescheduled', 'The customer delivery slot has been updated.', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } catch (error) {
+      Alert.alert('Unable to reschedule delivery', error.message || 'Please try again later.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -65,11 +93,11 @@ const RescheduleDelivery = () => {
             const selected = selectedSlot === index;
             return (
               <Pressable
-                key={slot}
+                key={slot.value}
                 style={[styles.slotCard, selected && styles.slotCardSelected]}
                 onPress={() => setSelectedSlot(index)}
               >
-                <Text style={[styles.slotText, selected && styles.selectedText]}>{slot}</Text>
+                <Text style={[styles.slotText, selected && styles.selectedText]}>{slot.label}</Text>
                 <View style={[styles.radio, selected && styles.radioSelected]}>
                   {selected && <View style={styles.radioDot} />}
                 </View>
@@ -87,8 +115,8 @@ const RescheduleDelivery = () => {
           style={styles.noteInput}
         />
 
-        <Pressable style={styles.confirmButton} onPress={confirmReschedule}>
-          <Text style={styles.confirmText}>🗓️ Confirm Reschedule</Text>
+        <Pressable style={styles.confirmButton} onPress={confirmReschedule} disabled={submitting}>
+          <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '🗓️ Confirm Reschedule'}</Text>
         </Pressable>
       </ScrollView>
     </View>

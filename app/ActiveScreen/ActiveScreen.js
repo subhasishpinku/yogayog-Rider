@@ -55,6 +55,7 @@ const ActiveScreen = ({ route }) => {
     orderId: orderCode,
     id: order?.id || order?.order_pk_id || orderId,
     amount: Number(order?.amount || 0),
+    paymentMethod: order?.payment_method,
     customerName: order?.customer_name,
     pickupArea: order?.pickup_area,
     dropArea: order?.drop_area,
@@ -75,7 +76,10 @@ const ActiveScreen = ({ route }) => {
   };
 
   const handleNonDeliveryAction = () => {
-    navigation.navigate(navigationStrings.NONDELIVERYREPORT, deliveryParams);
+    navigation.navigate(navigationStrings.NONDELIVERYREPORT, {
+      ...deliveryParams,
+      id: order?.id || order?.order_pk_id || orderId,
+    });
   };
 
   return (

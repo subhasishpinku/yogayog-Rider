@@ -3,20 +3,46 @@ import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-nativ
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
+import navigationStrings from '../constants/navigationStrings';
+import { useHome } from '../contexts/HomeContext';
 import styles from './styles/styles';
 
 const RTODetails = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { cancelRiderDelivery } = useHome();
   const [attempt, setAttempt] = useState(1);
   const [notes, setNotes] = useState('');
   const [proofUploaded, setProofUploaded] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const reasonTitle = route.params?.reasonTitle || 'Reason A · Return to Origin';
+  const shipmentId = route.params?.orderId || route.params?.id || 'Shipment';
+  const customerName = route.params?.customerName || 'Customer';
+  const deliveryArea = route.params?.dropArea || route.params?.pickupArea || 'Address unavailable';
+  const paymentMethod = route.params?.paymentMethod || 'Payment';
+  const amount = Number(route.params?.amount || 0);
 
-  const confirmRto = () => {
-    Alert.alert('RTO confirmed', 'The shipment has been marked for return to origin.', [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+  const confirmRto = async () => {
+    if (submitting) return;
+
+    setSubmitting(true);
+    try {
+      const response = await cancelRiderDelivery({
+        orderId: route.params?.id || route.params?.orderId,
+        reasonId: route.params?.reasonId,
+        remarks: notes.trim(),
+      });
+
+      console.log('[RTODetails] rider/cancel-deliver API response:', response);
+
+      Alert.alert('RTO confirmed', 'The shipment has been marked for return to origin.', [
+        { text: 'OK', onPress: () => navigation.navigate(navigationStrings.DASHBOARDSCREEN) },
+      ]);
+    } catch (error) {
+      Alert.alert('Unable to submit RTO', error.message || 'Please try again later.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -33,12 +59,12 @@ const RTODetails = () => {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.shipmentCard}>
           <Text style={styles.cardLabel}>SHIPMENT</Text>
-          <Text style={styles.shipmentId}>YCG-2025-00921</Text>
-          <Text style={styles.shipmentMeta}>Priya Mehta · Kalighat · COD ₹250</Text>
+          <Text style={styles.shipmentId}>{shipmentId}</Text>
+          <Text style={styles.shipmentMeta}>{customerName} · {deliveryArea} · {paymentMethod} ₹{amount.toFixed(2)}</Text>
         </View>
 
         <Text style={styles.fieldLabel}>DELIVERY ATTEMPT COUNT</Text>
-        <View style={styles.attemptRow}>
+        {/* <View style={styles.attemptRow}>
           {[1, 2, 3].map((value) => (
             <Pressable
               key={value}
@@ -50,13 +76,13 @@ const RTODetails = () => {
               </Text>
             </Pressable>
           ))}
-        </View>
+        </View> */}
 
-        <Pressable style={styles.proofCard} onPress={() => setProofUploaded(true)}>
+        {/* <Pressable style={styles.proofCard} onPress={() => setProofUploaded(true)}>
           <Text style={styles.cameraIcon}>📷</Text>
           <Text style={styles.proofTitle}>{proofUploaded ? 'Location Proof Added' : 'Upload Location Proof Photo'}</Text>
           <Text style={styles.proofSubtitle}>{proofUploaded ? 'Photo attached successfully' : 'Take photo of address / building'}</Text>
-        </Pressable>
+        </Pressable> */}
 
         <Text style={styles.fieldLabel}>ADDITIONAL NOTES</Text>
         <TextInput
@@ -73,8 +99,8 @@ const RTODetails = () => {
           <Text style={styles.warningText}>This will initiate an RTO. The shipment will be{ '\n' }returned to origin branch.</Text>
         </View>
 
-        <Pressable style={styles.confirmButton} onPress={confirmRto}>
-          <Text style={styles.confirmText}>↩ Confirm RTO</Text>
+        <Pressable style={styles.confirmButton} onPress={confirmRto} disabled={submitting}>
+          <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '↩ Confirm RTO'}</Text>
         </Pressable>
       </ScrollView>
     </View>
