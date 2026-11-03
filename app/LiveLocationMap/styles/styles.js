@@ -15,6 +15,8 @@ const styles = StyleSheet.create({
   networkStatus: { marginLeft: 8, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, color: colors.white, backgroundColor: '#262631', fontSize: 11, fontWeight: '900' },
   markerRider: { width: 50, height: 50, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: colors.gold, borderRadius: 25, backgroundColor: colors.gold, shadowColor: colors.gold, shadowOpacity: 0.75, shadowRadius: 13, elevation: 8 },
   riderEmoji: { fontSize: 24 },
+  markerPickup: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white, borderRadius: 16, backgroundColor: colors.gold },
+  pickupPin: { color: '#080808', fontSize: 14, fontWeight: '900' },
   markerDestination: { width: 34, height: 42, alignItems: 'center', justifyContent: 'center', borderRadius: 20, backgroundColor: colors.red },
   destinationPin: { color: '#080808', fontSize: 22, fontWeight: '900' },
   bottomCard: { padding: 14, borderWidth: 1, borderColor: '#4E3D12', borderRadius: 17, backgroundColor: 'rgba(18,18,28,0.97)' },

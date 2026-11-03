@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import { useHome } from '../contexts/HomeContext';
+import navigationStrings from '../constants/navigationStrings';
 import styles from './styles/styles';
 
 const pickup = {
@@ -106,7 +107,10 @@ const AcceptRejectOrder = ({ route }) => {
     setIsAccepting(true);
     try {
       await acceptRiderOrder(order.id || order.order_pk_id);
-      navigation.goBack();
+      navigation.navigate(navigationStrings.ORDERCHAINSCREEN, {
+        order,
+        orderId: order.id || order.order_pk_id,
+      });
     } catch (error) {
       console.log('[AcceptRejectOrder] accept order error:', error);
       setIsAccepting(false);

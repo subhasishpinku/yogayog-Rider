@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Linking, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -82,6 +82,28 @@ const ActiveScreen = ({ route }) => {
     });
   };
 
+  const handleNavigate = async () => {
+    const dropLocation = order?.drop_location || order?.drop_coordinates;
+    const latitude = Number(
+      order?.drop_latitude ?? order?.drop_lat ?? dropLocation?.latitude ?? drop.latitude
+    );
+    const longitude = Number(
+      order?.drop_longitude ??
+        order?.drop_lng ??
+        order?.drop_long ??
+        dropLocation?.longitude ??
+        drop.longitude
+    );
+    const destination = Number.isFinite(latitude) && Number.isFinite(longitude)
+      ? `${latitude},${longitude}`
+      : order?.drop_area;
+
+    if (!destination) return;
+
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+    await Linking.openURL(mapsUrl);
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -123,7 +145,7 @@ const ActiveScreen = ({ route }) => {
           <Text style={styles.etaLabel}>{order?.payment_method || 'Order'} · {order?.payment_status || 'Pending'}</Text>
           <Text style={styles.etaValue}>₹{Number(order?.amount || 0).toFixed(2)}</Text>
         </View>
-        <Pressable style={styles.navigateButton}>
+        <Pressable style={styles.navigateButton} onPress={handleNavigate}>
           <Text style={styles.navigateText}>🛵 Navigate</Text>
         </Pressable>
         {/* <View style={styles.herePill}>
@@ -202,7 +224,14 @@ const ActiveScreen = ({ route }) => {
           </View>
           <Pressable
             style={styles.callButton}
-            onPress={() => navigation.navigate(navigationStrings.CALLCUSTOMER)}
+            onPress={() =>
+              navigation.navigate(navigationStrings.CALLCUSTOMER, {
+                customerName: order?.customer_name,
+                customerPhone: order?.customer_phone,
+                orderId: orderCode,
+                dropArea: order?.drop_area,
+              })
+            }
           >
             <Text style={styles.callText}>📞 Call</Text>
           </Pressable>
@@ -224,10 +253,10 @@ const ActiveScreen = ({ route }) => {
               styles.deliveredButton,
               styles.deliveryActionButton,
               styles.nonDeliveryActionButton,
-              !isDelivered && styles.disabledDeliveryActionButton,
+              isDelivered && styles.disabledDeliveryActionButton,
             ]}
             onPress={handleNonDeliveryAction}
-            disabled={!isDelivered}
+            disabled={isDelivered}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
           </Pressable>

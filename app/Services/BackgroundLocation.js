@@ -1,8 +1,11 @@
 
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LOCATION_TASK_NAME = 'YOGAYOG_BACKGROUND_LOCATION';
+export const LAST_BACKGROUND_LOCATION_KEY = 'YOGAYOG_LAST_BACKGROUND_LOCATION';
+export const BACKGROUND_LOCATION_HISTORY_KEY = 'YOGAYOG_BACKGROUND_LOCATION_HISTORY';
 
 // Must be defined at module scope, not inside a component.
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
@@ -11,16 +14,34 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
     return;
   }
 
-  if (data?.locations?.length) {
+  try {
+    if (data?.locations?.length) {
     const location = data.locations[data.locations.length - 1];
 
     const latitude = location.coords.latitude;
     const longitude = location.coords.longitude;
 
+    const point = {
+      latitude,
+      longitude,
+      timestamp: location.timestamp || Date.now(),
+    };
+
+    const existingHistory = await AsyncStorage.getItem(BACKGROUND_LOCATION_HISTORY_KEY);
+    const history = existingHistory ? JSON.parse(existingHistory) : [];
+    const nextHistory = [...(Array.isArray(history) ? history : []), point].slice(-200);
+
+    await Promise.all([
+      AsyncStorage.setItem(LAST_BACKGROUND_LOCATION_KEY, JSON.stringify(point)),
+      AsyncStorage.setItem(BACKGROUND_LOCATION_HISTORY_KEY, JSON.stringify(nextHistory)),
+    ]);
+
     console.log('Background Latitude:', latitude);
     console.log('Background Longitude:', longitude);
-
-    // TODO: Send latitude and longitude to your rider location API.
+      console.log('Background location trail points:', nextHistory.length);
+    }
+  } catch (taskError) {
+    console.error('Background location persistence error:', taskError.message);
   }
 });
 

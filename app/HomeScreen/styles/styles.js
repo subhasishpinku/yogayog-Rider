@@ -33,6 +33,8 @@ const styles = StyleSheet.create({
   metricValue: { color: colors.white, fontSize: 23, fontWeight: '900' },
   earnings: { color: colors.gold, fontSize: 23, fontWeight: '900' },
   deliveries: { color: colors.green, fontSize: 23, fontWeight: '900' },
+  codCollected: { color: '#7DC8FF', fontSize: 23, fontWeight: '900' },
+  activeOrders: { color: '#C59BFF', fontSize: 23, fontWeight: '900' },
   metricLabel: { marginTop: 2, color: colors.muted, fontSize: 11 },
   sectionTitle: { paddingHorizontal: 12, marginTop: 17, marginBottom: 10, color: colors.white, fontSize: 16, fontWeight: '900' },
   map: { height: 159, alignItems: 'center', justifyContent: 'center', marginHorizontal: 8, overflow: 'hidden', borderRadius: 16, backgroundColor: colors.blue },

@@ -13,7 +13,7 @@ import {
 const profileItems = [
   { icon: '✓', title: 'KYC Page & Verification', subtitle: 'Verify your identity and rider account', badge: 'New', tone: 'gold',route: navigationStrings.KYCVERIFICATION  },
   { icon: '▣', title: 'Documents Upload Section', subtitle: 'Upload licence, RC, insurance and ID proof', route: navigationStrings.DOCUMENTSUPLOADSECTION },
-  { icon: '⌖', title: 'Live Location on Map', subtitle: 'Share your current delivery location', tone: 'green',route: navigationStrings.LIVELOCATIONMAP  },
+  // { icon: '⌖', title: 'Live Location on Map', subtitle: 'Share your current delivery location', tone: 'green',route: navigationStrings.LIVELOCATIONMAP  },
   // { icon: '₹', title: 'COD Amount to Collect', subtitle: 'Accept payment by QR or Cash', tone: 'gold' , route: navigationStrings.CODAMOUNTCOLLECT},
   // { icon: 'A–H', title: 'Non-Delivery Reasons', subtitle: 'Choose a reason from A–H when delivery fails', route: navigationStrings.NONDELIVERYREPORT },
   // { icon: '↗', title: 'COD Amount Handed Over to Branch', subtitle: 'Record cash handover after your shift', badge: 'New', tone: 'gold' ,route: navigationStrings.CODHANDOVER},

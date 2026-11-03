@@ -64,7 +64,15 @@ const HomeScreen = ({ navigation }) => {
     riderOrders,
     todayEarnings,
     todayDelivered,
+    earningsByPeriod,
   } = useHome();
+
+  const todaySummary = earningsByPeriod.today || {};
+  const todayCodAmount = Number(todaySummary.total_cod_amount || 0);
+  const activeOrdersCount = riderOrders.filter((order) => {
+    const status = String(order.status || '').toLowerCase();
+    return !['delivered', 'cancelled', 'canceled', 'non_delivery', 'rto'].includes(status);
+  }).length;
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -235,8 +243,8 @@ const HomeScreen = ({ navigation }) => {
       <View style={styles.metrics}>
         <View style={styles.metricCard}><Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text><Text style={styles.metricLabel}>Today&apos;s Earnings</Text></View>
         <View style={styles.metricCard}><Text style={styles.deliveries}>{todayDelivered}</Text><Text style={styles.metricLabel}>Deliveries Done</Text></View>
-        {/* <View style={styles.metricCard}><Text style={styles.metricValue}>⭐ 4.8</Text><Text style={styles.metricLabel}>Avg Rating</Text></View> */}
-        {/* <View style={styles.metricCard}><Text style={styles.metricValue}>42 km</Text><Text style={styles.metricLabel}>Distance Today</Text></View> */}
+        <View style={styles.metricCard}><Text style={styles.codCollected}>₹{todayCodAmount.toFixed(2)}</Text><Text style={styles.metricLabel}>COD Collected</Text></View>
+        <View style={styles.metricCard}><Text style={styles.activeOrders}>{activeOrdersCount}</Text><Text style={styles.metricLabel}>Orders in Queue</Text></View>
       </View>
 
       {/* <Text style={styles.sectionTitle}>Your Location</Text> */}
@@ -287,7 +295,11 @@ const HomeScreen = ({ navigation }) => {
           <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{riderOrders.length} orders</Text></View>
           {riderOrders.length > 0 ? riderOrders.map((order) => {
             const isAssigned = String(order.status || '').toLowerCase() === 'assigned';
-            const statusText = order.status ? order.status.replace(/_/g, ' ') : 'Order';
+            const statusText = order.status
+              ? String(order.status).toLowerCase() === 'rider_accepted'
+                ? 'Rider Accepted'
+                : order.status.replace(/_/g, ' ')
+              : 'Order';
             const statusStyle = [
               styles.orderStatus,
               order.status === 'delivered' && styles.deliveredStatus,
@@ -299,10 +311,15 @@ const HomeScreen = ({ navigation }) => {
               key={order.id}
               style={styles.orderCard}
               onPress={() => {
-                // if (String(order.status || '').toLowerCase() === 'assigned') {
-                //   navigation.navigate(navigationStrings.ACCEPTREJECTORDER, { order });
-                // }
-                 navigation.navigate(navigationStrings.ACCEPTREJECTORDER, { order });
+                const normalizedStatus = String(order.status || '').toLowerCase();
+                const targetScreen = normalizedStatus === 'assigned' || normalizedStatus === 'delivered'
+                  ? navigationStrings.ACCEPTREJECTORDER
+                  : navigationStrings.ORDERCHAINSCREEN;
+
+                navigation.navigate(targetScreen, {
+                  order,
+                  orderId: order.id || order.order_pk_id,
+                });
               }}
             > 
               <Text style={styles.orderMeta}>Order #{order.code} · {order.customer_name || 'Customer'}</Text>
@@ -310,7 +327,7 @@ const HomeScreen = ({ navigation }) => {
               <Text style={styles.orderDetail}>Pickup: {order.pickup_area || 'Not available'}</Text>
               <Text style={styles.orderDetail}>Drop: {order.drop_area || 'Not available'}</Text>
               <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)}</Text>
-              <Text style={styles.fareLabel}>{order.status || 'Order'}</Text>
+              <Text style={styles.fareLabel}>{statusText}</Text>
               <Text style={styles.orderDate}>
                 {order.created_at || ''}
                 {order.status ? (isAssigned ? (

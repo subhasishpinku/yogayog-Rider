@@ -32,6 +32,7 @@ import ActiveScreen from '../ActiveScreen/ActiveScreen';
 import WalletScreen from '../WalletScreen/WalletScreen';
 import OnlinePayment from '../OnlinePayment/OnlinePayment';
 import ProfileScreen from '../ProfileScreen/ProfileScreen';
+import OrderChainScreen from '../AcceptRejectOrder/OrderChainScreen';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -154,11 +155,14 @@ const HomeStack = () => {
         name={navigationStrings.ONLINEPAYMENT}
         component={OnlinePayment}
       />
-    <Stack.Screen
-        name={navigationStrings.PROFILESCREEN}
-        component={ProfileScreen}
-      />
-
+      <Stack.Screen
+          name={navigationStrings.PROFILESCREEN}
+          component={ProfileScreen}
+        />
+      <Stack.Screen
+          name={navigationStrings.ORDERCHAINSCREEN}
+          component={OrderChainScreen}
+        />
     </Stack.Navigator>
   );
 };

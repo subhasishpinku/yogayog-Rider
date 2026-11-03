@@ -343,6 +343,48 @@ export const HomeProvider = ({ children }) => {
     }
   }, [fetchRiderOrders, fetchRiderTodaysEarnings]);
 
+  const updateRiderOrderStatus = useCallback(async (orderId, status) => {
+    if (!orderId || !status) {
+      throw new Error('Order ID and status are required to update order status.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/update-order-status', {
+        order_id: orderId,
+        status,
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      const responseData = response.data || {};
+      const successMessage = String(responseData.message || '').toLowerCase();
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        responseData.status === true ||
+        responseData.status === 'true' ||
+        successMessage.includes('successfully');
+
+      if (!requestSucceeded) {
+        throw new Error(responseData.message || 'Unable to update order status.');
+      }
+
+      setRiderOrders((previousOrders) => previousOrders.map((order) => {
+        const currentId = order.id || order.order_pk_id || order.order_id;
+        return String(currentId) === String(orderId) ? { ...order, status } : order;
+      }));
+
+      return responseData;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/update-order-status error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   const fetchRiderProfile = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -605,6 +647,7 @@ export const HomeProvider = ({ children }) => {
         fetchRiderTodaysEarnings,
         fetchRiderTripDetails,
         acceptRiderOrder,
+        updateRiderOrderStatus,
         fetchRiderProfile,
         fetchRiderDocuments,
         fetchNonDeliveryReasons,
