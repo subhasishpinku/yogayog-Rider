@@ -17,6 +17,7 @@ export default {
   LIVELOCATIONSHOW: 'LiveLocationShow',
   CODAMOUNTCOLLECT: 'CodAmountCollect',
   QRPAYMENT: 'QRPayment',
+  BILLDESKPAYMENT: 'BillDeskPayment',
   CASHCOLLECTION: 'CashCollection',
   COLLECTEDCASH: 'CollectedCash',
   NONDELIVERYREPORT: 'NonDeliveryReport',

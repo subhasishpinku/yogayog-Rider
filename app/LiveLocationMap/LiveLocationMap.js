@@ -57,6 +57,47 @@ const describeError = (error) => ({
   code: error?.code,
 });
 
+const isCoordinate = (point) => (
+  Number.isFinite(Number(point?.latitude)) && Number.isFinite(Number(point?.longitude))
+);
+
+const getRouteCoordinates = (order) => {
+  const routeCoordinates =
+    order?.route_coordinates ||
+    order?.routeCoordinates ||
+    order?.polyline_coordinates ||
+    order?.route?.coordinates;
+
+  return Array.isArray(routeCoordinates)
+    ? routeCoordinates.filter(isCoordinate).map((point) => ({
+      latitude: Number(point.latitude),
+      longitude: Number(point.longitude),
+    }))
+    : [];
+};
+
+// Keeps the fallback route visually close to a road route until the API supplies
+// real road coordinates. Live GPS history is preferred whenever it is available.
+const createCurvedRoute = (points) => points.slice(0, -1).reduce((route, start, index) => {
+  const end = points[index + 1];
+  const latitudeDelta = end.latitude - start.latitude;
+  const longitudeDelta = end.longitude - start.longitude;
+  const curveDirection = index % 2 === 0 ? 1 : -1;
+  const control = {
+    latitude: (start.latitude + end.latitude) / 2 + longitudeDelta * 0.18 * curveDirection,
+    longitude: (start.longitude + end.longitude) / 2 - latitudeDelta * 0.18 * curveDirection,
+  };
+
+  return route.concat(Array.from({ length: 9 }, (_, step) => {
+    const progress = step / 9;
+    const inverse = 1 - progress;
+    return {
+      latitude: (inverse * inverse * start.latitude) + (2 * inverse * progress * control.latitude) + (progress * progress * end.latitude),
+      longitude: (inverse * inverse * start.longitude) + (2 * inverse * progress * control.longitude) + (progress * progress * end.longitude),
+    };
+  }));
+}, []).concat(points[points.length - 1] || []);
+
 const LiveLocationMap = ({ route }) => {
   const mapRef = useRef(null);
   const order = useMemo(() => route?.params?.order || {}, [route?.params?.order]);
@@ -65,6 +106,17 @@ const LiveLocationMap = ({ route }) => {
   const [riderLocation, setRiderLocation] = useState(fallbackLocation);
   const [riderPath, setRiderPath] = useState([]);
   const [hasLocationPermission, setHasLocationPermission] = useState(false);
+
+  const routeCoordinates = useMemo(() => {
+    const suppliedRoute = getRouteCoordinates(order);
+    if (suppliedRoute.length > 1) return suppliedRoute;
+
+    const points = riderPath.length > 1
+      ? [...riderPath, pickupPoint, destination]
+      : [riderLocation, pickupPoint, destination];
+
+    return createCurvedRoute(points);
+  }, [destination, order, pickupPoint, riderLocation, riderPath]);
 
   useEffect(() => {
     setPickupPoint(toCoordinate(order, 'pickup', fallbackPickup));
@@ -214,10 +266,20 @@ const LiveLocationMap = ({ route }) => {
             <Text style={styles.destinationPin}>⌖</Text>
           </View>
         </Marker>
-        <Polyline coordinates={[riderLocation, pickupPoint, destination]} strokeColor="#C29E00" strokeWidth={3} lineDashPattern={[6, 6]} />
-        {riderPath.length > 1 && (
-          <Polyline coordinates={riderPath} strokeColor="#25D0FF" strokeWidth={5} lineCap="round" lineJoin="round" />
-        )}
+        <Polyline
+          coordinates={routeCoordinates}
+          strokeColor="#8A6A00"
+          strokeWidth={10}
+          lineCap="round"
+          lineJoin="round"
+        />
+        <Polyline
+          coordinates={routeCoordinates}
+          strokeColor="#FFC800"
+          strokeWidth={6}
+          lineCap="round"
+          lineJoin="round"
+        />
       </MapView>
 
       <View style={styles.mapOverlay} pointerEvents="box-none">

@@ -11,6 +11,7 @@
     "@react-navigation/stack": "^7.12.1",
     "axios": "^1.20.0",
     "expo": "~55.0.32",
+    "expo-file-system": "~55.0.26",
     "expo-image-picker": "~55.0.24",
     "expo-location": "~55.1.15",
     "expo-navigation-bar": "~55.0.17",

@@ -18,6 +18,7 @@ import LiveLocationMap from '../LiveLocationMap/LiveLocationMap';
 import LiveLocationShow from '../LiveLocationMap/LiveLocationShow';
 import CodAmountCollect from '../CodAmountCollect/CodAmountCollect';
 import QRPayment from '../QRPayment/QRPayment';
+import BillDeskPayment from '../QRPayment/BillDeskPayment';
 import CollectedCash from '../CollectedCash/CollectedCash';
 import CashCollection from '../CashCollection/CashCollection';
 import NonDeliveryReport from '../NonDeliveryReport/NonDeliveryReport';
@@ -102,6 +103,10 @@ const HomeStack = () => {
          <Stack.Screen
         name={navigationStrings.QRPAYMENT}
         component={QRPayment}
+      />
+      <Stack.Screen
+        name={navigationStrings.BILLDESKPAYMENT}
+        component={BillDeskPayment}
       />
       <Stack.Screen
         name={navigationStrings.CASHCOLLECTION}

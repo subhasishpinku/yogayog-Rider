@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import React, { useMemo, useRef, useState } from 'react';
+import { Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
+import SignatureCanvas from 'react-native-signature-canvas';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 import { useHome } from '../contexts/HomeContext';
@@ -14,7 +15,10 @@ const CashCollection = ({ route }) => {
   const amountToCollect = Number(route?.params?.amount || 250);
   const [receivedAmount, setReceivedAmount] = useState(amountToCollect.toFixed(2));
   const [hasSignature, setHasSignature] = useState(false);
+  const [signatureData, setSignatureData] = useState(null);
+  const [isSignatureModalVisible, setIsSignatureModalVisible] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const signatureRef = useRef(null);
 
   const changeToReturn = useMemo(() => {
     const received = Number(receivedAmount) || 0;
@@ -35,9 +39,14 @@ const confirmCashReceived = async () => {
     return;
   }
 
+  if (!signatureData) {
+    Alert.alert('Signature required', 'Please capture the customer signature first.');
+    return;
+  }
+
   setSubmitting(true);
   try {
-    const response = await collectRiderCod(internalOrderId);
+    const response = await collectRiderCod(internalOrderId, signatureData);
     const collectedOrder = response?.order || {};
     const collectedParams = {
       orderId,
@@ -46,6 +55,7 @@ const confirmCashReceived = async () => {
       customerName: route?.params?.customerName,
       paymentMethod: collectedOrder.payment_method || 'COD',
       paymentStatus: collectedOrder.payment_status || 'Collected',
+      signature_image: signatureData,
       order: collectedOrder,
       message: response?.message,
     };
@@ -61,6 +71,18 @@ const confirmCashReceived = async () => {
     setSubmitting(false);
   }
 };
+
+  const handleSignatureOK = (signature) => {
+    setSignatureData(signature);
+    setHasSignature(true);
+    setIsSignatureModalVisible(false);
+  };
+
+  const clearSignature = () => {
+    signatureRef.current?.clearSignature();
+    setSignatureData(null);
+    setHasSignature(false);
+  };
 
   return (
     <View style={styles.screen}>
@@ -99,10 +121,14 @@ const confirmCashReceived = async () => {
         </View>
 
         <Text style={styles.fieldLabel}>CUSTOMER SIGNATURE</Text>
-        <Pressable style={styles.signatureBox} onPress={() => setHasSignature(true)}>
-          <Text style={styles.signatureLabel}>CUSTOMER SIGNATURE</Text>
+        <Pressable style={styles.signatureBox} onPress={() => setIsSignatureModalVisible(true)}>
+          {signatureData ? (
+            <Image source={{ uri: signatureData }} style={styles.signaturePreview} resizeMode="contain" />
+          ) : (
+            <Text style={styles.signatureIcon}>✍️</Text>
+          )}
           <Text style={[styles.signaturePrompt, hasSignature && styles.signatureCaptured]}>
-            {hasSignature ? '✓ Signature captured' : 'Touch here to sign'}
+            {hasSignature ? '✓ Signature captured · Tap to edit' : 'Tap here to sign'}
           </Text>
         </Pressable>
 
@@ -110,6 +136,44 @@ const confirmCashReceived = async () => {
             <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '☑ Confirm Cash Received'}</Text>
         </Pressable>
       </ScrollView>
+
+      <Modal
+        visible={isSignatureModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setIsSignatureModalVisible(false)}
+      >
+        <View style={styles.signatureModalBackdrop}>
+          <View style={styles.signatureModalCard}>
+            <Text style={styles.signatureModalTitle}>Customer Signature</Text>
+            <Text style={styles.signatureModalSubtitle}>Draw the customer signature below</Text>
+            <View style={styles.signatureCanvasWrap}>
+              <SignatureCanvas
+                ref={signatureRef}
+                onOK={handleSignatureOK}
+                onEmpty={() => Alert.alert('Signature required', 'Please draw a signature before saving.')}
+                descriptionText="Sign here"
+                clearText="Clear"
+                confirmText="Save"
+                autoClear={false}
+                penColor="#111111"
+                backgroundColor="#FFFFFF"
+              />
+            </View>
+            <View style={styles.signatureModalActions}>
+              <Pressable style={styles.signatureClearButton} onPress={() => signatureRef.current?.readSignature()}>
+                <Text style={styles.signatureClearText}>Save</Text>
+              </Pressable>
+              <Pressable style={styles.signatureClearButton} onPress={clearSignature}>
+                <Text style={styles.signatureClearText}>Clear</Text>
+              </Pressable>
+              <Pressable style={styles.signatureCancelButton} onPress={() => setIsSignatureModalVisible(false)}>
+                <Text style={styles.signatureCancelText}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

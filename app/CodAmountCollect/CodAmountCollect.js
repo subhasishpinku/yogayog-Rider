@@ -31,7 +31,7 @@ const CodAmountCollect = ({route}) => {
     const amount = Number(route?.params?.amount || 0);
     const customerName = route?.params?.customerName || 'Customer';
     const pickupArea = route?.params?.pickupArea || 'Pickup address unavailable';
-    const [selectedMethod, setSelectedMethod] = useState('qr');
+    const [selectedMethod, setSelectedMethod] = useState(null);
     const paymentParams = {
       orderId,
       id,

@@ -110,6 +110,7 @@ const styles = StyleSheet.create({
   },
   signatureBox: {
     height: 139,
+    alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
     borderWidth: 2,
@@ -126,13 +127,84 @@ const styles = StyleSheet.create({
   },
   signaturePrompt: {
     alignSelf: 'center',
-    marginBottom: 32,
+    marginBottom: 12,
     color: '#090909',
     fontSize: 13,
   },
   signatureCaptured: {
     color: colors.green,
     fontWeight: '800',
+  },
+  signatureIcon: {
+    marginTop: 18,
+    fontSize: 28,
+  },
+  signaturePreview: {
+    width: '90%',
+    height: 82,
+    marginTop: 8,
+    backgroundColor: colors.white,
+  },
+  signatureModalBackdrop: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(0, 0, 0, 0.78)',
+  },
+  signatureModalCard: {
+    width: '100%',
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+  },
+  signatureModalTitle: {
+    color: colors.black,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  signatureModalSubtitle: {
+    marginTop: 4,
+    color: colors.muted,
+    fontSize: 12,
+  },
+  signatureCanvasWrap: {
+    height: 240,
+    marginTop: 14,
+    overflow: 'hidden',
+    borderRadius: 12,
+    backgroundColor: colors.white,
+  },
+  signatureModalActions: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12,
+  },
+  signatureClearButton: {
+    flex: 1,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.gold,
+  },
+  signatureClearText: {
+    color: colors.black,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  signatureCancelButton: {
+    flex: 1,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#2C2C2F',
+  },
+  signatureCancelText: {
+    color: colors.white,
+    fontSize: 13,
+    fontWeight: '900',
   },
   confirmButton: {
     height: 57,

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system/legacy';
 
 import axiosInstance from './axiosInstance';
 
@@ -197,16 +198,40 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
-  const collectRiderCod = useCallback(async (orderId) => {
+  const collectRiderCod = useCallback(async (orderId, signatureImage) => {
     if (!orderId) {
       throw new Error('Order ID is required to collect COD.');
     }
 
+    if (!signatureImage) {
+      throw new Error('Customer signature is required to collect COD.');
+    }
+
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await axiosInstance.post('rider/collect-cod', null, {
+      let signatureUri = signatureImage;
+
+      if (String(signatureImage).startsWith('data:image/')) {
+        const [, base64Data] = String(signatureImage).split(',');
+        signatureUri = `${FileSystem.cacheDirectory}customer-signature-${Date.now()}.png`;
+        await FileSystem.writeAsStringAsync(signatureUri, base64Data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      }
+
+      const formData = new FormData();
+      formData.append('signature_image', {
+        uri: signatureUri,
+        name: 'customer-signature.png',
+        type: 'image/png',
+      });
+
+      const response = await axiosInstance.post('rider/collect-cod', formData, {
         params: { order_id: orderId },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (!response.data?.success) {
@@ -217,6 +242,47 @@ export const HomeProvider = ({ children }) => {
     } catch (error) {
       console.error(
         '[HomeContext] rider/collect-cod error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const createRiderBillDeskPayment = useCallback(async ({ orderMasterId, userId, amount }) => {
+    const normalizedAmount = Number(amount);
+
+    if (!orderMasterId || !userId || !Number.isFinite(normalizedAmount) || normalizedAmount <= 0) {
+      throw new Error('Order, rider, and a valid payment amount are required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const storedUserValue = await AsyncStorage.getItem('authUser');
+      const storedUser = storedUserValue ? JSON.parse(storedUserValue) : {};
+      const resolvedUserId = userId || storedUser.id || storedUser.user_id || storedUser.userId;
+
+      if (!resolvedUserId) {
+        throw new Error('Rider user ID is missing.');
+      }
+
+      const response = await axiosInstance.post('rider/create-payment', {
+        orderMasterId,
+        userId: resolvedUserId,
+        amount: normalizedAmount,
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/create-payment response:', response.data);
+
+      if (response.data?.status !== true || !response.data?.data) {
+        throw new Error(response.data?.message || 'Unable to create BillDesk payment.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/create-payment error:',
         error.response?.data || error.message
       );
       throw error;
@@ -643,6 +709,7 @@ export const HomeProvider = ({ children }) => {
         fetchRiderWalletBalance,
         makeRiderWithdrawalRequest,
         collectRiderCod,
+        createRiderBillDeskPayment,
         fetchRiderEarnings,
         fetchRiderTodaysEarnings,
         fetchRiderTripDetails,

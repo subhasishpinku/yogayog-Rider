@@ -3,14 +3,14 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   Text,
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
-import navigationStrings from '../constants/navigationStrings';
 import { useHome } from '../contexts/HomeContext';
 import styles from './styles/styles';
 const STATUS_FLOW = [
@@ -27,8 +27,19 @@ const STATUS_FLOW = [
 
 const normalizeStatus = (status) => String(status || '').trim().toLowerCase();
 
+const getMapDestination = (order) => {
+  const location = order?.drop_location || order?.drop_coordinates;
+  const latitude = Number(order?.drop_latitude ?? order?.drop_lat ?? location?.latitude);
+  const longitude = Number(
+    order?.drop_longitude ?? order?.drop_lng ?? order?.drop_long ?? location?.longitude,
+  );
+
+  return Number.isFinite(latitude) && Number.isFinite(longitude)
+    ? `${latitude},${longitude}`
+    : order?.drop_area || 'Drop location';
+};
+
 const OrderChainScreen = ({ route }) => {
-  const navigation = useNavigation();
   const { updateRiderOrderStatus } = useHome();
   const order = route?.params?.order || {};
   const orderId = route?.params?.orderId || order.id || order.order_pk_id || order.order_id;
@@ -53,6 +64,10 @@ const OrderChainScreen = ({ route }) => {
     try {
       await updateRiderOrderStatus(orderId, nextStatus.key);
       setCurrentStatus(nextStatus.key);
+
+      if (nextStatus.key === 'on_the_way') {
+        openLiveLocationMap();
+      }
     } catch (error) {
       Alert.alert('Status update failed', error.message || 'Please try again.');
     } finally {
@@ -61,7 +76,17 @@ const OrderChainScreen = ({ route }) => {
   };
 
   const openLiveLocationMap = () => {
-    navigation.navigate(navigationStrings.LIVELOCATIONMAP, { order, orderId });
+    //    navigation.navigate(navigationStrings.LIVELOCATIONMAP, { order, orderId });
+
+    const destination = encodeURIComponent(getMapDestination(order));
+    const mapsUrl = Platform.OS === 'ios'
+      ? `http://maps.apple.com/?daddr=${destination}&dirflg=d`
+      : `google.navigation:q=${destination}&mode=d`;
+    const browserFallback = `https://www.google.com/maps/dir/?api=1&destination=${destination}&travelmode=driving`;
+
+    Linking.openURL(mapsUrl).catch(() => Linking.openURL(browserFallback)).catch(() => {
+      Alert.alert('Map unavailable', 'Please install Google Maps or Apple Maps to navigate.');
+    });
   };
 
   return (
