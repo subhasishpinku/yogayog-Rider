@@ -39,6 +39,7 @@ const ActiveScreen = ({ route }) => {
   const rawOrderStatus = order?.status || order?.order_status || order?.delivery_status || order?.orderStatus || '';
   const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase();
   const isDelivered = normalizedOrderStatus === 'delivered';
+  const isPaymentDone = String(order?.payment_status || '').trim().toLowerCase() === 'done';
   const orderStatus = isDelivered
     ? 'Delivered'
     : normalizedOrderStatus
@@ -51,6 +52,7 @@ const ActiveScreen = ({ route }) => {
   const isCodOrder = ['cod', 'cashondelivery', 'cash'].includes(paymentMethod);
   const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
   const isWalletOrder = paymentMethod === 'wallet';
+  const canUseDeliveryActions = isPaymentDone && (isWalletOrder || isPrepaidOrder);
   const deliveryParams = {
     orderId: orderCode,
     id: order?.id || order?.order_pk_id || orderId,
@@ -253,19 +255,23 @@ const ActiveScreen = ({ route }) => {
               styles.deliveredButton,
               styles.deliveryActionButton,
               styles.nonDeliveryActionButton,
-              isDelivered && styles.disabledDeliveryActionButton,
+              !canUseDeliveryActions && (isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
             ]}
             onPress={handleNonDeliveryAction}
-            disabled={isDelivered}
+            disabled={!canUseDeliveryActions && (isDelivered || isPaymentDone)}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
           </Pressable>
           <Pressable
-            style={[styles.deliveredButton, styles.deliveryActionButton, !isDelivered && styles.disabledDeliveryActionButton]}
+            style={[
+              styles.deliveredButton,
+              styles.deliveryActionButton,
+              !canUseDeliveryActions && (!isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
+            ]}
             onPress={handleDeliveryAction}
-            disabled={!isDelivered}
+            disabled={!canUseDeliveryActions && (!isDelivered || isPaymentDone)}
           >
-            <Text style={styles.deliveredText}>Mark as Delivered ✓</Text>
+            <Text style={styles.deliveredText}>{isPaymentDone ? 'Delivered ✓' : 'Mark as Delivered ✓'}</Text>
           </Pressable>
         </View>
       </View>

@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useHome } from '../contexts/HomeContext';
+import navigationStrings from '../constants/navigationStrings';
 import styles from './styles/styles';
 const STATUS_FLOW = [
   { key: 'rider_accepted', label: 'Rider Accepted', description: 'Order accepted' },
@@ -39,7 +40,7 @@ const getMapDestination = (order) => {
     : order?.drop_area || 'Drop location';
 };
 
-const OrderChainScreen = ({ route }) => {
+const OrderChainScreen = ({ route, navigation }) => {
   const { updateRiderOrderStatus } = useHome();
   const order = route?.params?.order || {};
   const orderId = route?.params?.orderId || order.id || order.order_pk_id || order.order_id;
@@ -65,7 +66,9 @@ const OrderChainScreen = ({ route }) => {
       await updateRiderOrderStatus(orderId, nextStatus.key);
       setCurrentStatus(nextStatus.key);
 
-      if (nextStatus.key === 'on_the_way') {
+      if (nextStatus.key === 'delivered') {
+        navigation.replace(navigationStrings.DASHBOARDSCREEN);
+      } else if (nextStatus.key === 'on_the_way') {
         openLiveLocationMap();
       }
     } catch (error) {

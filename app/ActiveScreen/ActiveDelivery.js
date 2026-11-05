@@ -8,7 +8,7 @@ import styles from './styles/ActiveDeliverystyles';
 
 const ActiveDelivery = ({ route }) => {
   const navigation = useNavigation();
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const orderId = route?.params?.orderId || '1222000010';
   const amount = Number(route?.params?.amount || 0);
   const id = route?.params?.id;

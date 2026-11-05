@@ -131,6 +131,8 @@ export const HomeProvider = ({ children }) => {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
+      console.log('[HomeContext] rider/wallet-ledger response:', response.data);
+
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Unable to load wallet ledger.');
       }
@@ -141,6 +143,29 @@ export const HomeProvider = ({ children }) => {
     } catch (error) {
       console.error(
         '[HomeContext] rider/wallet-ledger error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const submitRiderCod = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/submit-cod', {}, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/submit-cod response:', response.data);
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to submit COD records.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/submit-cod error:',
         error.response?.data || error.message
       );
       throw error;
@@ -706,6 +731,7 @@ export const HomeProvider = ({ children }) => {
         fetchRiderOrderById,
         fetchRiderOrderPaymentDetails,
         fetchRiderWalletLedger,
+        submitRiderCod,
         fetchRiderWalletBalance,
         makeRiderWithdrawalRequest,
         collectRiderCod,

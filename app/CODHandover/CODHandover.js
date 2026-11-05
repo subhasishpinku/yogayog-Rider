@@ -9,7 +9,7 @@ import { useHome } from '../contexts/HomeContext';
 
 const CODHandover = () => {
   const navigation = useNavigation();
-  const { fetchRiderWalletLedger } = useHome();
+  const { fetchRiderWalletLedger, submitRiderCod } = useHome();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,6 +18,7 @@ const CODHandover = () => {
   const [signatureAdded, setSignatureAdded] = useState(false);
   const [signatureData, setSignatureData] = useState(null);
   const [isSignatureModalVisible, setIsSignatureModalVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const signatureRef = useRef(null);
 
   const loadLedger = useCallback(async () => {
@@ -45,15 +46,26 @@ const CODHandover = () => {
     setAmount(totalAmount.toFixed(2));
   }, [totalAmount]);
 
-  const confirmHandover = () => {
+  const confirmHandover = async () => {
     if (!staffName.trim()) {
       Alert.alert('Staff name required', 'Please enter the branch staff name.');
       return;
     }
 
-    Alert.alert('Handover confirmed', `₹${amount} handed over to ${staffName}.`, [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+    setIsSubmitting(true);
+    try {
+      const response = await submitRiderCod();
+
+      Alert.alert(
+        'Handover confirmed',
+        response.message || `₹${amount} handed over to ${staffName}.`,
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (requestError) {
+      Alert.alert('Handover failed', requestError.message || 'Unable to submit COD records.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSignatureOK = (signature) => {
@@ -164,6 +176,7 @@ const CODHandover = () => {
             <Pressable
               style={[styles.confirmButton, styles.actionButton]}
               onPress={confirmHandover}
+              disabled={isSubmitting}
             >
               <Text style={styles.actionText}>☑ Confirm Handover</Text>
             </Pressable>

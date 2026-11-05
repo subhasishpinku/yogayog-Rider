@@ -9,7 +9,10 @@ import { useHome } from '../contexts/HomeContext';
 import colors from './styles/colors';
 import styles from './styles/styles';
 import { startLiveLocation } from '../Services/LocationService';
-
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from '../Services/BackgroundLocation';
 const fallbackLocation = { latitude: 22.5186, longitude: 88.3477 };
 
 const getTimeBasedGreeting = () => {
@@ -31,6 +34,7 @@ const HomeScreen = ({ navigation }) => {
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
   const assignedBlinkOpacity = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
+  const handWave = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const logoAnimation = Animated.loop(
@@ -52,6 +56,25 @@ const HomeScreen = ({ navigation }) => {
 
     return () => logoAnimation.stop();
   }, [logoScale]);
+
+  useEffect(() => {
+    const handAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(handWave, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: -1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.delay(1200),
+      ])
+    );
+
+    handAnimation.start();
+    return () => handAnimation.stop();
+  }, [handWave]);
+
+  const handRotation = handWave.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-18deg', '0deg', '18deg'],
+  });
 
   const [isOnline, setIsOnline] = useState(true);
   const {
@@ -203,30 +226,62 @@ const HomeScreen = ({ navigation }) => {
     focusRiderLocation();
     loadRiderAddress();
   };
+  const startTracking = async () => {
+    try {
+      await startBackgroundLocation();
+      console.log('Background tracking started');
+    } catch (error) {
+      console.log('Tracking error:', error.message);
+    }
+  };
+  const stopTracking = async () => {
+    try {
+      await stopBackgroundLocation();
+      console.log('Background tracking stopped');
+    } catch (error) {
+      console.log('Stop error:', error.message);
+    }
+  };
+  const handleOnlineToggle = async (nextIsOnline) => {
+    setIsOnline(nextIsOnline);
 
+    if (nextIsOnline) {
+      await startTracking();
+      return;
+    }
+
+    await stopTracking();
+  };
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <View style={styles.ring} />
-      <Pressable
-      style={styles.avatar}
-      onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}>
-      <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
-    </Pressable>
-        <Text style={styles.greeting}>{getTimeBasedGreeting()} 👋</Text>
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>{riderName}</Text>
+        <View style={styles.greetingRow}>
           <Animated.Image
             source={require('../../assets/yogayoglogo1.png')}
             style={[styles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Pressable
+         <Text style={styles.greeting}>
+           {getTimeBasedGreeting()}{' '}
+           <Animated.Text style={{ transform: [{ rotate: handRotation }] }}>👋</Animated.Text>
+         </Text>
+           <Pressable
             style={styles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
             <Text style={styles.walletButtonText}>Wallet</Text>
           </Pressable>
+          <Pressable
+            style={[styles.avatar, styles.headerAvatar]}
+            onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
+          >
+            <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
+          </Pressable>
+        </View>
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>{riderName}</Text>
+         
         </View>
         <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>
       </View>
@@ -236,7 +291,12 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.statusTitle}>Status: <Text style={styles.online}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
           <Text style={styles.statusSubtext}>You are receiving new orders</Text>
         </View>
-        <Switch value={isOnline} onValueChange={setIsOnline} thumbColor={colors.white} trackColor={{ false: '#505055', true: colors.gold }} />
+        <Switch
+          value={isOnline}
+          onValueChange={handleOnlineToggle}
+          thumbColor={colors.white}
+          trackColor={{ false: '#505055', true: colors.gold }}
+        />
       </View>
 
       <Text style={styles.sectionTitle}>Today&apos;s Working Details</Text>
@@ -267,9 +327,13 @@ const HomeScreen = ({ navigation }) => {
           <Marker
             ref={riderMarkerRef}
             coordinate={riderLocation}
+            anchor={{ x: 0.5, y: 1 }}
             title="Live rider location"
             onPress={handleRiderMarkerPress}
           >
+            <View style={styles.riderMarker}>
+              <View style={styles.riderMarkerDot} />
+            </View>
             <Callout>
               <View style={styles.locationCallout}>
                 <Text style={styles.calloutTitle}>Live rider location</Text>

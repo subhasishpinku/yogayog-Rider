@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Image, Pressable, Text, TextInput, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, Easing, Image, Pressable, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 
 import colors from './styles/colors';
@@ -8,13 +8,54 @@ import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
 
 const bikeLogo = require('../../assets/bike_logo.png');
-const yogayogLogo = require('../../assets/yogayoglogo.png');
+const yogayogLogo = require('../../assets/yogayoglogo1.png');
 
 const LoginScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('bike');
+  const logoScale = useRef(new Animated.Value(1)).current;
+  const logoTranslateY = useRef(new Animated.Value(0)).current;
   const { authError, clearAuthError, isSendingOtp, sendOtp } = useAuth();
   const isUserNotFoundError = authError?.toLowerCase().includes('user not found');
+
+  useEffect(() => {
+    const logoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.parallel([
+          Animated.timing(logoScale, {
+            toValue: 1.06,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoTranslateY, {
+            toValue: -4,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+        Animated.parallel([
+          Animated.timing(logoScale, {
+            toValue: 1,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(logoTranslateY, {
+            toValue: 0,
+            duration: 900,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      ]),
+    );
+
+    logoAnimation.start();
+
+    return () => logoAnimation.stop();
+  }, [logoScale, logoTranslateY]);
 
   const handleSendOtp = async () => {
     const normalizedPhone = phone.replace(/\D/g, '');
@@ -61,9 +102,14 @@ const LoginScreen = ({ navigation }) => {
         <Text style={styles.welcomeEmoji}>👋</Text>
         <Text style={styles.title}>Welcome, Rider!</Text>
         <Text style={styles.description}>Enter your mobile number to continue</Text>
-        <Image
+        <Animated.Image
           source={yogayogLogo}
-          style={styles.headerLogo}
+          style={[
+            styles.headerLogo,
+            {
+              transform: [{ translateY: logoTranslateY }, { scale: logoScale }],
+            },
+          ]}
           resizeMode="contain"
           accessibilityLabel="Yogayog logo"
         />
@@ -107,7 +153,7 @@ const LoginScreen = ({ navigation }) => {
           <TextInput
             accessibilityLabel="Mobile number"
             keyboardType="phone-pad"
-            maxLength={11}
+            maxLength={10}
             onChangeText={setPhone}
             placeholder="Mobile number"
             placeholderTextColor={colors.mutedLight}

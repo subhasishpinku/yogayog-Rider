@@ -120,8 +120,8 @@ const styles = StyleSheet.create({
   },
   routePill: {
     position: 'absolute',
-    top: 73,
-    left: '25%',
+    top: 180,
+    left: '55%',
     width: 172,
     height: 37,
     alignItems: 'center',
