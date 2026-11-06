@@ -3,13 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
-
 import HomeStack from './app/Navigation/HomeStack';
 import { AuthProvider } from "./app/contexts/AuthContext"; // adjust path
 import {HomeProvider} from './app/contexts/HomeContext'; // adjust path
 // Hide the native splash screen before the React tree renders.
 SplashScreen.hideAsync().catch(() => {});
-
 export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
@@ -48,9 +46,9 @@ export default function App() {
 //.\gradlew.bat :app:bundleRelease --stacktrace
 //npx expo start -c
 // cd android
- //.\gradlew signingReport
- // Debug SHA-1 for this project's android/app/debug.keystore:
- // 5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25
+//.\gradlew signingReport
+// Debug SHA-1 for this project's android/app/debug.keystore:
+// 5E:8F:16:06:2E:A3:CD:2C:4A:0D:54:78:76:BA:A6:F3:8C:AB:F6:25
 //npx expo install --check
 // npx expo prebuild --clean
 // npx expo run:android

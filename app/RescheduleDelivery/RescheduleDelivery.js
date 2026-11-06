@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, Text, TextInput, ToastAndroid, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import { useHome } from '../contexts/HomeContext';
+import navigationStrings from '../constants/navigationStrings';
 import styles from './styles/styles';
 
 const formatDate = (date) => date.toISOString().split('T')[0];
@@ -36,6 +37,10 @@ const RescheduleDelivery = () => {
 
   const confirmReschedule = async () => {
     if (submitting) return;
+    if (!note.trim()) {
+      Alert.alert('Customer note required', "Please enter the customer's note before rescheduling.");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -49,10 +54,17 @@ const RescheduleDelivery = () => {
       console.log('[RescheduleDelivery] rider/reschedule-order API response:', response);
 
       Alert.alert('Delivery rescheduled', 'The customer delivery slot has been updated.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+        { text: 'OK', onPress: () => navigation.navigate(navigationStrings.DASHBOARDSCREEN) },
       ]);
     } catch (error) {
-      Alert.alert('Unable to reschedule delivery', error.message || 'Please try again later.');
+      const errorMessage =
+        error.response?.data?.message || error.message || 'Unable to reschedule delivery.';
+
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(errorMessage, ToastAndroid.LONG);
+      } else {
+        Alert.alert('Unable to reschedule delivery', errorMessage);
+      }
     } finally {
       setSubmitting(false);
     }

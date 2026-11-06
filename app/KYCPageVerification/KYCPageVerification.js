@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
+import FaceDetection from '@react-native-ml-kit/face-detection';
 
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
+import { useHome } from '../contexts/HomeContext';
 
 const steps = [
   { label: 'Profile', state: 'completed', symbol: '✓' },
@@ -16,14 +18,86 @@ const steps = [
 
 const verificationSteps = [
   { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.PROFILESCREEN},
-  { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
+   { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
   { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
   { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
 ];
 
+const faceLandmarkNames = [
+  'leftEye',
+  'rightEye',
+  'noseBase',
+  'leftCheek',
+  'rightCheek',
+  'mouthLeft',
+  'mouthRight',
+  'mouthBottom',
+];
+
+const getFaceLandmarkSignature = (face, mirror = false) => {
+  const frame = face?.frame;
+  if (!frame?.width || !frame?.height) return null;
+
+  const signature = {};
+  faceLandmarkNames.forEach((name) => {
+    const point = face.landmarks?.[name]?.position;
+    if (!point) return;
+
+    const normalizedX = (point.x - frame.left) / frame.width;
+    signature[name] = {
+      x: mirror ? 1 - normalizedX : normalizedX,
+      y: (point.y - frame.top) / frame.height,
+    };
+  });
+
+  return signature;
+};
+
+const getLargestFace = (faces) => faces.reduce((largest, face) => {
+  if (!largest) return face;
+
+  const largestArea = (largest.frame?.width || 0) * (largest.frame?.height || 0);
+  const faceArea = (face.frame?.width || 0) * (face.frame?.height || 0);
+  return faceArea > largestArea ? face : largest;
+}, null);
+
+const getFaceSimilarity = (profileFace, selfieFace) => {
+  const compareSignatures = (profileMirror, selfieMirror) => {
+    const profileSignature = getFaceLandmarkSignature(profileFace, profileMirror);
+    const selfieSignature = getFaceLandmarkSignature(selfieFace, selfieMirror);
+    const names = faceLandmarkNames.filter(
+      (name) => profileSignature?.[name] && selfieSignature?.[name]
+    );
+
+    if (names.length < 4) return 0;
+
+    const averageDistance = names.reduce((total, name) => {
+      const profilePoint = profileSignature[name];
+      const selfiePoint = selfieSignature[name];
+      return total + Math.hypot(profilePoint.x - selfiePoint.x, profilePoint.y - selfiePoint.y);
+    }, 0) / names.length;
+
+    return Math.max(0, 1 - averageDistance / 0.35);
+  };
+
+  return Math.max(
+    compareSignatures(false, false),
+    compareSignatures(true, false),
+    compareSignatures(false, true),
+    compareSignatures(true, true)
+  );
+};
+
 const KYCPageVerification = () => {
   const navigation = useNavigation();
+  const { fetchRiderProfile, riderProfile } = useHome();
   const [selfieUri, setSelfieUri] = useState(null);
+  const profileImageUri =
+    riderProfile?.profile_picture || riderProfile?.profile_image_url;
+
+  useEffect(() => {
+    fetchRiderProfile().catch(() => {});
+  }, [fetchRiderProfile]);
 
   const takeSelfie = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -34,14 +108,59 @@ const KYCPageVerification = () => {
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
+      aspect: [3, 4],
+      cameraType: ImagePicker.CameraType.front,
+      quality: 1,
     });
 
     if (!result.canceled && result.assets?.[0]?.uri) {
       const selfieUri = result.assets[0].uri;
-      setSelfieUri(selfieUri);
-      navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri });
+
+      if (!profileImageUri) {
+        Alert.alert('Profile image required', 'Unable to compare the selfie without a profile image.');
+        return;
+      }
+
+      try {
+        const [profileFaces, selfieFaces] = await Promise.all([
+          FaceDetection.detect(profileImageUri, {
+            performanceMode: 'accurate',
+            landmarkMode: 'all',
+            minFaceSize: 0.05,
+          }),
+          FaceDetection.detect(selfieUri, {
+            performanceMode: 'accurate',
+            landmarkMode: 'all',
+            minFaceSize: 0.05,
+          }),
+        ]);
+
+        console.log('[KYCPageVerification] detected faces:', {
+          profile: profileFaces.length,
+          selfie: selfieFaces.length,
+        });
+
+        const profileFace = getLargestFace(profileFaces);
+        const selfieFace = getLargestFace(selfieFaces);
+
+        if (!profileFace || !selfieFace) {
+          Alert.alert('Face verification failed', 'Make sure a clear face is visible in both images.');
+          return;
+        }
+
+        const similarity = getFaceSimilarity(profileFace, selfieFace);
+        console.log('[KYCPageVerification] face similarity:', similarity);
+        if (similarity < 0.45) {
+          Alert.alert('Face does not match', 'The selfie does not match the profile image. Please try again.');
+          return;
+        }
+
+        setSelfieUri(selfieUri);
+        navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri });
+      } catch (error) {
+        console.error('[KYCPageVerification] local face verification error:', error);
+        Alert.alert('Face verification unavailable', 'Please try again with clear face images.');
+      }
     }
   };
 
@@ -90,9 +209,14 @@ const KYCPageVerification = () => {
         <View style={styles.selfieCard}>
           <Text style={styles.selfieTitle}>📸 Step 3: Selfie Verification</Text>
           <Text style={styles.selfieDescription}>Take a clear selfie holding your Aadhaar card. Make sure your face and card details are clearly visible.</Text>
-          <Pressable style={styles.selfieDropzone} onPress={takeSelfie} accessibilityRole="button" accessibilityLabel="Take selfie with Aadhaar">
-            {selfieUri ? <Image source={{ uri: selfieUri }} style={styles.selfieImage} /> : <><Text style={styles.cameraEmoji}>🤳</Text><Text style={styles.selfieAction}>Take Selfie with Aadhaar</Text><Text style={styles.selfieHint}>Camera will open automatically</Text></>}
-          </Pressable>
+          <View style={styles.selfieDropzoneRow}>
+            <View style={[styles.selfieDropzone, styles.selfieDropzoneHalf]}>
+              {profileImageUri ? <Image source={{ uri: profileImageUri }} style={styles.selfieImage} /> : null}
+            </View>
+            <Pressable style={[styles.selfieDropzone, styles.selfieDropzoneHalf]} onPress={takeSelfie} accessibilityRole="button" accessibilityLabel="Take Selfie Face">
+              {selfieUri ? <Image source={{ uri: selfieUri }} style={styles.selfieImage} /> : <><Text style={styles.cameraEmoji}>🤳</Text><Text style={styles.selfieAction}>Take Selfie Face</Text><Text style={styles.selfieHint}>Camera will open automatically</Text></>}
+            </Pressable>
+          </View>
           <Pressable style={styles.cameraButton} onPress={takeSelfie}>
             <Text style={styles.cameraButtonText}>{selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
           </Pressable>

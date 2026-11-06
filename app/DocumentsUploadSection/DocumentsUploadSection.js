@@ -90,18 +90,33 @@ const DocumentsUploadSection = () => {
 
   const pickImage = async (document, fileIndex = 0) => {
     try {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const isProfilePhoto = document.documentType === 'profile_picture';
+      const permission = isProfilePhoto
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        Alert.alert('Permission required', 'Please allow photo library access to upload a document.');
+        Alert.alert(
+          'Permission required',
+          isProfilePhoto
+            ? 'Please allow camera access to take a profile selfie.'
+            : 'Please allow photo library access to upload a document.'
+        );
         return;
       }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 0.8,
-      });
+      const result = isProfilePhoto
+        ? await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [3, 4],
+            cameraType: ImagePicker.CameraType.front,
+            quality: 1,
+          })
+        : await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.8,
+          });
 
       if (result.canceled || !result.assets?.[0]) return;
 

@@ -20,8 +20,17 @@ const WithdrawEarnings = () => {
   const [amount, setAmount] = useState('0');
   const [isBalanceLoading, setIsBalanceLoading] = useState(true);
   const [balanceError, setBalanceError] = useState('');
-  const { fetchRiderWalletBalance, makeRiderWithdrawalRequest, walletBalance } = useHome();
+  const {
+    fetchRiderWalletBalance,
+    makeRiderWithdrawalRequest,
+    fetchRiderProfile,
+    riderProfile,
+    walletBalance,
+  } = useHome();
   const availableBalance = Number(walletBalance || 0);
+  const accountNumber = riderProfile?.ac_numb
+    ? `•••• •••• •••• ${String(riderProfile.ac_numb).slice(-4)}`
+    : '•••• •••• ••••';
   const [isSubmitting, setIsSubmitting] = useState(false);
   const allAmount = Math.max(availableBalance - 2, 0);
   const quickAmounts = [
@@ -50,6 +59,10 @@ const WithdrawEarnings = () => {
       mounted = false;
     };
   }, [fetchRiderWalletBalance]);
+
+  useEffect(() => {
+    fetchRiderProfile().catch(() => {});
+  }, [fetchRiderProfile]);
 
   const selectAmount = (value) => {
     setAmount(value.toFixed(2));
@@ -123,6 +136,7 @@ const WithdrawEarnings = () => {
           <TextInput
             value={amount}
             onChangeText={setAmount}
+            editable={false}
             keyboardType="number-pad"
             style={styles.amountInput}
             placeholder="0"
@@ -155,9 +169,9 @@ const WithdrawEarnings = () => {
           </View>
           <View style={styles.bankCopy}>
             <Text style={styles.bankName}>SBI Savings Account</Text>
-            <Text style={styles.accountNumber}>•••• •••• •••• 4821</Text>
+            <Text style={styles.accountNumber}>{accountNumber}</Text>
           </View>
-          <Pressable>
+          <Pressable onPress={() => navigation.navigate(navigationStrings.PROFILESCREEN)}>
             <Text style={styles.changeText}>Change</Text>
           </Pressable>
         </View>

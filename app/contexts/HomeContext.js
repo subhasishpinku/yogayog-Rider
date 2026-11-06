@@ -665,10 +665,10 @@ export const HomeProvider = ({ children }) => {
 
       return responseData;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/reschedule-order error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/reschedule-order error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);

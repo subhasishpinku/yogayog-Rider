@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Animated, Easing, Pressable, ScrollView, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -46,13 +46,39 @@ const EarningsScreen = () => {
   const totalCodAmount = selectedEarnings?.total_cod_amount || 0;
   const averageEarnings = totalOrders ? totalEarnings / totalOrders : 0;
   const chartBarColor = totalEarnings > 0 ? colors.gold : '#000000';
-  const chartLabels = selectedPeriod === 'Today'
-    ? ['Today']
-    : selectedPeriod === 'Week'
-      ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      : selectedPeriod === 'Month'
-        ? ['W1', 'W2', 'W3', 'W4', 'W5']
-        : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const chartLabels = useMemo(() => (
+    selectedPeriod === 'Today'
+      ? ['Today']
+      : selectedPeriod === 'Week'
+        ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        : selectedPeriod === 'Month'
+          ? ['W1', 'W2', 'W3', 'W4', 'W5']
+          : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  ), [selectedPeriod]);
+  const barAnimations = useMemo(
+    () => chartLabels.map(() => new Animated.Value(0)),
+    [chartLabels]
+  );
+
+  useEffect(() => {
+    const animation = Animated.stagger(
+      80,
+      barAnimations.map((barAnimation) =>
+        Animated.timing(barAnimation, {
+          toValue: 1,
+          duration: 600,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        })
+      )
+    );
+
+    animation.start();
+
+    return () => {
+      animation.stop();
+    };
+  }, [barAnimations]);
 
   return (
     <View style={styles.screen}>
@@ -129,10 +155,19 @@ const EarningsScreen = () => {
           {isLoading ? <Text style={styles.payoutText}>Loading earnings...</Text> : null}
           {errorMessage ? <Text style={styles.payoutText}>{errorMessage}</Text> : null}
           <View style={styles.chartArea}>
-            {chartLabels.map((label) => (
+            {chartLabels.map((label, index) => (
               <View key={label} style={styles.chartColumn}>
                 <View style={styles.barTrack}>
-                  <View style={[styles.bar, { height: '100%', backgroundColor: chartBarColor }]} />
+                  <Animated.View
+                    style={[
+                      styles.bar,
+                      {
+                        height: '100%',
+                        backgroundColor: chartBarColor,
+                        transform: [{ scaleY: barAnimations[index] }],
+                      },
+                    ]}
+                  />
                 </View>
                 <Text style={styles.dayLabel}>{label}</Text>
               </View>
