@@ -44,20 +44,29 @@ const CodAmountCollect = ({route}) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+           <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Collect Payment</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Pressable
+    
+
+          {/* <Pressable
             accessibilityLabel="Go back"
             hitSlop={8}
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
             <Text style={styles.backText}>←</Text>
-          </Pressable>
-          <Text style={styles.title}>Collect Payment</Text>
+          </Pressable> */}
+          {/* <Text style={styles.title}>Collect Payment</Text> */}
           <Text style={styles.orderMeta}>Order #{orderId} · {customerName}</Text>
         </View>
 

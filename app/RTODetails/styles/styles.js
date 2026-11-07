@@ -164,6 +164,35 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '900',
   },
+  
+titleBar: {
+    height: 56,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: '#FFC800',
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  titleBarSpacer: {
+    width: 36,
+  },
 });
 
 export default styles;

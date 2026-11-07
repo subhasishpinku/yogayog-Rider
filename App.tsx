@@ -12,7 +12,7 @@ export default function App() {
   useEffect(() => {
     const initializeApp = async () => {
       try {
-        await NavigationBar.setVisibilityAsync('hidden');
+        await NavigationBar.setVisibilityAsync('visible');
       } catch (error) {
         console.log('Initialization error:', error);
       }
@@ -23,7 +23,7 @@ export default function App() {
 
   return (
     <>
-      <StatusBar hidden />
+      <StatusBar style="light" />
       <AuthProvider >
         <HomeProvider>
       <NavigationContainer>

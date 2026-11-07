@@ -91,12 +91,19 @@ const CODHandover = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>COD Handover</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+          {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
             <Text style={styles.backText}>←</Text>
-          </Pressable>
-          <Text style={styles.title}>COD Handover</Text>
+          </Pressable> */}
+          {/* <Text style={styles.title}>COD Handover</Text> */}
           <Text style={styles.subtitle}>Hand over collected cash to branch</Text>
         </View>
 

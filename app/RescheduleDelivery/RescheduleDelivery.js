@@ -73,11 +73,19 @@ const RescheduleDelivery = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <View style={styles.header}>
-        <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
         </Pressable>
-        <Text style={styles.title}>Reschedule Delivery</Text>
+        <Text style={styles.titleBarText}>Reschedule Delivery</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
+
+      <View style={styles.header}>
+        {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>←</Text>
+        </Pressable> */}
+        {/* <Text style={styles.title}>Reschedule Delivery</Text> */}
         <Text style={styles.subtitle}>Reason D · Customer wants different slot</Text>
       </View>
 

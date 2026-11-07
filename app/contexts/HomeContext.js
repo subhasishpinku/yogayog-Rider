@@ -50,16 +50,19 @@ export const HomeProvider = ({ children }) => {
   const fetchRiderOrders = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      console.log("ttttttttttt",{token})
+      console.log('[HomeContext] auth token:', token ? `present (...${token.slice(-6)})` : 'missing');
       const response = await axiosInstance.get('rider/orders', {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
+
+      console.log('[HomeContext] rider/orders response:', response.data);
 
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Unable to load rider orders.');
       }
 
       const orders = Array.isArray(response.data.orders) ? response.data.orders : [];
+      console.log('[HomeContext] rider/orders parsed orders:', orders);
       setRiderOrders(orders);
       return orders;
     } catch (error) {
@@ -330,9 +333,17 @@ export const HomeProvider = ({ children }) => {
 
     try {
       const token = await AsyncStorage.getItem('authToken');
+      console.log('[HomeContext] earnings request:', {
+        period: normalizedPeriod,
+        endpoint,
+        authToken: token ? `present (...${token.slice(-6)})` : 'missing',
+      });
+      console.log(`[HomeContext] ${endpoint} request headers:`, token ? { Authorization: `Bearer) ${token}` } : undefined);
       const response = await axiosInstance.get(endpoint, {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
+
+      console.log(`[HomeContext] ${endpoint} response:`, response.data);
 
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Unable to load earnings.');
@@ -345,6 +356,8 @@ export const HomeProvider = ({ children }) => {
         total_cod_amount: Number(summary.total_cod_amount || 0),
         total_earnings: Number(summary.total_earnings || 0),
       };
+
+      console.log(`[HomeContext] ${normalizedPeriod} normalized summary:`, normalizedSummary);
 
       setEarningsByPeriod((previous) => ({
         ...previous,

@@ -181,6 +181,13 @@ const AcceptRejectOrder = ({ route }) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+      <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Order Details</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.mapArea}>
           <MapView

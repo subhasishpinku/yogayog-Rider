@@ -176,12 +176,41 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 'auto',
     borderRadius: 17,
+    bottom: 30,
     backgroundColor: colors.gold,
   },
   withdrawActionText: {
     color: '#080808',
     fontSize: 16,
     fontWeight: '900',
+  },
+  titleBar: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  titleBarSpacer: {
+    width: 36,
   },
 });
 

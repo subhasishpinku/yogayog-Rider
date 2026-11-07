@@ -108,17 +108,23 @@ const WithdrawEarnings = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-
+  <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Withdraw Earnings</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        {/* <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backIcon}>←</Text>
-        </Pressable>
+        </Pressable> */}
 
-        <Text style={styles.title}>Withdraw Earnings</Text>
+        {/* <Text style={styles.title}>Withdraw Earnings</Text> */}
         <Text style={styles.available}>
           {balanceError || `Available: ₹${availableBalance.toFixed(2)}`}
         </Text>

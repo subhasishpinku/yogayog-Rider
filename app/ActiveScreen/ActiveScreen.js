@@ -109,7 +109,13 @@ const ActiveScreen = ({ route }) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-
+  <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Order Active</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <View style={styles.mapArea}>
         <MapView
           style={styles.map}

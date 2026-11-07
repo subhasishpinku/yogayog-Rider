@@ -50,9 +50,16 @@ const AllProfileScreen = () => {
   return (
   <View style={styles.screen}>
     <StatusBar style="light" />
+      <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>All Profile</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
     <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
-        <Text style={styles.title}>All Profile</Text>
+        {/* <Text style={styles.title}>All Profile</Text> */}
         <Text style={styles.subtitle}>Manage your rider tools and verification</Text>
       </View>
       <Text style={styles.sectionTitle}>RIDER FEATURES</Text>

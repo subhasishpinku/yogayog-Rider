@@ -48,11 +48,18 @@ const RTODetails = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
-      <View style={styles.header}>
-        <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>←</Text>
+      <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
         </Pressable>
-        <Text style={styles.title}>RTO Details</Text>
+        <Text style={styles.titleBarText}>RTO Details</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
+      <View style={styles.header}>
+        {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Text style={styles.backText}>←</Text>
+        </Pressable> */}
+        {/* <Text style={styles.title}>RTO Details</Text> */}
         <Text style={styles.subtitle}>{reasonTitle}</Text>
       </View>
 

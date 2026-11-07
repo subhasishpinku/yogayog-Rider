@@ -26,6 +26,37 @@ const styles = StyleSheet.create({
   logoutIcon: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#542323' },
   logoutIconText: { color: '#FF6B6B', fontSize: 22, fontWeight: '900' },
   logoutText: { marginLeft: 12, color: '#FF6B6B', fontSize: 14, fontWeight: '900' },
+  titleBar: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    marginTop:7,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+    alignItems: 'left',
+
+  },
+  titleBarSpacer: {
+    width: 36,
+  },
 });
 
 export default styles;

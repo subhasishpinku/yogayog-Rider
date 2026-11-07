@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Pressable, Text, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, BackHandler, Pressable, Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import styles from './styles/styles';
 
@@ -11,10 +11,31 @@ import ActiveList from '../ActiveScreen/ActiveList';
 const DashboardScreen = () => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
+  const [activeListFilter, setActiveListFilter] = useState('all');
   const iconScale = useRef(new Animated.Value(1)).current;
   const iconTranslateY = useRef(new Animated.Value(0)).current;
-  const screens = { home: <HomeScreen navigation={navigation} />, active: <ActiveList />, earnings: <EarningsScreen />, profile: <ProfileScreen /> };
+  const navigateToTab = (tab, filter = 'all') => {
+    if (tab === 'active') setActiveListFilter(filter);
+    setActiveTab(tab);
+  };
+  const screens = { home: <HomeScreen navigation={navigation} onNavigateToTab={navigateToTab} />, active: <ActiveList initialStatus={activeListFilter} />, earnings: <EarningsScreen />, profile: <ProfileScreen /> };
   const tabs = [['home', '🏠', 'Home'], ['active', '📦', 'Active'], ['earnings', '💰', 'Earnings'], ['profile', '👤', 'Profile']];
+
+  useFocusEffect(
+    useCallback(() => {
+      const handleBackPress = () => {
+        if (activeTab !== 'home') {
+          setActiveTab('home');
+          return true;
+        }
+
+        return false;
+      };
+
+      const subscription = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
+      return () => subscription.remove();
+    }, [activeTab]),
+  );
 
   useEffect(() => {
     const iconAnimation = Animated.loop(

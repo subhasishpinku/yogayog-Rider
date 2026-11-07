@@ -49,6 +49,37 @@ const styles = StyleSheet.create({
   cameraButton: { height: 57, alignItems: 'center', justifyContent: 'center', marginTop: 13, borderRadius: 16, backgroundColor: colors.gold },
   cameraButtonText: { color: '#080808', fontSize: 16, fontWeight: '900' },
   privacy: { marginHorizontal: 12, marginTop: 12, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12, backgroundColor: '#172A20' },
+  titleBar: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    marginTop:7,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+    alignItems: 'left',
+
+  },
+  titleBarSpacer: {
+    width: 36,
+  },
   privacyText: { color: colors.green, fontSize: 12, lineHeight: 19 },
 });
 

@@ -47,15 +47,23 @@ const QRPayment = ({ route }) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Collect payment</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+          {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
             <Text style={styles.backText}>←</Text>
-          </Pressable>
+          </Pressable> */}
           <View style={styles.secureBadge}>
             <Text style={styles.secureBadgeText}>🔒 SECURE PAYMENT</Text>
           </View>
-          <Text style={styles.title}>Collect payment</Text>
+          {/* <Text style={styles.title}>Collect payment</Text> */}
           <Text style={styles.subtitle}>Choose BillDesk UPI or collect cash from the customer.</Text>
         </View>
 

@@ -12,15 +12,15 @@ import { useHome } from '../contexts/HomeContext';
 const steps = [
   { label: 'Profile', state: 'completed', symbol: '✓' },
   { label: 'Documents', state: 'completed', symbol: '✓' },
-  { label: 'Verification', state: 'active', symbol: '3' },
-  { label: 'Approved', state: 'pending', symbol: '4' },
+  // { label: 'Verification', state: 'active', symbol: '3' },
+  // { label: 'Approved', state: 'pending', symbol: '4' },
 ];
 
 const verificationSteps = [
   { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.PROFILESCREEN},
    { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
-  { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
-  { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
+  // { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
+  // { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
 ];
 
 const faceLandmarkNames = [
@@ -167,12 +167,19 @@ const KYCPageVerification = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>KYC Verification</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Go back">
+          {/* <Pressable style={styles.backButton} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Go back">
             <Text style={styles.backText}>‹</Text>
-          </Pressable>
-          <Text style={styles.title}>KYC Verification</Text>
+          </Pressable> */}
+          {/* <Text style={styles.title}>KYC Verification</Text> */}
           <Text style={styles.subtitle}>Complete all steps to start earning</Text>
 
           <View style={styles.progress}>
@@ -206,7 +213,7 @@ const KYCPageVerification = () => {
           </Pressable>
         ))}
 
-        <View style={styles.selfieCard}>
+        {/* <View style={styles.selfieCard}>
           <Text style={styles.selfieTitle}>📸 Step 3: Selfie Verification</Text>
           <Text style={styles.selfieDescription}>Take a clear selfie holding your Aadhaar card. Make sure your face and card details are clearly visible.</Text>
           <View style={styles.selfieDropzoneRow}>
@@ -220,7 +227,7 @@ const KYCPageVerification = () => {
           <Pressable style={styles.cameraButton} onPress={takeSelfie}>
             <Text style={styles.cameraButtonText}>{selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
           </Pressable>
-        </View>
+        </View> */}
 
         <View style={styles.privacy}>
           <Text style={styles.privacyText}>✓  Your data is encrypted and only used for{`\n`}   verification. We do not share it with third parties.</Text>

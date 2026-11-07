@@ -24,7 +24,7 @@ const getTimeBasedGreeting = () => {
   return 'Good night';
 };
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const mapRef = useRef(null);
   const riderMarkerRef = useRef(null);
   const [latitude, setLatitude] = useState(null);
@@ -301,10 +301,19 @@ const HomeScreen = ({ navigation }) => {
 
       <Text style={styles.sectionTitle}>Today&apos;s Working Details</Text>
       <View style={styles.metrics}>
-        <View style={styles.metricCard}><Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text><Text style={styles.metricLabel}>Today&apos;s Earnings</Text></View>
-        <View style={styles.metricCard}><Text style={styles.deliveries}>{todayDelivered}</Text><Text style={styles.metricLabel}>Deliveries Done</Text></View>
+        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('earnings')}>
+          <Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text>
+          <Text style={styles.metricLabel}>Today&apos;s Earnings</Text>
+        </Pressable>
+        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('active', 'today_payment_done')}>
+          <Text style={styles.deliveries}>{todayDelivered}</Text>
+          <Text style={styles.metricLabel}>Deliveries Done</Text>
+        </Pressable>
         <View style={styles.metricCard}><Text style={styles.codCollected}>₹{todayCodAmount.toFixed(2)}</Text><Text style={styles.metricLabel}>COD Collected</Text></View>
-        <View style={styles.metricCard}><Text style={styles.activeOrders}>{activeOrdersCount}</Text><Text style={styles.metricLabel}>Orders in Queue</Text></View>
+        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('active', 'order_in_queue')}>
+          <Text style={styles.activeOrders}>{activeOrdersCount}</Text>
+          <Text style={styles.metricLabel}>Orders in Queue</Text>
+        </Pressable>
       </View>
 
       {/* <Text style={styles.sectionTitle}>Your Location</Text> */}

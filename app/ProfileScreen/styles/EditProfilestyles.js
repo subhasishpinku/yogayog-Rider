@@ -87,12 +87,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 15,
     borderRadius: 17,
+    bottom: 20,
     backgroundColor: colors.gold,
   },
   saveText: {
     color: '#080808',
     fontSize: 16,
     fontWeight: '900',
+  },
+  
+titleBar: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    marginTop:7,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+    alignItems: 'left',
+
+  },
+  titleBarSpacer: {
+    width: 36,
   },
 });
 

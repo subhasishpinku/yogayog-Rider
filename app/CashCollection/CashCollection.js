@@ -87,12 +87,20 @@ const confirmCashReceived = async () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Cash Collection</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+          {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
             <Text style={styles.backText}>←</Text>
-          </Pressable>
-          <Text style={styles.title}>Cash Collection</Text>
+          </Pressable> */}
+          {/* <Text style={styles.title}>Cash Collection</Text> */}
+          
           <Text style={styles.subtitle}>Order #{orderId} · Collect from customer</Text>
         </View>
 

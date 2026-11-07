@@ -67,12 +67,19 @@ const NonDeliveryReport = ({ route }) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Non-Delivery Report</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <View style={styles.headerBackground}>
         <View style={styles.headerOrb} />
-        <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
+        {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>←</Text>
-        </Pressable>
-        <Text style={styles.title}>Non-Delivery Report</Text>
+        </Pressable> */}
+        {/* <Text style={styles.title}>Non-Delivery Report</Text> */}
         <Text style={styles.orderMeta}>{orderCode} · {customerName}</Text>
         <View style={styles.warningCard}>
           <Text style={styles.warningText}>Select the reason why this shipment could not be{ '\n' }delivered</Text>

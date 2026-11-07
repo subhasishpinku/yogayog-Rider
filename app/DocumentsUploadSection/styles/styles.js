@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import colors from './colors';
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  content: { paddingBottom: 24 },
+  content: { paddingBottom: 50 },
   header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingTop: 12, paddingBottom: 8, backgroundColor: colors.header },
   backButton: { width: 37, height: 37, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#262628' },
   backText: { color: colors.white, fontSize: 25, lineHeight: 26 },
@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   uploadText: { color: colors.gold, fontSize: 13, fontWeight: '900' },
   warning: { marginTop: 10, paddingHorizontal: 16, paddingVertical: 14, borderRadius: 13, backgroundColor: '#382022' },
   warningText: { color: colors.red, fontSize: 12, fontWeight: '800', lineHeight: 18 },
-  saveButton: { height: 58, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginHorizontal: 1, borderRadius: 17, backgroundColor: colors.gold },
+  saveButton: { height: 58, alignItems: 'center', justifyContent: 'center', marginTop: 24, marginBottom: 24, marginHorizontal: 1, borderRadius: 17, backgroundColor: colors.gold },
   saveText: { color: '#080808', fontSize: 16, fontWeight: '900' },
   imagePreviewOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   imagePreviewBackdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.78)' },
@@ -42,6 +42,38 @@ const styles = StyleSheet.create({
   imagePreview: { width: '100%', height: 420, borderRadius: 10 },
   imagePreviewClose: { alignItems: 'center', justifyContent: 'center', height: 44, marginTop: 12, borderRadius: 11, backgroundColor: colors.gold },
   imagePreviewCloseText: { color: '#080808', fontSize: 14, fontWeight: '900' },
+  
+titleBar: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    marginTop:7,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+    alignItems: 'left',
+
+  },
+  titleBarSpacer: {
+    width: 36,
+  },
 });
 export default styles;
 

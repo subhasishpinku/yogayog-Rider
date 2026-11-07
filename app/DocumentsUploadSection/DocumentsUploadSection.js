@@ -145,13 +145,21 @@ const DocumentsUploadSection = () => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+      <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Document Upload</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
+
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Go back">
+          {/* <Pressable style={styles.backButton} onPress={() => navigation.goBack()} accessibilityRole="button" accessibilityLabel="Go back">
             <Text style={styles.backText}>‹</Text>
-          </Pressable>
+          </Pressable> */}
           <View style={styles.headerCopy}>
-            <Text style={styles.title}>Document Upload</Text>
+            {/* <Text style={styles.title}>Document Upload</Text> */}
             <Text style={styles.subtitle}>Upload clear photos of all documents</Text>
           </View>
         </View>

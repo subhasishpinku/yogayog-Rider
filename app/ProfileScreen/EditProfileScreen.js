@@ -92,16 +92,23 @@ const EditProfileScreen = ({ route }) => {
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
+        <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Edit Profile</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+        {/* <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
           <Text style={styles.backIcon}>←</Text>
-        </Pressable>
+        </Pressable> */}
 
-        <Text style={styles.title}>Edit Profile</Text>
+        {/* <Text style={styles.title}>Edit Profile</Text> */}
         <Text style={styles.subtitle}>Update your credentials</Text>
 
         <Text style={styles.sectionTitle}>PERSONAL</Text>

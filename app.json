@@ -60,6 +60,12 @@
           "isAndroidForegroundServiceEnabled": true,
           "isIosBackgroundLocationEnabled": true
         }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "visibility": "visible"
+        }
       ]
     ],
     "extra": {
