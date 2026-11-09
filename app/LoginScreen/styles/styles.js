@@ -143,10 +143,10 @@ const styles = StyleSheet.create({
   terms: {
     position: 'absolute',
     right: 20,
-    bottom: 91,
+    bottom: 110,
     left: 20,
     color: colors.mutedLight,
-    fontSize: 12,
+    fontSize: 10,
     lineHeight: 19,
   },
   termsLink: {
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   button: {
     position: 'absolute',
     right: 20,
-    bottom: 28,
+    bottom: 45,
     left: 20,
     height: 58,
     alignItems: 'center',

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { useNavigation } from '@react-navigation/native';
-import FaceDetection from '@react-native-ml-kit/face-detection';
+import { processFace } from '@rdnf-magiba/expo-face-recognition';
 
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
@@ -23,75 +24,39 @@ const verificationSteps = [
   // { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
 ];
 
-const faceLandmarkNames = [
-  'leftEye',
-  'rightEye',
-  'noseBase',
-  'leftCheek',
-  'rightCheek',
-  'mouthLeft',
-  'mouthRight',
-  'mouthBottom',
-];
+const getEmbeddingSimilarity = (firstEmbedding, secondEmbedding) => {
+  if (!firstEmbedding?.length || firstEmbedding.length !== secondEmbedding?.length) return 0;
 
-const getFaceLandmarkSignature = (face, mirror = false) => {
-  const frame = face?.frame;
-  if (!frame?.width || !frame?.height) return null;
+  let dot = 0;
+  let firstMagnitude = 0;
+  let secondMagnitude = 0;
 
-  const signature = {};
-  faceLandmarkNames.forEach((name) => {
-    const point = face.landmarks?.[name]?.position;
-    if (!point) return;
-
-    const normalizedX = (point.x - frame.left) / frame.width;
-    signature[name] = {
-      x: mirror ? 1 - normalizedX : normalizedX,
-      y: (point.y - frame.top) / frame.height,
-    };
+  firstEmbedding.forEach((value, index) => {
+    const firstValue = Number(value) || 0;
+    const secondValue = Number(secondEmbedding[index]) || 0;
+    dot += firstValue * secondValue;
+    firstMagnitude += firstValue * firstValue;
+    secondMagnitude += secondValue * secondValue;
   });
 
-  return signature;
+  if (!firstMagnitude || !secondMagnitude) return 0;
+  return dot / (Math.sqrt(firstMagnitude) * Math.sqrt(secondMagnitude));
 };
 
-const getLargestFace = (faces) => faces.reduce((largest, face) => {
-  if (!largest) return face;
+const getLocalImageUri = async (imageUri, filePrefix) => {
+  if (!imageUri || !/^https?:\/\//i.test(imageUri)) return imageUri;
 
-  const largestArea = (largest.frame?.width || 0) * (largest.frame?.height || 0);
-  const faceArea = (face.frame?.width || 0) * (face.frame?.height || 0);
-  return faceArea > largestArea ? face : largest;
-}, null);
-
-const getFaceSimilarity = (profileFace, selfieFace) => {
-  const compareSignatures = (profileMirror, selfieMirror) => {
-    const profileSignature = getFaceLandmarkSignature(profileFace, profileMirror);
-    const selfieSignature = getFaceLandmarkSignature(selfieFace, selfieMirror);
-    const names = faceLandmarkNames.filter(
-      (name) => profileSignature?.[name] && selfieSignature?.[name]
-    );
-
-    if (names.length < 4) return 0;
-
-    const averageDistance = names.reduce((total, name) => {
-      const profilePoint = profileSignature[name];
-      const selfiePoint = selfieSignature[name];
-      return total + Math.hypot(profilePoint.x - selfiePoint.x, profilePoint.y - selfiePoint.y);
-    }, 0) / names.length;
-
-    return Math.max(0, 1 - averageDistance / 0.35);
-  };
-
-  return Math.max(
-    compareSignatures(false, false),
-    compareSignatures(true, false),
-    compareSignatures(false, true),
-    compareSignatures(true, true)
-  );
+  const extension = imageUri.split('?')[0].split('.').pop() || 'jpg';
+  const localUri = `${FileSystem.cacheDirectory}${filePrefix}-${Date.now()}.${extension}`;
+  const download = await FileSystem.downloadAsync(imageUri, localUri);
+  return download.uri;
 };
 
 const KYCPageVerification = () => {
   const navigation = useNavigation();
   const { fetchRiderProfile, riderProfile } = useHome();
   const [selfieUri, setSelfieUri] = useState(null);
+  const [isRecognizingFace, setIsRecognizingFace] = useState(false);
   const profileImageUri =
     riderProfile?.profile_picture || riderProfile?.profile_image_url;
 
@@ -121,45 +86,60 @@ const KYCPageVerification = () => {
         return;
       }
 
-      try {
-        const [profileFaces, selfieFaces] = await Promise.all([
-          FaceDetection.detect(profileImageUri, {
-            performanceMode: 'accurate',
-            landmarkMode: 'all',
-            minFaceSize: 0.05,
-          }),
-          FaceDetection.detect(selfieUri, {
-            performanceMode: 'accurate',
-            landmarkMode: 'all',
-            minFaceSize: 0.05,
-          }),
-        ]);
+      setIsRecognizingFace(true);
 
-        console.log('[KYCPageVerification] detected faces:', {
-          profile: profileFaces.length,
-          selfie: selfieFaces.length,
+      try {
+        const fileExtension = selfieUri.split('.').pop()?.split('?')[0] || 'jpg';
+        const stableSelfieUri = `${FileSystem.cacheDirectory}kyc-selfie-${Date.now()}.${fileExtension}`;
+
+        await FileSystem.copyAsync({
+          from: selfieUri,
+          to: stableSelfieUri,
         });
 
-        const profileFace = getLargestFace(profileFaces);
-        const selfieFace = getLargestFace(selfieFaces);
+        const localProfileImageUri = await getLocalImageUri(profileImageUri, 'kyc-profile');
 
-        if (!profileFace || !selfieFace) {
-          Alert.alert('Face verification failed', 'Make sure a clear face is visible in both images.');
+        const [profileResult, selfieResult] = await Promise.all([
+          processFace(localProfileImageUri),
+          processFace(stableSelfieUri),
+        ]);
+
+        console.log('[KYCPageVerification] on-device face results:', {
+          profile: profileResult,
+          selfie: selfieResult,
+        });
+
+        if (!profileResult.success || !selfieResult.success) {
+          Alert.alert('Face verification failed', 'Make sure both images contain one clear face.');
           return;
         }
 
-        const similarity = getFaceSimilarity(profileFace, selfieFace);
-        console.log('[KYCPageVerification] face similarity:', similarity);
-        if (similarity < 0.45) {
+        if (!profileResult.embedding || !selfieResult.embedding) {
+          Alert.alert('Clear face required', 'Please remove glasses and take clear, front-facing photos.');
+          return;
+        }
+
+        const similarity = getEmbeddingSimilarity(profileResult.embedding, selfieResult.embedding);
+        console.log('[KYCPageVerification] FaceNet cosine similarity:', similarity);
+        if (similarity < 0.65) {
           Alert.alert('Face does not match', 'The selfie does not match the profile image. Please try again.');
           return;
         }
 
-        setSelfieUri(selfieUri);
-        navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri });
+        setSelfieUri(stableSelfieUri);
+        Alert.alert(
+          'Face verification successful',
+          'Your face has been verified successfully.',
+          [{
+            text: 'OK',
+            onPress: () => navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri: stableSelfieUri }),
+          }]
+        );
       } catch (error) {
         console.error('[KYCPageVerification] local face verification error:', error);
         Alert.alert('Face verification unavailable', 'Please try again with clear face images.');
+      } finally {
+        setIsRecognizingFace(false);
       }
     }
   };
@@ -212,27 +192,44 @@ const KYCPageVerification = () => {
             <Text style={[styles.stepBadge, step.state === 'completed' && styles.completedBadge, step.state === 'active' && styles.activeBadge, step.state === 'pending' && styles.pendingBadge]}>{step.status}</Text>
           </Pressable>
         ))}
-
-        {/* <View style={styles.selfieCard}>
+{/* 
+        <View style={styles.selfieCard}>
           <Text style={styles.selfieTitle}>📸 Step 3: Selfie Verification</Text>
           <Text style={styles.selfieDescription}>Take a clear selfie holding your Aadhaar card. Make sure your face and card details are clearly visible.</Text>
           <View style={styles.selfieDropzoneRow}>
             <View style={[styles.selfieDropzone, styles.selfieDropzoneHalf]}>
               {profileImageUri ? <Image source={{ uri: profileImageUri }} style={styles.selfieImage} /> : null}
             </View>
-            <Pressable style={[styles.selfieDropzone, styles.selfieDropzoneHalf]} onPress={takeSelfie} accessibilityRole="button" accessibilityLabel="Take Selfie Face">
+            <Pressable style={[styles.selfieDropzone, styles.selfieDropzoneHalf]} onPress={takeSelfie} disabled={isRecognizingFace} accessibilityRole="button" accessibilityLabel="Take Selfie Face">
               {selfieUri ? <Image source={{ uri: selfieUri }} style={styles.selfieImage} /> : <><Text style={styles.cameraEmoji}>🤳</Text><Text style={styles.selfieAction}>Take Selfie Face</Text><Text style={styles.selfieHint}>Camera will open automatically</Text></>}
             </Pressable>
           </View>
-          <Pressable style={styles.cameraButton} onPress={takeSelfie}>
-            <Text style={styles.cameraButtonText}>{selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
+          <Pressable style={[styles.cameraButton, isRecognizingFace && styles.cameraButtonDisabled]} onPress={takeSelfie} disabled={isRecognizingFace}>
+            {isRecognizingFace ? (
+              <View style={styles.recognitionLoader}>
+                <ActivityIndicator size="small" color="#080808" />
+                <Text style={styles.cameraButtonText}>Recognizing face...</Text>
+              </View>
+            ) : (
+              <Text style={styles.cameraButtonText}>{selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
+            )}
           </Pressable>
         </View> */}
 
-        <View style={styles.privacy}>
+        {/* <View style={styles.privacy}>
           <Text style={styles.privacyText}>✓  Your data is encrypted and only used for{`\n`}   verification. We do not share it with third parties.</Text>
-        </View>
+        </View> */}
       </ScrollView>
+
+      <Modal transparent visible={isRecognizingFace} animationType="fade">
+        <View style={styles.recognitionOverlay}>
+          <View style={styles.recognitionCard}>
+            <ActivityIndicator size="large" color={styles.recognitionSpinner.color} />
+            <Text style={styles.recognitionTitle}>Recognizing face...</Text>
+            <Text style={styles.recognitionMessage}>Please wait while we verify your identity.</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

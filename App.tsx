@@ -2,13 +2,17 @@ import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as NavigationBar from 'expo-navigation-bar';
 import { NavigationContainer } from '@react-navigation/native';
+import { useNavigationContainerRef } from '@react-navigation/native';
 import * as SplashScreen from 'expo-splash-screen';
 import HomeStack from './app/Navigation/HomeStack';
 import { AuthProvider } from "./app/contexts/AuthContext"; // adjust path
 import {HomeProvider} from './app/contexts/HomeContext'; // adjust path
+import DeviceStatusChecker from './app/NetworkGps/DeviceStatusChecker';
 // Hide the native splash screen before the React tree renders.
 SplashScreen.hideAsync().catch(() => {});
 export default function App() {
+  const navigationRef = useNavigationContainerRef();
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -26,7 +30,8 @@ export default function App() {
       <StatusBar style="light" />
       <AuthProvider >
         <HomeProvider>
-      <NavigationContainer>
+      <NavigationContainer ref={navigationRef}>
+        <DeviceStatusChecker navigationRef={navigationRef} />
         <HomeStack />
       </NavigationContainer>
       </HomeProvider>

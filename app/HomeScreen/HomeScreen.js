@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, Switch, Text, View } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -24,6 +24,79 @@ const getTimeBasedGreeting = () => {
   return 'Good night';
 };
 
+const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scrollY }) => {
+  const [cardY, setCardY] = useState(null);
+  const showInitially = index < 2;
+  const isAssigned = String(order.status || '').toLowerCase() === 'assigned';
+  const statusText = order.status
+    ? String(order.status).toLowerCase() === 'rider_accepted'
+      ? 'Rider Accepted'
+      : order.status.replace(/_/g, ' ')
+    : 'Order';
+  const statusStyle = [
+    styles.orderStatus,
+    order.status === 'delivered' && styles.deliveredStatus,
+    isAssigned && styles.assignedStatus,
+  ];
+
+  const cardAnimation = showInitially || cardY === null
+    ? null
+    : scrollY.interpolate({
+        inputRange: [Math.max(0, cardY - 520), Math.max(1, cardY - 220)],
+        outputRange: [0, 1],
+        extrapolate: 'clamp',
+      });
+  const cardTranslateY = showInitially || cardY === null
+    ? 0
+    : scrollY.interpolate({
+        inputRange: [Math.max(0, cardY - 520), Math.max(1, cardY - 220)],
+        outputRange: [24, 0],
+        extrapolate: 'clamp',
+      });
+
+  return (
+    <Animated.View
+      onLayout={(event) => setCardY(event.nativeEvent.layout.y)}
+      style={{
+        opacity: cardAnimation || 1,
+        transform: [{ translateY: cardTranslateY }],
+      }}
+    >
+      <Pressable
+        style={styles.orderCard}
+        onPress={() => {
+          const normalizedStatus = String(order.status || '').toLowerCase();
+          const targetScreen = normalizedStatus === 'assigned' || normalizedStatus === 'delivered'
+            ? navigationStrings.ACCEPTREJECTORDER
+            : navigationStrings.ORDERCHAINSCREEN;
+
+          navigation.navigate(targetScreen, {
+            order,
+            orderId: order.id || order.order_pk_id,
+          });
+        }}
+      >
+        <Text style={styles.orderMeta}>Order #{order.code} · {order.customer_name || 'Customer'}</Text>
+        <Text style={styles.orderDetail}>📞 {order.customer_phone || 'Phone unavailable'}</Text>
+        <Text style={styles.orderDetail}>Pickup: {order.pickup_area || 'Not available'}</Text>
+        <Text style={styles.orderDetail}>Drop: {order.drop_area || 'Not available'}</Text>
+        <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)}</Text>
+        <Text style={styles.fareLabel}>{statusText}</Text>
+        <Text style={styles.orderDate}>
+          {order.created_at || ''}
+          {order.status ? (isAssigned ? (
+            <Animated.Text style={[statusStyle, { opacity: assignedBlinkOpacity }]}>
+              {'  '}{statusText}
+            </Animated.Text>
+          ) : (
+            <Text style={statusStyle}>{'  '}{statusText}</Text>
+          )) : null}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
 const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const mapRef = useRef(null);
   const riderMarkerRef = useRef(null);
@@ -35,6 +108,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const assignedBlinkOpacity = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
   const handWave = useRef(new Animated.Value(0)).current;
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const logoAnimation = Animated.loop(
@@ -253,7 +327,14 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     await stopTracking();
   };
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <Animated.ScrollView
+      contentContainerStyle={styles.content}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true }
+      )}
+      scrollEventThrottle={16}
+    >
       <View style={styles.header}>
         <View style={styles.ring} />
         <View style={styles.greetingRow}>
@@ -366,54 +447,16 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       {isOnline ? (
         <>
           <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{riderOrders.length} orders</Text></View>
-          {riderOrders.length > 0 ? riderOrders.map((order) => {
-            const isAssigned = String(order.status || '').toLowerCase() === 'assigned';
-            const statusText = order.status
-              ? String(order.status).toLowerCase() === 'rider_accepted'
-                ? 'Rider Accepted'
-                : order.status.replace(/_/g, ' ')
-              : 'Order';
-            const statusStyle = [
-              styles.orderStatus,
-              order.status === 'delivered' && styles.deliveredStatus,
-              isAssigned && styles.assignedStatus,
-            ];
-
-            return (
-            <Pressable
-              key={order.id}
-              style={styles.orderCard}
-              onPress={() => {
-                const normalizedStatus = String(order.status || '').toLowerCase();
-                const targetScreen = normalizedStatus === 'assigned' || normalizedStatus === 'delivered'
-                  ? navigationStrings.ACCEPTREJECTORDER
-                  : navigationStrings.ORDERCHAINSCREEN;
-
-                navigation.navigate(targetScreen, {
-                  order,
-                  orderId: order.id || order.order_pk_id,
-                });
-              }}
-            > 
-              <Text style={styles.orderMeta}>Order #{order.code} · {order.customer_name || 'Customer'}</Text>
-              <Text style={styles.orderDetail}>📞 {order.customer_phone || 'Phone unavailable'}</Text>
-              <Text style={styles.orderDetail}>Pickup: {order.pickup_area || 'Not available'}</Text>
-              <Text style={styles.orderDetail}>Drop: {order.drop_area || 'Not available'}</Text>
-              <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)}</Text>
-              <Text style={styles.fareLabel}>{statusText}</Text>
-              <Text style={styles.orderDate}>
-                {order.created_at || ''}
-                {order.status ? (isAssigned ? (
-                  <Animated.Text style={[statusStyle, { opacity: assignedBlinkOpacity }]}>
-                    {'  '}{statusText}
-                  </Animated.Text>
-                ) : (
-                  <Text style={statusStyle}>{'  '}{statusText}</Text>
-                )) : null}
-              </Text>
-            </Pressable>
-            );
-          }) : (
+          {riderOrders.length > 0 ? riderOrders.map((order, index) => (
+            <AnimatedOrderCard
+              key={order.id || order.order_pk_id}
+              assignedBlinkOpacity={assignedBlinkOpacity}
+              index={index}
+              navigation={navigation}
+              order={order}
+              scrollY={scrollY}
+            />
+          )) : (
             <View style={styles.offlineCard}>
               <Text style={styles.offlineTitle}>No orders available</Text>
             </View>
@@ -466,7 +509,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </Animated.ScrollView>
   );
 };
 

@@ -11,12 +11,20 @@ import {
 } from '../Services/BackgroundLocation';
 
 const VerifyOtpScreen = ({ navigation, route }) => {
+  const resendDelay = 28;
   const [otp, setOtp] = useState(['', '', '', '']);
-  const [seconds, setSeconds] = useState(28);
+  const [seconds, setSeconds] = useState(resendDelay);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
   const inputRefs = useRef([]);
   const phone = route?.params?.phone || '98765 43210';
   const role = route?.params?.role === 'truck' ? 'Truck Driver' : 'Bike Rider';
-  const { authError, clearAuthError, isVerifyingOtp, verifyOtp } = useAuth();
+  const {
+    authError,
+    clearAuthError,
+    isVerifyingOtp,
+    sendOtp,
+    verifyOtp,
+  } = useAuth();
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -55,6 +63,24 @@ const VerifyOtpScreen = ({ navigation, route }) => {
       // The error is exposed by AuthContext and rendered below the OTP fields.
     }
   };
+
+  const handleResendOtp = async () => {
+    if (seconds > 0 || isResendingOtp) return;
+
+    setIsResendingOtp(true);
+
+    try {
+      await sendOtp(phone);
+      setOtp(['', '', '', '']);
+      setSeconds(resendDelay);
+      inputRefs.current[0]?.focus();
+    } catch {
+      // The error is exposed by AuthContext and rendered above the resend link.
+    } finally {
+      setIsResendingOtp(false);
+    }
+  };
+
   const startTracking = async () => {
     try {
       await startBackgroundLocation();
@@ -108,10 +134,20 @@ const VerifyOtpScreen = ({ navigation, route }) => {
           {!!authError && <Text style={styles.errorText}>{authError}</Text>}
 
           <Text style={styles.resendText}>
-          Didn&apos;t receive?{' '}
-          <Text style={styles.resendLink}>
-            {seconds > 0 ? `Resend in ${seconds}s` : 'Resend OTP'}
-          </Text>
+            Didn&apos;t receive?{' '}
+            <Text
+              accessibilityLabel={seconds > 0 ? `Resend in ${seconds} seconds` : 'Resend OTP'}
+              accessibilityRole="link"
+              disabled={seconds > 0 || isResendingOtp}
+              onPress={handleResendOtp}
+              style={[styles.resendLink, (seconds > 0 || isResendingOtp) && styles.resendLinkDisabled]}
+            >
+              {isResendingOtp
+                ? 'Sending...'
+                : seconds > 0
+                  ? `Resend in ${seconds}s`
+                  : 'Resend OTP'}
+            </Text>
           </Text>
         </View>
 

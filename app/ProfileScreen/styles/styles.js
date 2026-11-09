@@ -147,6 +147,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 14,
     marginTop: 12,
     borderRadius: 17,
+    bottom: 12,
     backgroundColor: colors.gold,
   },
   editIcon: {

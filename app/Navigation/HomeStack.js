@@ -34,6 +34,8 @@ import WalletScreen from '../WalletScreen/WalletScreen';
 import OnlinePayment from '../OnlinePayment/OnlinePayment';
 import ProfileScreen from '../ProfileScreen/ProfileScreen';
 import OrderChainScreen from '../AcceptRejectOrder/OrderChainScreen';
+import NetworkScreen from '../NetworkGps/NetworkScreen';
+import GpsScreen from '../NetworkGps/GpsScreen';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -168,6 +170,14 @@ const HomeStack = () => {
           name={navigationStrings.ORDERCHAINSCREEN}
           component={OrderChainScreen}
         />
+      <Stack.Screen
+        name={navigationStrings.NETWORKSCREEN}
+        component={NetworkScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.GPSSCREEN}
+        component={GpsScreen}
+      />
     </Stack.Navigator>
   );
 };

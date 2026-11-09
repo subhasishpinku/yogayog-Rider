@@ -47,6 +47,13 @@ const styles = StyleSheet.create({
   selfieAction: { marginTop: 5, color: colors.white, fontSize: 13, fontWeight: '900' },
   selfieHint: { marginTop: 3, color: colors.muted, fontSize: 11 },
   cameraButton: { height: 57, alignItems: 'center', justifyContent: 'center', marginTop: 13, borderRadius: 16, backgroundColor: colors.gold },
+  cameraButtonDisabled: { opacity: 0.7 },
+  recognitionLoader: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  recognitionOverlay: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0, 0, 0, 0.72)' },
+  recognitionCard: { alignItems: 'center', marginHorizontal: 28, paddingHorizontal: 28, paddingVertical: 26, borderRadius: 18, backgroundColor: colors.card },
+  recognitionSpinner: { color: colors.gold },
+  recognitionTitle: { marginTop: 16, color: colors.white, fontSize: 17, fontWeight: '900' },
+  recognitionMessage: { marginTop: 7, color: colors.mutedLight, fontSize: 12, textAlign: 'center' },
   cameraButtonText: { color: '#080808', fontSize: 16, fontWeight: '900' },
   privacy: { marginHorizontal: 12, marginTop: 12, paddingHorizontal: 14, paddingVertical: 12, borderRadius: 12, backgroundColor: '#172A20' },
   titleBar: {

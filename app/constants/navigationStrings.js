@@ -31,6 +31,8 @@ export default {
   ACTIVELIST: 'ActiveList',
   WALLETSCREEN: 'WalletScreen',
   ONLINEPAYMENT: 'OnlinePayment',
-  ORDERCHAINSCREEN: 'OrderChainScreen'
+  ORDERCHAINSCREEN: 'OrderChainScreen',
+  NETWORKSCREEN: 'NetworkScreen',
+  GPSSCREEN: 'GpsScreen',
 };
 

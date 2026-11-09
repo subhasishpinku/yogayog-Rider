@@ -87,10 +87,13 @@ const styles = StyleSheet.create({
     color: colors.gold,
     fontWeight: '800',
   },
+  resendLinkDisabled: {
+    opacity: 0.6,
+  },
   button: {
     position: 'absolute',
     right: 12,
-    bottom: 28,
+    bottom: 45,
     left: 12,
     height: 58,
     alignItems: 'center',

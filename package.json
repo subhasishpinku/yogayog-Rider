@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.ts",
   "dependencies": {
+    "@rdnf-magiba/expo-face-recognition": "^0.1.17",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "8.6.0",
     "@react-native-ml-kit/face-detection": "^2.0.1",
@@ -17,6 +18,7 @@
     "expo-image-picker": "~55.0.24",
     "expo-location": "~55.1.15",
     "expo-navigation-bar": "~55.0.17",
+    "expo-network": "~55.0.18",
     "expo-ocr-kit": "^0.1.4",
     "expo-splash-screen": "~55.0.25",
     "expo-status-bar": "~55.0.6",
