@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
@@ -13,16 +14,18 @@ import { useHome } from '../contexts/HomeContext';
 const steps = [
   { label: 'Profile', state: 'completed', symbol: '✓' },
   { label: 'Documents', state: 'completed', symbol: '✓' },
-  // { label: 'Verification', state: 'active', symbol: '3' },
-  // { label: 'Approved', state: 'pending', symbol: '4' },
+  { label: 'Verification', state: 'active', symbol: '3' },
+  { label: 'Approved', state: 'pending', symbol: '4' },
 ];
 
 const verificationSteps = [
   { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.PROFILESCREEN},
-   { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
-  // { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
-  // { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
+  { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
+  { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
+  { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
 ];
+
+const IDENTITY_VERIFICATION_STORAGE_KEY = 'kycIdentityVerification';
 
 const getEmbeddingSimilarity = (firstEmbedding, secondEmbedding) => {
   if (!firstEmbedding?.length || firstEmbedding.length !== secondEmbedding?.length) return 0;
@@ -57,12 +60,32 @@ const KYCPageVerification = () => {
   const { fetchRiderProfile, riderProfile } = useHome();
   const [selfieUri, setSelfieUri] = useState(null);
   const [isRecognizingFace, setIsRecognizingFace] = useState(false);
+  const [isIdentityVerified, setIsIdentityVerified] = useState(false);
   const profileImageUri =
     riderProfile?.profile_picture || riderProfile?.profile_image_url;
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
   }, [fetchRiderProfile]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    AsyncStorage.getItem(IDENTITY_VERIFICATION_STORAGE_KEY)
+      .then((storedRecord) => {
+        if (mounted && storedRecord) {
+          const record = JSON.parse(storedRecord);
+          const storedSelfieUri = record?.selfieUri || null;
+          setIsIdentityVerified(record?.verified === true && !!storedSelfieUri);
+          setSelfieUri(storedSelfieUri);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const takeSelfie = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -127,6 +150,15 @@ const KYCPageVerification = () => {
         }
 
         setSelfieUri(stableSelfieUri);
+        setIsIdentityVerified(true);
+        await AsyncStorage.setItem(
+          IDENTITY_VERIFICATION_STORAGE_KEY,
+          JSON.stringify({
+            verified: true,
+            selfieUri: stableSelfieUri,
+            verifiedAt: new Date().toISOString(),
+          })
+        );
         Alert.alert(
           'Face verification successful',
           'Your face has been verified successfully.',
@@ -143,6 +175,21 @@ const KYCPageVerification = () => {
       }
     }
   };
+
+  const handleVerificationDone = () => {
+    if (isIdentityVerified) {
+      navigation.navigate(navigationStrings.DASHBOARDSCREEN);
+      return;
+    }
+
+    takeSelfie();
+  };
+
+  const displayedVerificationSteps = verificationSteps.map((step) => (
+    step.title === 'Identity Verification' && isIdentityVerified
+      ? { ...step, icon: '✓', status: 'Verified', state: 'completed' }
+      : step
+  ));
 
   return (
     <View style={styles.screen}>
@@ -175,7 +222,7 @@ const KYCPageVerification = () => {
           </View>
         </View>
 
-        {verificationSteps.map((step) => (
+        {displayedVerificationSteps.map((step) => (
           <Pressable
             key={step.title}
             style={styles.stepCard}
@@ -192,7 +239,7 @@ const KYCPageVerification = () => {
             <Text style={[styles.stepBadge, step.state === 'completed' && styles.completedBadge, step.state === 'active' && styles.activeBadge, step.state === 'pending' && styles.pendingBadge]}>{step.status}</Text>
           </Pressable>
         ))}
-{/* 
+
         <View style={styles.selfieCard}>
           <Text style={styles.selfieTitle}>📸 Step 3: Selfie Verification</Text>
           <Text style={styles.selfieDescription}>Take a clear selfie holding your Aadhaar card. Make sure your face and card details are clearly visible.</Text>
@@ -200,25 +247,25 @@ const KYCPageVerification = () => {
             <View style={[styles.selfieDropzone, styles.selfieDropzoneHalf]}>
               {profileImageUri ? <Image source={{ uri: profileImageUri }} style={styles.selfieImage} /> : null}
             </View>
-            <Pressable style={[styles.selfieDropzone, styles.selfieDropzoneHalf]} onPress={takeSelfie} disabled={isRecognizingFace} accessibilityRole="button" accessibilityLabel="Take Selfie Face">
+            <Pressable style={[styles.selfieDropzone, styles.selfieDropzoneHalf]} onPress={handleVerificationDone} disabled={isRecognizingFace || isIdentityVerified} accessibilityRole="button" accessibilityLabel="Take Selfie Face">
               {selfieUri ? <Image source={{ uri: selfieUri }} style={styles.selfieImage} /> : <><Text style={styles.cameraEmoji}>🤳</Text><Text style={styles.selfieAction}>Take Selfie Face</Text><Text style={styles.selfieHint}>Camera will open automatically</Text></>}
             </Pressable>
           </View>
-          <Pressable style={[styles.cameraButton, isRecognizingFace && styles.cameraButtonDisabled]} onPress={takeSelfie} disabled={isRecognizingFace}>
+          <Pressable style={[styles.cameraButton, isRecognizingFace && styles.cameraButtonDisabled]} onPress={handleVerificationDone} disabled={isRecognizingFace}>
             {isRecognizingFace ? (
               <View style={styles.recognitionLoader}>
                 <ActivityIndicator size="small" color="#080808" />
                 <Text style={styles.cameraButtonText}>Recognizing face...</Text>
               </View>
             ) : (
-              <Text style={styles.cameraButtonText}>{selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
+              <Text style={styles.cameraButtonText}>{isIdentityVerified ? 'Done' : selfieUri ? 'Retake Selfie' : 'Open Camera for Selfie'}</Text>
             )}
           </Pressable>
-        </View> */}
+        </View> 
 
-        {/* <View style={styles.privacy}>
+       <View style={styles.privacy}>
           <Text style={styles.privacyText}>✓  Your data is encrypted and only used for{`\n`}   verification. We do not share it with third parties.</Text>
-        </View> */}
+        </View>
       </ScrollView>
 
       <Modal transparent visible={isRecognizingFace} animationType="fade">

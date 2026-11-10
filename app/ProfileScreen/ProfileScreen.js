@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 
 import navigationStrings from '../constants/navigationStrings';
@@ -24,8 +25,9 @@ const DetailSection = ({ title, rows }) => (
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const { fetchRiderProfile, riderProfile } = useHome();
+  const { fetchRiderProfile, riderProfile, uploadRiderDocument } = useHome();
   const [profileImageFailed, setProfileImageFailed] = useState(false);
+  const [isUpdatingProfileImage, setIsUpdatingProfileImage] = useState(false);
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -79,6 +81,42 @@ const ProfileScreen = () => {
     ['UPI ID', profile.upi || 'Not available', 'highlight'],
   ];
 
+  const handleProfileImagePress = async () => {
+    if (isUpdatingProfileImage) return;
+
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Alert.alert('Permission required', 'Please allow camera access to update your profile photo.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [3, 4],
+      cameraType: ImagePicker.CameraType.front,
+      quality: 0.8,
+    });
+
+    if (result.canceled || !result.assets?.[0]) return;
+
+    const asset = result.assets[0];
+    setIsUpdatingProfileImage(true);
+
+    try {
+      await uploadRiderDocument(asset, 'profile_picture');
+      await fetchRiderProfile();
+      setProfileImageFailed(false);
+      Alert.alert('Profile photo updated', 'Your profile photo has been updated successfully.');
+    } catch (error) {
+      Alert.alert(
+        'Profile photo update failed',
+        error.response?.data?.message || error.message || 'Unable to update profile photo.'
+      );
+    } finally {
+      setIsUpdatingProfileImage(false);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -89,14 +127,26 @@ const ProfileScreen = () => {
       >
         <View style={styles.header}>
           <View style={styles.headerRing} />
-          <View style={styles.avatar}>
+          <Pressable style={styles.avatar} onPress={handleProfileImagePress} disabled={isUpdatingProfileImage}>
             <Image
               source={profileImageUrl && !profileImageFailed ? { uri: profileImageUrl } : imagePath.demoImage}
               style={styles.avatarImage}
               resizeMode="cover"
               onError={() => setProfileImageFailed(true)}
             />
-          </View>
+            <Pressable
+              style={styles.avatarCameraButton}
+              onPress={(event) => {
+                event.stopPropagation?.();
+                handleProfileImagePress();
+              }}
+              disabled={isUpdatingProfileImage}
+              accessibilityRole="button"
+              accessibilityLabel="Update profile photo"
+            >
+              <Text style={styles.avatarCameraIcon}>📷</Text>
+            </Pressable>
+          </Pressable>
           <Text style={styles.name}>{riderName}</Text>
           <Text style={styles.role}>🛵 {profile.veh_type || 'Bike'} · {profile.rider_code || 'YCG-RDR-0042'}</Text>
           <View style={styles.statusRow}>

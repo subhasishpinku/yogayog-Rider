@@ -1,10 +1,21 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
+import { Alert, Platform, ToastAndroid } from 'react-native';
 
 import axiosInstance from './axiosInstance';
 
 const HomeContext = createContext(null);
+
+const showErrorToast = (error, fallbackMessage = 'Something went wrong.') => {
+  const message = error?.response?.data?.message || error?.message || fallbackMessage;
+
+  if (Platform.OS === 'android') {
+    ToastAndroid.show(message, ToastAndroid.LONG);
+  } else {
+    Alert.alert('Error', message);
+  }
+};
 
 const resolveRiderAssetUrl = (assetPath) => {
   if (!assetPath) {
@@ -66,10 +77,10 @@ export const HomeProvider = ({ children }) => {
       setRiderOrders(orders);
       return orders;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/orders error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/orders error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -93,10 +104,10 @@ export const HomeProvider = ({ children }) => {
       console.log('[HomeContext] rider/order-by-id response:', response.data);
       return response.data.order || null;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/order-by-id error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/order-by-id error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -119,10 +130,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data.order || null;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/get-order-payment-details error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/get-order-payment-details error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -144,10 +155,10 @@ export const HomeProvider = ({ children }) => {
         ? response.data.wallet_transactions
         : [];
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/wallet-ledger error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/wallet-ledger error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -167,10 +178,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/submit-cod error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/submit-cod error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -190,10 +201,10 @@ export const HomeProvider = ({ children }) => {
       setWalletBalance(balance);
       return balance;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/wallet-balance error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/wallet-balance error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -218,10 +229,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/make-withdrawal-request error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/make-withdrawal-request error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -268,10 +279,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/collect-cod error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/collect-cod error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -309,10 +320,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/create-payment error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/create-payment error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -371,10 +382,10 @@ export const HomeProvider = ({ children }) => {
 
       return normalizedSummary;
     } catch (error) {
-      console.error(
-        `[HomeContext] ${endpoint} error:`,
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   `[HomeContext] ${endpoint} error:`,
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -402,10 +413,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data.order || null;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/trip-details error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/trip-details error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -434,15 +445,15 @@ export const HomeProvider = ({ children }) => {
       refreshResults
         .filter((result) => result.status === 'rejected')
         .forEach((result) => {
-          console.error('[HomeContext] post-accept refresh error:', result.reason);
+          showErrorToast(result.reason, 'Unable to refresh order information.');
         });
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/accept-order error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/accept-order error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, [fetchRiderOrders, fetchRiderTodaysEarnings]);
@@ -481,10 +492,10 @@ export const HomeProvider = ({ children }) => {
 
       return responseData;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/update-order-status error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/update-order-status error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -505,10 +516,10 @@ export const HomeProvider = ({ children }) => {
       setRiderProfile(profile);
       return profile;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/profile error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/profile error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -516,8 +527,35 @@ export const HomeProvider = ({ children }) => {
   const updateRiderProfile = useCallback(async (payload) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await axiosInstance.post('rider/profile/update', payload, {
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      const profileImage = payload?.profile_picture;
+      const hasProfileImage = Boolean(profileImage?.uri);
+      let requestPayload = payload;
+      const requestHeaders = {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      if (hasProfileImage) {
+        const formData = new FormData();
+        Object.entries(payload).forEach(([key, value]) => {
+          if (key !== 'profile_picture' && value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+
+        const imageUri = String(profileImage.uri);
+        const extension = imageUri.split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
+        formData.append('profile_picture', {
+          uri: imageUri,
+          name: profileImage.fileName || `profile-picture.${extension}`,
+          type: profileImage.mimeType || (extension === 'png' ? 'image/png' : 'image/jpeg'),
+        });
+
+        requestPayload = formData;
+        requestHeaders['Content-Type'] = 'multipart/form-data';
+      }
+
+      const response = await axiosInstance.post('rider/profile/update', requestPayload, {
+        headers: requestHeaders,
       });
 
       if (!response.data?.success) {
@@ -531,10 +569,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/profile update error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/profile update error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -556,10 +594,10 @@ export const HomeProvider = ({ children }) => {
       setRiderDocuments(documents);
       return documents;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/document-list error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/document-list error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -590,10 +628,10 @@ export const HomeProvider = ({ children }) => {
       setNonDeliveryReasons(reasons);
       return reasons;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/non-delivery-reason-list error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/non-delivery-reason-list error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -631,10 +669,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/cancel-deliver error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/cancel-deliver error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);
@@ -729,10 +767,10 @@ export const HomeProvider = ({ children }) => {
 
       return response.data;
     } catch (error) {
-      console.error(
-        '[HomeContext] rider/upload-document error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[HomeContext] rider/upload-document error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, [fetchRiderDocuments]);

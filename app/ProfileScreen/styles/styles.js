@@ -46,6 +46,22 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 20,
   },
+  avatarCameraButton: {
+    position: 'absolute',
+    right: -8,
+    bottom: -8,
+    width: 30,
+    height: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.header,
+    borderRadius: 15,
+    backgroundColor: colors.gold,
+  },
+  avatarCameraIcon: {
+    fontSize: 15,
+  },
   name: {
     marginTop: 13,
     color: colors.white,

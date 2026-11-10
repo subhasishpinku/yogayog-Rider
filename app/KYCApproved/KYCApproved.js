@@ -6,8 +6,25 @@ import { useNavigation } from '@react-navigation/native';
 import navigationStrings from '../constants/navigationStrings';
 import styles from './styles/styles';
 
+const getCurrentDateTime = () => {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  });
+  const time = now.toLocaleTimeString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  return `${date}, ${time}`;
+};
+
 const KYCApproved = () => {
   const navigation = useNavigation();
+  const verifiedOn = getCurrentDateTime();
 
   return (
     <View style={styles.screen}>
@@ -26,7 +43,7 @@ const KYCApproved = () => {
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Verified On</Text>
-            <Text style={styles.detailValue}>31 Jul 2026</Text>
+            <Text style={styles.detailValue}>{verifiedOn}</Text>
           </View>
           <View style={[styles.detailRow, styles.lastDetailRow]}>
             <Text style={styles.detailLabel}>Status</Text>

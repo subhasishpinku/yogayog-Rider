@@ -14,7 +14,7 @@ const documentDefinitions = [
   { icon: '📋', title: 'RC Book (Vehicle)', documentType: 'rc_file', subtitle: 'Registration Certificate', uploadLabel: 'Upload RC Book' },
   { icon: '🛡️', title: 'Vehicle Insurance', documentType: 'vehicle_insurance', subtitle: 'Valid policy document', uploadLabel: 'Upload Insurance' },
   { icon: '🏢', title: 'Bank Passbook / Cheque', documentType: 'bank_passbook', subtitle: 'For payout verification' },
-  { icon: '📸', title: 'Profile Photo', documentType: 'profile_picture', subtitle: 'Clear face photo · White background' },
+  { icon: '📸', title: 'Profile Photo', documentType: 'profile_picture', subtitle: 'Clear face photo · White background', uploadLabel: 'Upload Profile Photo' },
 ];
 
 const getFileName = (fileUrl, fallback) => {

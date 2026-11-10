@@ -290,10 +290,10 @@ export const AuthProvider = ({ children }) => {
       setRiderProfile(response.data.rider || null);
       return response.data.rider;
     } catch (error) {
-      console.error(
-        '[AuthContext] rider/profile error:',
-        error.response?.data || error.message
-      );
+      // console.error(
+      //   '[AuthContext] rider/profile error:',
+      //   error.response?.data || error.message
+      // );
       throw error;
     }
   }, []);

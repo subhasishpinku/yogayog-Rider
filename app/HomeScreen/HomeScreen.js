@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, Switch, Text, View } from 'react-native';
+import { Animated, Modal, Pressable, RefreshControl, Switch, Text, View } from 'react-native';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -151,6 +151,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   });
 
   const [isOnline, setIsOnline] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     fetchRiderProfile,
     riderProfile,
@@ -163,6 +164,20 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     todayDelivered,
     earningsByPeriod,
   } = useHome();
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+
+    try {
+      await Promise.allSettled([
+        fetchRiderProfile(),
+        fetchRiderOrders(),
+        fetchRiderTodaysEarnings(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const todaySummary = earningsByPeriod.today || {};
   const todayCodAmount = Number(todaySummary.total_cod_amount || 0);
@@ -329,6 +344,14 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   return (
     <Animated.ScrollView
       contentContainerStyle={styles.content}
+      refreshControl={(
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.gold]}
+          tintColor={colors.gold}
+        />
+      )}
       onScroll={Animated.event(
         [{ nativeEvent: { contentOffset: { y: scrollY } } }],
         { useNativeDriver: true }
