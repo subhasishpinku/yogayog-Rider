@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import styles from './styles/styles';
 import colors from './styles/colors';
 import navigationStrings from '../constants/navigationStrings';
+import { useAuth } from '../contexts/AuthContext';
 import { useHome } from '../contexts/HomeContext';
 
 const periods = ['Today', 'Week', 'Month', 'Year'];
@@ -16,8 +17,13 @@ const EarningsScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const { fetchRiderEarnings, earningsByPeriod } = useHome();
+  const { fetchRiderProfile, riderProfile } = useAuth();
   const periodKey = selectedPeriod.toLowerCase();
   const selectedEarnings = earningsByPeriod[periodKey];
+
+  useEffect(() => {
+    fetchRiderProfile().catch(() => {});
+  }, [fetchRiderProfile]);
 
   useEffect(() => {
     let mounted = true;
@@ -92,7 +98,9 @@ const EarningsScreen = () => {
         
           <View style={styles.headerCopy}>
             <Text style={styles.title}>My Earnings</Text>
-            <Text style={styles.subtitle}>Suresh Kumar · 🛵 Bike</Text>
+            <Text style={styles.subtitle}>
+              {riderProfile?.name || 'Suresh Kumar'} · 🛵 {riderProfile?.veh_type || 'Bike'}
+            </Text>
           </View>
           <Pressable
             style={styles.headerAction}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Modal, Pressable, RefreshControl, Switch, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -14,6 +15,7 @@ import {
   stopBackgroundLocation,
 } from '../Services/BackgroundLocation';
 const fallbackLocation = { latitude: 22.5186, longitude: 88.3477 };
+const RIDER_AVAILABILITY_KEY = 'riderAvailability';
 
 const getTimeBasedGreeting = () => {
   const hour = new Date().getHours();
@@ -150,7 +152,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     outputRange: ['-18deg', '0deg', '18deg'],
   });
 
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     fetchRiderProfile,
@@ -164,6 +166,28 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     todayDelivered,
     earningsByPeriod,
   } = useHome();
+
+  useEffect(() => {
+    let mounted = true;
+
+    const restoreAvailability = async () => {
+      try {
+        const savedAvailability = await AsyncStorage.getItem(RIDER_AVAILABILITY_KEY);
+
+        if (mounted && savedAvailability) {
+          setIsOnline(savedAvailability === 'online');
+        }
+      } catch (error) {
+        console.log('Availability restore error:', error);
+      }
+    };
+
+    restoreAvailability();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -191,8 +215,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   }, [fetchRiderProfile]);
 
   useEffect(() => {
+    if (!isOnline) {
+      return undefined;
+    }
+
     fetchRiderOrders().catch(() => {});
-  }, [fetchRiderOrders]);
+  }, [fetchRiderOrders, isOnline]);
 
   useEffect(() => {
     fetchRiderTodaysEarnings().catch(() => {});
@@ -334,6 +362,15 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const handleOnlineToggle = async (nextIsOnline) => {
     setIsOnline(nextIsOnline);
 
+    try {
+      await AsyncStorage.setItem(
+        RIDER_AVAILABILITY_KEY,
+        nextIsOnline ? 'online' : 'offline'
+      );
+    } catch (error) {
+      console.log('Availability save error:', error);
+    }
+
     if (nextIsOnline) {
       await startTracking();
       return;
@@ -393,7 +430,9 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       <View style={styles.statusCard}>
         <View>
           <Text style={styles.statusTitle}>Status: <Text style={styles.online}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
-          <Text style={styles.statusSubtext}>You are receiving new orders</Text>
+          <Text style={styles.statusSubtext}>
+            {isOnline ? 'You are receiving new orders' : 'You are offline and not receiving new orders'}
+          </Text>
         </View>
         <Switch
           value={isOnline}

@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import * as ImagePicker from 'expo-image-picker';
+// import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useNavigation } from '@react-navigation/native';
-import { processFace } from '@rdnf-magiba/expo-face-recognition';
+// import { processFace } from '@rdnf-magiba/expo-face-recognition';
 
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
@@ -14,15 +14,15 @@ import { useHome } from '../contexts/HomeContext';
 const steps = [
   { label: 'Profile', state: 'completed', symbol: '✓' },
   { label: 'Documents', state: 'completed', symbol: '✓' },
-  { label: 'Verification', state: 'active', symbol: '3' },
-  { label: 'Approved', state: 'pending', symbol: '4' },
+  // { label: 'Verification', state: 'active', symbol: '3' },
+  // { label: 'Approved', state: 'pending', symbol: '4' },
 ];
 
 const verificationSteps = [
   { icon: '✓', title: 'Basic Profile', subtitle: 'Name, address, contact details', status: 'Completed', state: 'completed' ,route: navigationStrings.PROFILESCREEN},
   { icon: '✓', title: 'Document Upload', subtitle: 'Aadhaar, PAN, DL, RC, Insurance', status: 'Uploaded', state: 'completed', route: navigationStrings.DOCUMENTSUPLOADSECTION },
-  { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
-  { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
+  // { icon: '3', title: 'Identity Verification', subtitle: 'Selfie with Aadhaar card', status: 'In Progress', state: 'active' },
+  // { icon: '4', title: 'Background Check', subtitle: 'Police verification · 3–5 days', status: 'Pending', state: 'pending' },
 ];
 
 const IDENTITY_VERIFICATION_STORAGE_KEY = 'kycIdentityVerification';
@@ -87,103 +87,103 @@ const KYCPageVerification = () => {
     };
   }, []);
 
-  const takeSelfie = async () => {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      Alert.alert('Permission required', 'Please allow camera access for selfie verification.');
-      return;
-    }
+  // const takeSelfie = async () => {
+  //   const permission = await ImagePicker.requestCameraPermissionsAsync();
+  //   if (!permission.granted) {
+  //     Alert.alert('Permission required', 'Please allow camera access for selfie verification.');
+  //     return;
+  //   }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [3, 4],
-      cameraType: ImagePicker.CameraType.front,
-      quality: 1,
-    });
+  //   const result = await ImagePicker.launchCameraAsync({
+  //     allowsEditing: true,
+  //     aspect: [3, 4],
+  //     cameraType: ImagePicker.CameraType.front,
+  //     quality: 1,
+  //   });
 
-    if (!result.canceled && result.assets?.[0]?.uri) {
-      const selfieUri = result.assets[0].uri;
+  //   if (!result.canceled && result.assets?.[0]?.uri) {
+  //     const selfieUri = result.assets[0].uri;
 
-      if (!profileImageUri) {
-        Alert.alert('Profile image required', 'Unable to compare the selfie without a profile image.');
-        return;
-      }
+  //     if (!profileImageUri) {
+  //       Alert.alert('Profile image required', 'Unable to compare the selfie without a profile image.');
+  //       return;
+  //     }
 
-      setIsRecognizingFace(true);
+  //     setIsRecognizingFace(true);
 
-      try {
-        const fileExtension = selfieUri.split('.').pop()?.split('?')[0] || 'jpg';
-        const stableSelfieUri = `${FileSystem.cacheDirectory}kyc-selfie-${Date.now()}.${fileExtension}`;
+  //     try {
+  //       const fileExtension = selfieUri.split('.').pop()?.split('?')[0] || 'jpg';
+  //       const stableSelfieUri = `${FileSystem.cacheDirectory}kyc-selfie-${Date.now()}.${fileExtension}`;
 
-        await FileSystem.copyAsync({
-          from: selfieUri,
-          to: stableSelfieUri,
-        });
+  //       await FileSystem.copyAsync({
+  //         from: selfieUri,
+  //         to: stableSelfieUri,
+  //       });
 
-        const localProfileImageUri = await getLocalImageUri(profileImageUri, 'kyc-profile');
+  //       const localProfileImageUri = await getLocalImageUri(profileImageUri, 'kyc-profile');
 
-        const [profileResult, selfieResult] = await Promise.all([
-          processFace(localProfileImageUri),
-          processFace(stableSelfieUri),
-        ]);
+  //       const [profileResult, selfieResult] = await Promise.all([
+  //         processFace(localProfileImageUri),
+  //         processFace(stableSelfieUri),
+  //       ]);
 
-        console.log('[KYCPageVerification] on-device face results:', {
-          profile: profileResult,
-          selfie: selfieResult,
-        });
+  //       console.log('[KYCPageVerification] on-device face results:', {
+  //         profile: profileResult,
+  //         selfie: selfieResult,
+  //       });
 
-        if (!profileResult.success || !selfieResult.success) {
-          Alert.alert('Face verification failed', 'Make sure both images contain one clear face.');
-          return;
-        }
+  //       if (!profileResult.success || !selfieResult.success) {
+  //         Alert.alert('Face verification failed', 'Make sure both images contain one clear face.');
+  //         return;
+  //       }
 
-        if (!profileResult.embedding || !selfieResult.embedding) {
-          Alert.alert('Clear face required', 'Please remove glasses and take clear, front-facing photos.');
-          return;
-        }
+  //       if (!profileResult.embedding || !selfieResult.embedding) {
+  //         Alert.alert('Clear face required', 'Please remove glasses and take clear, front-facing photos.');
+  //         return;
+  //       }
 
-        const similarity = getEmbeddingSimilarity(profileResult.embedding, selfieResult.embedding);
-        console.log('[KYCPageVerification] FaceNet cosine similarity:', similarity);
-        if (similarity < 0.65) {
-          Alert.alert('Face does not match', 'The selfie does not match the profile image. Please try again.');
-          return;
-        }
+  //       const similarity = getEmbeddingSimilarity(profileResult.embedding, selfieResult.embedding);
+  //       console.log('[KYCPageVerification] FaceNet cosine similarity:', similarity);
+  //       if (similarity < 0.65) {
+  //         Alert.alert('Face does not match', 'The selfie does not match the profile image. Please try again.');
+  //         return;
+  //       }
 
-        setSelfieUri(stableSelfieUri);
-        setIsIdentityVerified(true);
-        await AsyncStorage.setItem(
-          IDENTITY_VERIFICATION_STORAGE_KEY,
-          JSON.stringify({
-            verified: true,
-            selfieUri: stableSelfieUri,
-            verifiedAt: new Date().toISOString(),
-          })
-        );
-        Alert.alert(
-          'Face verification successful',
-          'Your face has been verified successfully.',
-          [{
-            text: 'OK',
-            onPress: () => navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri: stableSelfieUri }),
-          }]
-        );
-      } catch (error) {
-        console.error('[KYCPageVerification] local face verification error:', error);
-        Alert.alert('Face verification unavailable', 'Please try again with clear face images.');
-      } finally {
-        setIsRecognizingFace(false);
-      }
-    }
-  };
+  //       setSelfieUri(stableSelfieUri);
+  //       setIsIdentityVerified(true);
+  //       await AsyncStorage.setItem(
+  //         IDENTITY_VERIFICATION_STORAGE_KEY,
+  //         JSON.stringify({
+  //           verified: true,
+  //           selfieUri: stableSelfieUri,
+  //           verifiedAt: new Date().toISOString(),
+  //         })
+  //       );
+  //       Alert.alert(
+  //         'Face verification successful',
+  //         'Your face has been verified successfully.',
+  //         [{
+  //           text: 'OK',
+  //           onPress: () => navigation.navigate(navigationStrings.KYCAPPROVED, { selfieUri: stableSelfieUri }),
+  //         }]
+  //       );
+  //     } catch (error) {
+  //       console.error('[KYCPageVerification] local face verification error:', error);
+  //       Alert.alert('Face verification unavailable', 'Please try again with clear face images.');
+  //     } finally {
+  //       setIsRecognizingFace(false);
+  //     }
+  //   }
+  // };
 
-  const handleVerificationDone = () => {
-    if (isIdentityVerified) {
-      navigation.navigate(navigationStrings.DASHBOARDSCREEN);
-      return;
-    }
+  // const handleVerificationDone = () => {
+  //   if (isIdentityVerified) {
+  //     navigation.navigate(navigationStrings.DASHBOARDSCREEN);
+  //     return;
+  //   }
 
-    takeSelfie();
-  };
+  //   takeSelfie();
+  // };
 
   const displayedVerificationSteps = verificationSteps.map((step) => (
     step.title === 'Identity Verification' && isIdentityVerified
@@ -240,7 +240,7 @@ const KYCPageVerification = () => {
           </Pressable>
         ))}
 
-        <View style={styles.selfieCard}>
+        {/* <View style={styles.selfieCard}>
           <Text style={styles.selfieTitle}>📸 Step 3: Selfie Verification</Text>
           <Text style={styles.selfieDescription}>Take a clear selfie holding your Aadhaar card. Make sure your face and card details are clearly visible.</Text>
           <View style={styles.selfieDropzoneRow}>
@@ -265,7 +265,7 @@ const KYCPageVerification = () => {
 
        <View style={styles.privacy}>
           <Text style={styles.privacyText}>✓  Your data is encrypted and only used for{`\n`}   verification. We do not share it with third parties.</Text>
-        </View>
+        </View> */}
       </ScrollView>
 
       <Modal transparent visible={isRecognizingFace} animationType="fade">

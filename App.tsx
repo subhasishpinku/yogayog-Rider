@@ -41,6 +41,10 @@ export default function App() {
 }
 //http://192.168.23.135:8082
 //npx expo run:android
+//npx depcheck
+//npm uninstall package-name
+//npx expo-doctor
+//eas build -p android --profile preview --clear-cache
 //npx expo start
 //npx expo run:ios
 //npx expo prebuild --clean
