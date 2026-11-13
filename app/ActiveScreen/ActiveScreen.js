@@ -38,6 +38,13 @@ const ActiveScreen = ({ route }) => {
   const orderCode = order?.order_id || orderId || '1222000010';
   const rawOrderStatus = order?.status || order?.order_status || order?.delivery_status || order?.orderStatus || '';
   const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase();
+  const pickupStatusesWithoutCheck = [
+    'assigned',
+    'on_the_way',
+    'on the way',
+    'reached',
+  ];
+  const isPickedUp = !pickupStatusesWithoutCheck.includes(normalizedOrderStatus);
   const isDelivered = normalizedOrderStatus === 'delivered';
   const isPaymentDone = String(order?.payment_status || '').trim().toLowerCase() === 'done';
   const orderStatus = isDelivered
@@ -53,6 +60,7 @@ const ActiveScreen = ({ route }) => {
   const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
   const isWalletOrder = paymentMethod === 'wallet';
   const canUseDeliveryActions = isPaymentDone && (isWalletOrder || isPrepaidOrder);
+  const isDeliveryActionDisabled = !canUseDeliveryActions && (!isDelivered || isPaymentDone);
   const deliveryParams = {
     orderId: orderCode,
     id: order?.id || order?.order_pk_id || orderId,
@@ -169,7 +177,7 @@ const ActiveScreen = ({ route }) => {
               style={[styles.orderActionButton, styles.codButton]}
               onPress={() => navigation.navigate(navigationStrings.CODAMOUNTCOLLECT, deliveryParams)}
             >
-              <Text style={styles.orderActionText}>COD</Text>
+              <Text style={styles.orderActionText}>{isPaymentDone ? 'Collected ✓' : 'Collect payment'}</Text>
             </Pressable>
           )}
           {/* <Pressable
@@ -210,7 +218,7 @@ const ActiveScreen = ({ route }) => {
           <View style={styles.routeRow}>
             <Text style={styles.pickupDot}>●</Text>
             <View style={styles.routeCopy}>
-              <Text style={styles.routeLabel}>PICKED UP ✓</Text>
+              <Text style={styles.routeLabel}>{isPickedUp ? 'PICKED UP ✓' : 'PICKUP'}</Text>
               <Text style={styles.routeAddress}>{order?.pickup_area || 'Pickup address unavailable'}</Text>
             </View>
           </View>
@@ -261,10 +269,10 @@ const ActiveScreen = ({ route }) => {
               styles.deliveredButton,
               styles.deliveryActionButton,
               styles.nonDeliveryActionButton,
-              !canUseDeliveryActions && (isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
+              (!isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
             ]}
             onPress={handleNonDeliveryAction}
-            disabled={!canUseDeliveryActions && (isDelivered || isPaymentDone)}
+            disabled={!isDelivered || isPaymentDone}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
           </Pressable>
@@ -277,7 +285,9 @@ const ActiveScreen = ({ route }) => {
             onPress={handleDeliveryAction}
             disabled={!canUseDeliveryActions && (!isDelivered || isPaymentDone)}
           >
-            <Text style={styles.deliveredText}>{isPaymentDone ? 'Delivered ✓' : 'Mark as Delivered ✓'}</Text>
+            <Text style={styles.deliveredText}>
+              {isDeliveryActionDisabled ? 'Collected ✓' : isPaymentDone ? 'View payment ✓' : 'Collect payment X'}
+            </Text>
           </Pressable>
         </View>
       </View>

@@ -174,7 +174,7 @@ const WithdrawEarnings = () => {
             <Text style={styles.bankIcon}>🏦</Text>
           </View>
           <View style={styles.bankCopy}>
-            <Text style={styles.bankName}>SBI Savings Account</Text>
+            <Text style={styles.bankName}>Savings Account</Text>
             <Text style={styles.accountNumber}>{accountNumber}</Text>
           </View>
           <Pressable onPress={() => navigation.navigate(navigationStrings.PROFILESCREEN)}>

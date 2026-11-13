@@ -119,8 +119,8 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="light" />
-
+      {/* <StatusBar style="hidden" /> */}
+       <StatusBar hidden={true} />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

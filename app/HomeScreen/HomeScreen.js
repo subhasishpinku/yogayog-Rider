@@ -84,6 +84,26 @@ const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scr
         <Text style={styles.orderDetail}>Drop: {order.drop_area || 'Not available'}</Text>
         <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)}</Text>
         <Text style={styles.fareLabel}>{statusText}</Text>
+        <Pressable
+          style={{
+            alignSelf: 'flex-end',
+            marginTop: 8,
+            paddingHorizontal: 10,
+            paddingVertical: 6,
+            borderRadius: 10,
+            backgroundColor: colors.gold,
+          }}
+          onPress={(event) => {
+            event.stopPropagation?.();
+            navigation.navigate(navigationStrings.RESCHEDULEDELIVERY, {
+              order,
+              id: order.id || order.order_pk_id,
+              orderId: order.id || order.order_pk_id,
+            });
+          }}
+        >
+          <Text style={{ color: '#080808', fontSize: 11, fontWeight: '900' }}>Reschedule</Text>
+        </Pressable>
         <Text style={styles.orderDate}>
           {order.created_at || ''}
           {order.status ? (isAssigned ? (
@@ -209,6 +229,9 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     const status = String(order.status || '').toLowerCase();
     return !['delivered', 'cancelled', 'canceled', 'non_delivery', 'rto'].includes(status);
   }).length;
+  const availableOrders = riderOrders.filter(
+    (order) => String(order.status || '').toLowerCase() !== 'delivered'
+  );
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -508,8 +531,8 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
 
       {isOnline ? (
         <>
-          <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{riderOrders.length} orders</Text></View>
-          {riderOrders.length > 0 ? riderOrders.map((order, index) => (
+          <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{availableOrders.length} orders</Text></View>
+          {availableOrders.length > 0 ? availableOrders.map((order, index) => (
             <AnimatedOrderCard
               key={order.id || order.order_pk_id}
               assignedBlinkOpacity={assignedBlinkOpacity}

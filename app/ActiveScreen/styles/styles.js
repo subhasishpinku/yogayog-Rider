@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   mapArea: {
-    height: '35%',
+    height: '32%',
     overflow: 'hidden',
     backgroundColor: colors.map,
   },

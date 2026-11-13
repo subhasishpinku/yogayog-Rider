@@ -88,10 +88,6 @@ const WalletScreen = ({ route }) => {
               <Text style={styles.detailLabel}>Payment status</Text>
               <Text style={styles.detailValue}>{paymentDetails?.payment_status || 'N/A'}</Text>
             </View>
-            <View style={[styles.detailRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.detailLabel}>Internal order ID</Text>
-              <Text style={styles.detailValue}>{internalOrderId || 'N/A'}</Text>
-            </View>
           </View>
 
           <Text style={styles.footerText}>Payment information fetched from the order record.</Text>

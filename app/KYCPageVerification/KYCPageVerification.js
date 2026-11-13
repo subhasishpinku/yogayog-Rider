@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 // import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 // import { processFace } from '@rdnf-magiba/expo-face-recognition';
 
 import styles from './styles/styles';
@@ -26,6 +26,7 @@ const verificationSteps = [
 ];
 
 const IDENTITY_VERIFICATION_STORAGE_KEY = 'kycIdentityVerification';
+const DOCUMENT_UPLOAD_STATUS_KEY = 'documentUploadStatus';
 
 const getEmbeddingSimilarity = (firstEmbedding, secondEmbedding) => {
   if (!firstEmbedding?.length || firstEmbedding.length !== secondEmbedding?.length) return 0;
@@ -61,12 +62,35 @@ const KYCPageVerification = () => {
   const [selfieUri, setSelfieUri] = useState(null);
   const [isRecognizingFace, setIsRecognizingFace] = useState(false);
   const [isIdentityVerified, setIsIdentityVerified] = useState(false);
+  const [isDocumentsUploaded, setIsDocumentsUploaded] = useState(false);
   const profileImageUri =
     riderProfile?.profile_picture || riderProfile?.profile_image_url;
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
   }, [fetchRiderProfile]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      let mounted = true;
+
+      AsyncStorage.getItem(DOCUMENT_UPLOAD_STATUS_KEY)
+        .then((storedStatus) => {
+          if (mounted) {
+            setIsDocumentsUploaded(storedStatus === '1');
+          }
+        })
+        .catch(() => {
+          if (mounted) {
+            setIsDocumentsUploaded(false);
+          }
+        });
+
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -185,11 +209,20 @@ const KYCPageVerification = () => {
   //   takeSelfie();
   // };
 
-  const displayedVerificationSteps = verificationSteps.map((step) => (
-    step.title === 'Identity Verification' && isIdentityVerified
+  const displayedVerificationSteps = verificationSteps.map((step) => {
+    if (step.title === 'Document Upload') {
+      return {
+        ...step,
+        icon: isDocumentsUploaded ? '✓' : '1',
+        status: isDocumentsUploaded ? 'Uploaded' : 'Required',
+        state: isDocumentsUploaded ? 'completed' : 'pending',
+      };
+    }
+
+    return step.title === 'Identity Verification' && isIdentityVerified
       ? { ...step, icon: '✓', status: 'Verified', state: 'completed' }
-      : step
-  ));
+      : step;
+  });
 
   return (
     <View style={styles.screen}>

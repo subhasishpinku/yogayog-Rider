@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Alert, Image, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { recognizeText } from 'expo-ocr-kit';
@@ -16,6 +17,8 @@ const documentDefinitions = [
   { icon: '🏢', title: 'Bank Passbook / Cheque', documentType: 'bank_passbook', subtitle: 'For payout verification' },
   { icon: '📸', title: 'Profile Photo', documentType: 'profile_picture', subtitle: 'Clear face photo · White background', uploadLabel: 'Upload Profile Photo' },
 ];
+
+const DOCUMENT_UPLOAD_STATUS_KEY = 'documentUploadStatus';
 
 const getFileName = (fileUrl, fallback) => {
   if (!fileUrl) return fallback;
@@ -49,6 +52,17 @@ const DocumentsUploadSection = () => {
       files: uploaded ? [fileUrl] : [],
     };
   }), [riderDocuments]);
+
+  useEffect(() => {
+    const allDocumentsUploaded =
+      documents.length === documentDefinitions.length &&
+      documents.every((document) => document.statusStyle === 'uploaded');
+
+    AsyncStorage.setItem(
+      DOCUMENT_UPLOAD_STATUS_KEY,
+      allDocumentsUploaded ? '1' : '0'
+    ).catch(() => {});
+  }, [documents]);
 
   const pendingDocuments = documents.filter((document) => document.statusStyle === 'required');
   const pendingDocumentNames = pendingDocuments.map((document) => document.title).join(' & ');
