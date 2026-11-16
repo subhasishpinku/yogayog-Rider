@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Alert, Image, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { recognizeText } from 'expo-ocr-kit';
 import { StatusBar } from 'expo-status-bar';
 
@@ -14,6 +15,12 @@ const accountTypes = [
   { label: 'Bike', value: 'bike' },
   { label: 'Truck', value: 'truck' },
 ];
+
+const normalizeKycName = (name) => String(name || '')
+  .trim()
+  .toUpperCase()
+  .replace(/^(MR|MRS|MS|DR)\.?\s+/, '')
+  .replace(/\s+/g, ' ');
 
 const RegisterScreen = ({ navigation, route }) => {
   const [fullName, setFullName] = useState('');
@@ -38,18 +45,23 @@ const RegisterScreen = ({ navigation, route }) => {
   const [address, setAddress] = useState('');
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [bankIfscCode, setBankIfscCode] = useState('');
+  const [bankVerificationError, setBankVerificationError] = useState('');
+  const [kycNames, setKycNames] = useState({ pan: '', licence: '', bank: '' });
   const [secondaryAccountNumber, setSecondaryAccountNumber] = useState('');
   const [secondaryIfscCode, setSecondaryIfscCode] = useState('');
   const [upiId, setUpiId] = useState('');
   const [vehicleNumber, setVehicleNumber] = useState('');
   const [drivingLicenceNumber, setDrivingLicenceNumber] = useState('');
+  const [drivingLicenceError, setDrivingLicenceError] = useState('');
   const [panNumber, setPanNumber] = useState('');
+  const [panError, setPanError] = useState('');
   const [aadhaarNumber, setAadhaarNumber] = useState('');
   const [drivingLicenceImage, setDrivingLicenceImage] = useState(null);
   const [panImage, setPanImage] = useState(null);
   const [aadhaarImage, setAadhaarImage] = useState(null);
   const [profileImage, setProfileImage] = useState(null);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [isVerifyingKyc, setIsVerifyingKyc] = useState(false);
   const {
     authError,
     isRegistering,
@@ -57,10 +69,18 @@ const RegisterScreen = ({ navigation, route }) => {
     isVerifyingEmailOtp,
     registerRider,
     sendEmailOtp,
+    verifyBankAccount,
+    verifyDrivingLicence,
     verifyEmailOtp,
+    verifyPan,
+    verifyRiderKyc,
   } = useAuth();
 
   const phone = route?.params?.phone || '';
+  const normalizedKycNames = Object.values(kycNames).map(normalizeKycName);
+  const hasAllKycNames = normalizedKycNames.every(Boolean);
+  const areKycNamesMatching = hasAllKycNames && new Set(normalizedKycNames).size === 1;
+  const kycNamesMismatch = hasAllKycNames && !areKycNamesMatching;
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -154,7 +174,7 @@ const RegisterScreen = ({ navigation, route }) => {
     ]);
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = async () => {
     const requiredFields = [
       [profileImage, 'Upload Photo'],
       [drivingLicenceImage, 'Upload Driving Licence'],
@@ -200,9 +220,45 @@ const RegisterScreen = ({ navigation, route }) => {
       Alert.alert('Verify email', 'Please verify your email before creating an account.');
       return;
     }
+
     const [day, month, year] = dateOfBirth.split('/');
+    const pan = panNumber.trim().toUpperCase();
+    const licenceNumber = drivingLicenceNumber.trim().toUpperCase();
+    const accountNumber = bankAccountNumber.trim();
+    const ifsc = bankIfscCode.trim().toUpperCase();
+    const dob = `${year}-${month}-${day}`;
+
+    if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(pan)) {
+      Alert.alert('Invalid PAN', 'Enter a valid 10-character PAN number.');
+      return;
+    }
+    if (!/^[A-Z]{2}\d{13,17}$/.test(licenceNumber)) {
+      Alert.alert('Invalid driving licence', 'Enter a valid driving licence number.');
+      return;
+    }
+    if (!/^\d{9,18}$/.test(accountNumber) || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+      Alert.alert('Invalid bank details', 'Enter a valid bank account number and IFSC code.');
+      return;
+    }
+
+    let verifiedPanName = '';
+    setIsVerifyingKyc(true);
+    try {
+      const kycResult = await verifyRiderKyc({ pan, licenceNumber, dob, accountNumber, ifsc });
+      verifiedPanName = String(kycResult.pan?.full_name || '').trim();
+      if (verifiedPanName) setFullName(verifiedPanName);
+    } catch (error) {
+      Alert.alert(
+        'KYC verification failed',
+        error.response?.data?.message || error.message || 'Unable to verify KYC details. Please try again.'
+      );
+      return;
+    } finally {
+      setIsVerifyingKyc(false);
+    }
+
     const payload = {
-      name: fullName.trim(),
+      name: verifiedPanName || fullName.trim(),
       address: address.trim(),
       city: city.trim(),
       pincode: pincode.trim(),
@@ -213,14 +269,14 @@ const RegisterScreen = ({ navigation, route }) => {
       veh_type: accountType === 'truck' ? 'Truck' : 'Bike',
       veh_number: vehicleNumber.trim(),
       upi: upiId.trim(),
-      ac_numb: bankAccountNumber.trim(),
-      ifsc_c: bankIfscCode.trim().toUpperCase(),
+      ac_numb: accountNumber,
+      ifsc_c: ifsc,
       second_acc: secondaryAccountNumber.trim(),
       second_ifsc: secondaryIfscCode.trim().toUpperCase(),
       aadhar_no: aadhaarNumber.trim(),
-      pan_no: panNumber.trim().toUpperCase(),
-      dl_no: drivingLicenceNumber.trim().toUpperCase(),
-      dob: `${year}-${month}-${day}`,
+      pan_no: pan,
+      dl_no: licenceNumber,
+      dob,
       profile_pic: profileImage,
       dl_pic: drivingLicenceImage,
       pan_pic: panImage,
@@ -231,6 +287,101 @@ const RegisterScreen = ({ navigation, route }) => {
       .then(() => navigation.replace(navigationStrings.DASHBOARDSCREEN))
       .catch(() => {
         // The registration error is exposed by AuthContext and rendered below.
+      });
+  };
+
+  const handlePanBlur = (panValue = panNumber) => {
+    const pan = String(panValue || '').trim().toUpperCase();
+    if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(pan)) return;
+
+    verifyPan(pan)
+      .then((response) => {
+        const verifiedPanName = String(response.data?.full_name || '').trim();
+        setPanError('');
+        if (verifiedPanName) {
+          setFullName(verifiedPanName);
+          setKycNames((current) => ({ ...current, pan: verifiedPanName }));
+        }
+      })
+      .catch((error) => {
+        const message = error.response?.data?.message || error.message || 'PAN verification failed.';
+        setFullName('');
+        setKycNames((current) => ({ ...current, pan: '' }));
+        setPanError(message);
+        console.warn('[RegisterScreen] PAN verification failed:', message);
+      });
+  };
+
+  const handleDrivingLicenceBlur = (licenceValue = drivingLicenceNumber) => {
+    const licenceNumber = String(licenceValue || '').trim().toUpperCase().replace(/[\s-]/g, '');
+    const dob = [
+      selectedDate.getFullYear(),
+      String(selectedDate.getMonth() + 1).padStart(2, '0'),
+      String(selectedDate.getDate()).padStart(2, '0'),
+    ].join('-');
+    if (!/^[A-Z]{2}\d{13,17}$/.test(licenceNumber) || !dateOfBirth) return;
+
+    verifyDrivingLicence(licenceNumber, dob)
+      .then(async (response) => {
+        setDrivingLicenceError('');
+        const licenceData = response.data?.data;
+        const verifiedLicenceName = String(licenceData?.name || '').trim();
+        if (verifiedLicenceName) {
+          setKycNames((current) => ({ ...current, licence: verifiedLicenceName }));
+        }
+        const licenceDob = String(licenceData?.dob || '');
+        const [dobYear, dobMonth, dobDay] = licenceDob.split('-');
+
+        if (dobYear && dobMonth && dobDay) {
+          setDateOfBirth(`${dobDay}/${dobMonth}/${dobYear}`);
+          setSelectedDate(new Date(Number(dobYear), Number(dobMonth) - 1, Number(dobDay)));
+        }
+        setPincode(String(licenceData?.permanent_zip || licenceData?.temporary_zip || '').trim());
+
+        const profileImageBase64 = String(licenceData?.profile_image || '').replace(/\s/g, '');
+        if (profileImageBase64) {
+          const imageBase64 = profileImageBase64.replace(/^data:image\/\w+;base64,/, '');
+          const profileImageUri = `${FileSystem.cacheDirectory}licence-profile-${licenceNumber}.jpg`;
+
+          await FileSystem.writeAsStringAsync(profileImageUri, imageBase64, {
+            encoding: FileSystem.EncodingType.Base64,
+          });
+          setProfileImage(profileImageUri);
+          console.log('[RegisterScreen] Driving licence profile image applied to upload preview.');
+        }
+      })
+      .catch((error) => {
+        const message = error.response?.data?.message || error.message || 'Driving licence verification failed.';
+        setProfileImage(null);
+        setKycNames((current) => ({ ...current, licence: '' }));
+        setDrivingLicenceError(message);
+        console.warn('[RegisterScreen] Driving licence verification failed:', message);
+      });
+  };
+
+  const handleBankDetailsBlur = (accountValue = bankAccountNumber, ifscValue = bankIfscCode) => {
+    const accountNumber = String(accountValue || '').trim();
+    const ifsc = String(ifscValue || '').trim().toUpperCase();
+    if (!/^\d{9,18}$/.test(accountNumber) || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) return;
+
+    verifyBankAccount(accountNumber, ifsc)
+      .then((response) => {
+        const verifiedBankName = String(response.data?.full_name || '').trim();
+        const ifscDetails = response.data?.ifsc_details || response.data?.data?.ifsc_details || {};
+        setBankVerificationError('');
+        if (verifiedBankName) {
+          setFullName(verifiedBankName);
+          setKycNames((current) => ({ ...current, bank: verifiedBankName }));
+        }
+        setCity(String(ifscDetails.city || '').trim());
+        setState(String(ifscDetails.state || '').trim());
+        setAddress(String(ifscDetails.address || '').trim());
+      })
+      .catch((error) => {
+        const message = error.response?.data?.message || error.message || 'Bank account verification failed.';
+        setKycNames((current) => ({ ...current, bank: '' }));
+        setBankVerificationError(message);
+        console.warn('[RegisterScreen] Bank account verification failed:', message);
       });
   };
 
@@ -310,7 +461,13 @@ const RegisterScreen = ({ navigation, route }) => {
               <Image accessibilityLabel="Yogayog logo" source={logo} style={styles.logo} resizeMode="contain" />
               <Pressable accessibilityRole="button" onPress={() => pickDocument(setProfileImage)} style={styles.profileUpload}>
                 {profileImage ? (
-                  <Image source={{ uri: profileImage }} style={styles.profilePreview} />
+                  <Image
+                    key={profileImage}
+                    source={{ uri: profileImage }}
+                    style={styles.profilePreview}
+                    resizeMode="cover"
+                    onError={() => console.warn('[RegisterScreen] Unable to render profile image preview.')}
+                  />
                 ) : (
                   <Text style={styles.profileUploadIcon}>↑</Text>
                 )}
@@ -415,8 +572,23 @@ const RegisterScreen = ({ navigation, route }) => {
             {renderInput('Enter Address', address, setAddress, { multiline: true, numberOfLines: 3 })}
 
             <Text style={styles.sectionTitle}>▣  Bank Details</Text>
-            {renderInput('Bank Account Number', bankAccountNumber, setBankAccountNumber, { keyboardType: 'number-pad' })}
-            {renderInput('IFSC Code', bankIfscCode, setBankIfscCode, { autoCapitalize: 'characters' })}
+            {renderInput('Bank Account Number', bankAccountNumber, (value) => {
+              setBankAccountNumber(value);
+              setBankVerificationError('');
+              setKycNames((current) => ({ ...current, bank: '' }));
+              if (/^\d{9,18}$/.test(value.trim()) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(bankIfscCode.trim().toUpperCase())) {
+                handleBankDetailsBlur(value, bankIfscCode);
+              }
+            }, { keyboardType: 'number-pad' })}
+            {renderInput('IFSC Code', bankIfscCode, (value) => {
+              setBankIfscCode(value);
+              setBankVerificationError('');
+              setKycNames((current) => ({ ...current, bank: '' }));
+              if (/^\d{9,18}$/.test(bankAccountNumber.trim()) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value.trim().toUpperCase())) {
+                handleBankDetailsBlur(bankAccountNumber, value);
+              }
+            }, { autoCapitalize: 'characters' })}
+            {!!bankVerificationError && <Text style={styles.errorText}>{bankVerificationError}</Text>}
             {renderInput('Secondary Account Number', secondaryAccountNumber, setSecondaryAccountNumber, { keyboardType: 'number-pad' })}
             {renderInput('Secondary IFSC Code', secondaryIfscCode, setSecondaryIfscCode, { autoCapitalize: 'characters' })}
 
@@ -425,11 +597,44 @@ const RegisterScreen = ({ navigation, route }) => {
 
             <Text style={styles.sectionTitle}>▱  Vehicle Details</Text>
             {renderInput('Vehicle Number', vehicleNumber, setVehicleNumber, { autoCapitalize: 'characters' })}
-            {renderInput('Driving Licence Number', drivingLicenceNumber, setDrivingLicenceNumber, { autoCapitalize: 'characters' })}
+            {renderInput('Driving Licence Number', drivingLicenceNumber, (value) => {
+              setDrivingLicenceNumber(value);
+              setKycNames((current) => ({ ...current, licence: '' }));
+              const normalizedLicenceNumber = value.trim().toUpperCase().replace(/[\s-]/g, '');
+              const isLicenceFormatValid = /^[A-Z]{2}\d{13,17}$/.test(normalizedLicenceNumber);
+
+              if (!dateOfBirth && value.trim()) {
+                setDrivingLicenceError('Please select Date of Birth before entering your Driving Licence Number.');
+              } else if (normalizedLicenceNumber.length >= 15 && !isLicenceFormatValid) {
+                setProfileImage(null);
+                setDrivingLicenceError('The driving licence number format is invalid.');
+              } else {
+                setDrivingLicenceError('');
+              }
+              if (isLicenceFormatValid && dateOfBirth) {
+                handleDrivingLicenceBlur(value);
+              }
+            }, { autoCapitalize: 'characters' })}
+            {!!drivingLicenceError && <Text style={styles.errorText}>{drivingLicenceError}</Text>}
             {renderUpload('Upload Driving Licence', drivingLicenceImage, () => chooseDocumentSource(setDrivingLicenceImage, 'drivingLicence'))}
 
             <Text style={styles.sectionTitle}>▤  KYC Details</Text>
-            {renderInput('PAN Number', panNumber, setPanNumber, { autoCapitalize: 'characters', maxLength: 10 })}
+            {renderInput('PAN Number', panNumber, (value) => {
+              setPanNumber(value);
+              setPanError('');
+              setKycNames((current) => ({ ...current, pan: '' }));
+              const normalizedPan = value.trim().toUpperCase();
+              const isPanFormatValid = /^[A-Z]{5}\d{4}[A-Z]$/.test(normalizedPan);
+
+              if (normalizedPan.length === 10 && !isPanFormatValid) {
+                setFullName('');
+                setPanError('The pan format is invalid.');
+              }
+              if (isPanFormatValid) {
+                handlePanBlur(value);
+              }
+            }, { autoCapitalize: 'characters', maxLength: 10 })}
+            {!!panError && <Text style={styles.errorText}>{panError}</Text>}
             {renderInput('Aadhaar Number', aadhaarNumber, setAadhaarNumber, { keyboardType: 'number-pad', maxLength: 12 })}
             {renderUpload('Upload PAN Image', panImage, () => chooseDocumentSource(setPanImage, 'pan'))}
             {renderUpload('Upload Aadhaar Image', aadhaarImage, () => chooseDocumentSource(setAadhaarImage, 'aadhaar'))}
@@ -445,8 +650,9 @@ const RegisterScreen = ({ navigation, route }) => {
               <Text style={styles.termsText}>I accept the terms and conditions</Text>
             </Pressable>
             {!!authError && <Text style={styles.errorText}>{authError}</Text>}
-            <Pressable accessibilityRole="button" disabled={isRegistering} onPress={handleCreateAccount} style={[styles.createButton, acceptedTerms && styles.createButtonActive, isRegistering && styles.createButtonDisabled]}>
-              <Text style={[styles.createButtonText, acceptedTerms && styles.createButtonTextActive]}>{isRegistering ? 'Creating Account...' : 'Create Account'}</Text>
+            {kycNamesMismatch && <Text style={styles.errorText}>PAN, Driving Licence and Bank Account holder names must match.</Text>}
+            <Pressable accessibilityRole="button" disabled={isRegistering || isVerifyingKyc || !areKycNamesMatching} onPress={handleCreateAccount} style={[styles.createButton, acceptedTerms && areKycNamesMatching && styles.createButtonActive, (isRegistering || isVerifyingKyc || !areKycNamesMatching) && styles.createButtonDisabled]}>
+              <Text style={[styles.createButtonText, acceptedTerms && areKycNamesMatching && styles.createButtonTextActive]}>{isVerifyingKyc ? 'Verifying KYC...' : isRegistering ? 'Creating Account...' : 'Create Account'}</Text>
             </Pressable>
             {!!phone && <Text style={styles.phoneHint}>Registered mobile: +91 {phone}</Text>}
           </View>

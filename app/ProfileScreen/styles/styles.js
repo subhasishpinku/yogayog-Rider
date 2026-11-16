@@ -9,8 +9,17 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 112,
   },
+  titleBar: { height: 80, paddingHorizontal: 12, paddingTop: 30, overflow: 'hidden', backgroundColor: colors.gold },
+  titleBarRing: { position: 'absolute', top: -30, right: -27, width: 118, height: 118, borderWidth: 14, borderColor: '#302812', borderRadius: 999 },
+  titleBarGreetingRow: { flexDirection: 'row', alignItems: 'center' },
+  titleBarLogo: { width: 72, height: 27, marginLeft: 8, borderRadius: 5 },
+  titleBarGreeting: { color: colors.white, fontSize: 17, left: 5 },
+  titleBarWalletButton: { marginLeft: 'auto', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.white },
+  titleBarWalletButtonText: { color: '#17120A', fontSize: 14, fontWeight: '900' },
+  titleBarAvatar: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginLeft: 5, borderRadius: 24, backgroundColor: '#473E17' },
+  titleBarAvatarText: { color: colors.gold, fontSize: 18, fontWeight: '900' },
   header: {
-    height: 213,
+    height: 110,
     paddingHorizontal: 12,
     paddingTop: 18,
     overflow: 'hidden',
@@ -26,6 +35,9 @@ const styles = StyleSheet.create({
     borderColor: '#2E2810',
     borderRadius: 70,
   },
+  profileSummaryRow: { flexDirection: 'row', alignItems: 'flex-start' },
+  profileSummaryInfo: { flex: 1, marginLeft: 16, paddingTop: 3 },
+  profileSummaryName: { marginTop: 0 },
   avatar: {
     width: 79,
     height: 79,
@@ -75,8 +87,10 @@ const styles = StyleSheet.create({
   },
   statusRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     alignItems: 'center',
     marginTop: 9,
+    rowGap: 6,
   },
   statusChip: {
     height: 23,

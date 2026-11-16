@@ -168,6 +168,7 @@ const ActiveScreen = ({ route }) => {
           <Text style={styles.hereText}>🛵 You are here</Text>
           <View style={styles.hereArrow} />
         </View> */}
+        
       </View>
 
       <View style={styles.orderPanel}>
@@ -202,6 +203,15 @@ const ActiveScreen = ({ route }) => {
               <Text style={styles.orderActionText}>Online</Text>
             </Pressable>
           )}
+           <Pressable
+          style={styles.statusUpdateButton}
+          onPress={() => navigation.navigate(navigationStrings.ORDERCHAINSCREEN, {
+            order,
+            orderId: order?.id || order?.order_pk_id || orderId,
+          })}
+        >
+          <Text style={styles.statusUpdateButtonText}>Rider Update Status</Text>
+        </Pressable>
         </View>
 
         <View style={styles.orderHeader}>
@@ -209,6 +219,14 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.orderId}>Order #{orderCode}</Text>
             <Text style={styles.orderTitle}>{orderStatus}</Text>
           </View>
+          {!isDelivered && (
+            <Pressable
+              style={styles.rescheduleButton}
+              onPress={() => navigation.navigate(navigationStrings.RESCHEDULEDELIVERY, deliveryParams)}
+            >
+              <Text style={styles.rescheduleText}>Reschedule</Text>
+            </Pressable>
+          )}
           <View style={styles.activeBadge}>
             <Text style={styles.activeText}>• Active</Text>
           </View>
@@ -238,6 +256,7 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.customerName}>{order?.customer_name || 'Customer'}</Text>
             <Text style={styles.customerPhone}>{order?.customer_phone || 'Phone unavailable'}</Text>
           </View>
+         
           <Pressable
             style={styles.callButton}
             onPress={() =>
@@ -250,7 +269,9 @@ const ActiveScreen = ({ route }) => {
             }
           >
             <Text style={styles.callText}>📞 Call</Text>
+
           </Pressable>
+          
         </View>
 
         <View style={styles.summaryRow}>
@@ -290,6 +311,7 @@ const ActiveScreen = ({ route }) => {
             </Text>
           </Pressable>
         </View>
+        
       </View>
     </View>
   );

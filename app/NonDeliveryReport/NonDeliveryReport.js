@@ -21,7 +21,7 @@ const reasonPresentation = {
 const NonDeliveryReport = ({ route }) => {
   const navigation = useNavigation();
   const { fetchNonDeliveryReasons, nonDeliveryReasons } = useHome();
-  const [selectedReason, setSelectedReason] = useState('A');
+  const [selectedReason, setSelectedReason] = useState(null);
   const orderId = route?.params?.id || route?.params?.orderId;
   const orderCode = route?.params?.orderId || orderId || '1222000010';
   const customerName = route?.params?.customerName || 'Priya Mehta';
@@ -33,15 +33,19 @@ const NonDeliveryReport = ({ route }) => {
   }, [fetchNonDeliveryReasons]);
 
   const reasons = useMemo(() => {
-    return nonDeliveryReasons.map((reason) => ({
-      ...reason,
-      id: reason.code,
-      reasonId: reason.id,
-      title: `${reason.code} · ${reason.title}`,
-      subtitle: reason.description,
-      tone: reasonPresentation[reason.code]?.tone || 'blue',
-      route: reasonPresentation[reason.code]?.route,
-    }));
+    return nonDeliveryReasons.filter((reason) => Number(reason.id) !== 4).map((reason) => {
+      const code = reason.code || String.fromCharCode(64 + Number(reason.id));
+
+      return {
+        ...reason,
+        id: reason.id,
+        reasonId: reason.id,
+        title: reason.title,
+        subtitle: reason.description,
+        tone: reasonPresentation[code]?.tone || 'blue',
+        route: reasonPresentation[code]?.route,
+      };
+    });
   }, [nonDeliveryReasons]);
 
   useEffect(() => {
@@ -49,6 +53,8 @@ const NonDeliveryReport = ({ route }) => {
   }, [reasons]);
 
   const continueWithReason = () => {
+    if (selectedReason === null) return;
+
     const selected = reasons.find((reason) => reason.id === selectedReason);
     navigation.navigate(selected?.route || navigationStrings.RTODETAILS, {
       id: orderId,
@@ -71,7 +77,7 @@ const NonDeliveryReport = ({ route }) => {
         <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
           <Text style={styles.titleBarBackText}>‹</Text>
         </Pressable>
-        <Text style={styles.titleBarText}>Non-Delivery Report1</Text>
+        <Text style={styles.titleBarText}>Non-Delivery Report</Text>
         <View style={styles.titleBarSpacer} />
       </View>
       <View style={styles.headerBackground}>
@@ -115,7 +121,7 @@ const NonDeliveryReport = ({ route }) => {
           );
         })}
 
-        <Pressable style={styles.continueButton} onPress={continueWithReason}>
+        <Pressable style={styles.continueButton} onPress={continueWithReason} disabled={selectedReason === null}>
           <Text style={styles.continueText}>Continue with Selected Reason →</Text>
         </Pressable>
       </ScrollView>

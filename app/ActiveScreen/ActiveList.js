@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Animated, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 import { useHome } from '../contexts/HomeContext';
+import { useAuth } from '../contexts/AuthContext';
 import navigationStrings from '../constants/navigationStrings';
 import colors from './styles/colors';
 import styles from './styles/ActiveListstyles';
@@ -18,6 +19,15 @@ const statusTabs = [
   { key: 'today_payment_done', label: 'Today Done' },
   { key: 'today_payment_pending', label: 'Today Pending' },
 ];
+
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
+};
 
 const statusLabel = (status) => {
   if (status === 'rider_accepted') return 'Accepted';
@@ -48,12 +58,66 @@ const isOrderToday = (createdAt) => {
 
 const ActiveList = ({ initialStatus = 'all' }) => {
   const navigation = useNavigation();
+  const { riderProfile } = useAuth();
   const { fetchRiderOrders, riderOrders } = useHome();
   const [selectedStatus, setSelectedStatus] = useState(initialStatus);
+  const [listTab, setListTab] = useState('pending');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
+  const pendingPaymentOpacity = React.useRef(new Animated.Value(1)).current;
+  const logoScale = useRef(new Animated.Value(1)).current;
+  const handWave = useRef(new Animated.Value(0)).current;
+
+  const riderName = riderProfile?.name || 'Suresh Kumar';
+  const riderInitials = riderName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+  const handRotation = handWave.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-18deg', '0deg', '18deg'],
+  });
+
+  useEffect(() => {
+    const logoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoScale, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+        Animated.timing(logoScale, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    const handAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(handWave, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: -1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.delay(1200),
+      ])
+    );
+
+    logoAnimation.start();
+    handAnimation.start();
+    return () => {
+      logoAnimation.stop();
+      handAnimation.stop();
+    };
+  }, [handWave, logoScale]);
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pendingPaymentOpacity, { toValue: 0.35, duration: 650, useNativeDriver: true }),
+        Animated.timing(pendingPaymentOpacity, { toValue: 1, duration: 650, useNativeDriver: true }),
+      ])
+    );
+
+    animation.start();
+    return () => animation.stop();
+  }, [pendingPaymentOpacity]);
 
   const loadOrders = useCallback(async (isRefresh = false) => {
     setError('');
@@ -77,7 +141,13 @@ const ActiveList = ({ initialStatus = 'all' }) => {
   const filteredOrders = useMemo(() => {
     const query = search.trim().toLowerCase();
     return riderOrders.filter((order) => {
+      const normalizedOrderStatus = String(order.status || '').trim().toLowerCase();
       const paymentStatus = String(order.payment_status || '').trim().toLowerCase();
+      const matchesListTab = listTab === 'all'
+        ? true
+        : listTab === 'delivered'
+          ? normalizedOrderStatus === 'delivered' && paymentStatus === 'done'
+          : normalizedOrderStatus !== 'delivered' && paymentStatus === 'pending';
       const matchesStatus = selectedStatus === 'all'
         || order.status === selectedStatus
         || (selectedStatus === 'order_in_queue' && order.status !== 'delivered')
@@ -88,9 +158,9 @@ const ActiveList = ({ initialStatus = 'all' }) => {
       const searchableText = [order.code, order.customer_name, order.customer_phone, order.pickup_area, order.drop_area]
         .join(' ')
         .toLowerCase();
-      return matchesStatus && (!query || searchableText.includes(query));
+      return matchesListTab && matchesStatus && (!query || searchableText.includes(query));
     });
-  }, [riderOrders, search, selectedStatus]);
+  }, [listTab, riderOrders, search, selectedStatus]);
 
   const countForStatus = (key) => {
     if (key === 'all') return riderOrders.length;
@@ -117,11 +187,38 @@ const ActiveList = ({ initialStatus = 'all' }) => {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        {/* <Text style={styles.eyebrow}>RIDER ORDERS</Text> */}
-        
-        <Text style={styles.title}>Active List</Text>
-        <Text style={styles.subtitle}>Track your accepted and delivered orders</Text>
+        <View style={styles.ring} />
+        <View style={styles.greetingRow}>
+          <Animated.Image
+            source={require('../../assets/yogayoglogo1.png')}
+            style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+            resizeMode="contain"
+          />
+          <Text style={styles.greeting}>
+            {getTimeBasedGreeting()}{' '}
+            <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
+              ✋︎
+            </Animated.Text>
+          </Text>
+          <Pressable
+            style={styles.walletButton}
+            onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
+          >
+            <Text style={styles.walletButtonText}>Wallet</Text>
+          </Pressable>
+          <Pressable
+            style={[styles.avatar, styles.headerAvatar]}
+            onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
+          >
+            <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
+          </Pressable>
+        </View>
+        {/* <View style={styles.nameRow}>
+          <Text style={styles.name}>{riderName}</Text>
+        </View> */}
+        {/* <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text> */}
       </View>
+
 
       <TextInput
         value={search}
@@ -131,11 +228,38 @@ const ActiveList = ({ initialStatus = 'all' }) => {
         style={styles.searchInput}
       />
 
+      <View style={styles.listTabs}>
+        {[
+          { key: 'pending', label: 'Pending' },
+          { key: 'delivered', label: 'Delivered' },
+        ].map((tab) => {
+          const selected = listTab === tab.key;
+          return (
+            <Pressable
+              key={tab.key}
+              onPress={() => {
+                setListTab(tab.key);
+                setSelectedStatus('all');
+              }}
+              style={[styles.listTab, selected && styles.selectedListTab]}
+            >
+              <Text style={[styles.listTabText, selected && styles.selectedListTabText]}>{tab.label}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusTabs}>
         {statusTabs.map((tab) => {
           const selected = selectedStatus === tab.key;
           return (
-            <Pressable key={tab.key} onPress={() => setSelectedStatus(tab.key)} style={[styles.statusTab, selected && styles.selectedStatusTab]}>
+            <Pressable
+              key={tab.key}
+              onPress={() => {
+                setSelectedStatus(tab.key);
+                if (tab.key === 'all') setListTab('all');
+              }}
+              style={[styles.statusTab, selected && styles.selectedStatusTab]}
+            >
               <Text style={[styles.statusDot, selected && styles.selectedStatusDot]}>•</Text>
               <Text style={[styles.statusTabText, selected && styles.selectedStatusTabText]}>{tab.label} {countForStatus(tab.key)}</Text>
             </Pressable>
@@ -164,17 +288,32 @@ const ActiveList = ({ initialStatus = 'all' }) => {
             <Text style={styles.emptyText}>Try another status or search term.</Text>
           </View>
         ) : (
-          filteredOrders.map((order) => (
-            <Pressable
-              key={order.id}
-              style={styles.orderCard}
-              onPress={() => navigation.navigate(navigationStrings.ACTIVESCREEN, { orderId: order.id })}
-            >
+          filteredOrders.map((order) => {
+            const paymentStatus = String(order.payment_status || 'Pending');
+            const normalizedPaymentStatus = paymentStatus.trim().toLowerCase();
+            const isPaymentPending = normalizedPaymentStatus === 'pending';
+            const isPaymentDone = normalizedPaymentStatus === 'done';
+
+            return (
+              <Pressable
+                key={order.id}
+                style={styles.orderCard}
+                onPress={() => navigation.navigate(navigationStrings.ACTIVESCREEN, { orderId: order.id })}
+              >
               <View style={styles.orderTopRow}>
                 <Text style={styles.orderCode}>{order.code || `#${order.id}`}</Text>
                 <View style={styles.statusColumn}>
                   <View style={styles.statusBadge}><Text style={styles.statusBadgeText}>{statusLabel(order.status)}</Text></View>
-                  <Text style={styles.paymentStatusText}>Payment: {order.payment_status || 'Pending'}</Text>
+                  <Animated.Text
+                    style={[
+                      styles.paymentStatusText,
+                      isPaymentPending && styles.pendingPaymentStatusText,
+                      isPaymentDone && styles.donePaymentStatusText,
+                      isPaymentPending && { opacity: pendingPaymentOpacity },
+                    ]}
+                  >
+                    Payment: {paymentStatus}
+                  </Animated.Text>
                 </View>
               </View>
               <Text style={styles.customerName}>{order.customer_name || 'Customer'}</Text>
@@ -183,8 +322,9 @@ const ActiveList = ({ initialStatus = 'all' }) => {
               <View style={styles.routeDivider} />
               <View style={styles.routeRow}><Text style={styles.dropDot}>●</Text><Text style={styles.routeText} numberOfLines={1}>{order.drop_area || 'Drop unavailable'}</Text></View>
               <View style={styles.orderBottomRow}><Text style={styles.createdAt}>{order.created_at || ''}</Text><Text style={styles.amount}>₹{Number(order.amount || 0).toFixed(2)}</Text></View>
-            </Pressable>
-          ))
+              </Pressable>
+            );
+          })
         )}
       </ScrollView>
     </View>

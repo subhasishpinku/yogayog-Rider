@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   mapArea: {
-    height: '32%',
+    height: '31%',
     overflow: 'hidden',
     backgroundColor: colors.map,
   },
@@ -218,6 +218,19 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '900',
   },
+  rescheduleButton: {
+    marginLeft: 'auto',
+    marginRight: 7,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 12,
+    backgroundColor: colors.gold,
+  },
+  rescheduleText: {
+    color: '#080808',
+    fontSize: 10,
+    fontWeight: '900',
+  },
   routeCard: {
     marginTop: 13,
     paddingHorizontal: 15,
@@ -311,6 +324,21 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: 11,
     paddingBottom: 10,
+  },
+  statusUpdateButton: {
+    height: 44,
+    width: '40%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 1,
+    alignSelf: 'flex-end',
+    borderRadius: 14,
+    backgroundColor: colors.gold,
+  },
+  statusUpdateButtonText: {
+    color: '#080808',
+    fontSize: 13,
+    fontWeight: '900',
   },
   summaryLabel: {
     color: colors.muted,

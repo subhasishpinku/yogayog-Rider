@@ -39,7 +39,10 @@ const RTODetails = () => {
         { text: 'OK', onPress: () => navigation.navigate(navigationStrings.DASHBOARDSCREEN) },
       ]);
     } catch (error) {
-      Alert.alert('Unable to submit RTO', error.message || 'Please try again later.');
+      // Alert.alert('Unable to submit RTO', error.message || 'Please try again later.');
+      Alert.alert('Unable to submit RTO', error.message || 'Please try again later.', [
+        { text: 'OK', onPress: () => navigation.navigate(navigationStrings.DASHBOARDSCREEN) },
+      ]);
     } finally {
       setSubmitting(false);
     }

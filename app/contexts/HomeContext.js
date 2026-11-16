@@ -407,6 +407,8 @@ export const HomeProvider = ({ children }) => {
         headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
+      console.log('[HomeContext] rider/trip-details response:', response.data);
+
       if (!response.data?.success) {
         throw new Error(response.data?.message || 'Unable to load trip details.');
       }

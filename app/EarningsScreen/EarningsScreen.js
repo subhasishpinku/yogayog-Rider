@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Easing, Pressable, ScrollView, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
@@ -11,6 +11,15 @@ import { useHome } from '../contexts/HomeContext';
 
 const periods = ['Today', 'Week', 'Month', 'Year'];
 
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
+};
+
 const EarningsScreen = () => {
   const navigation = useNavigation();
   const [selectedPeriod, setSelectedPeriod] = useState('Today');
@@ -18,8 +27,46 @@ const EarningsScreen = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const { fetchRiderEarnings, earningsByPeriod } = useHome();
   const { fetchRiderProfile, riderProfile } = useAuth();
+  const logoScale = useRef(new Animated.Value(1)).current;
+  const handWave = useRef(new Animated.Value(0)).current;
   const periodKey = selectedPeriod.toLowerCase();
   const selectedEarnings = earningsByPeriod[periodKey];
+  const riderName = riderProfile?.name || 'Suresh Kumar';
+  const riderInitials = riderName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+  const handRotation = handWave.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-18deg', '0deg', '18deg'],
+  });
+
+  useEffect(() => {
+    const logoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoScale, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+        Animated.timing(logoScale, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    const handAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(handWave, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: -1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.delay(1200),
+      ])
+    );
+
+    logoAnimation.start();
+    handAnimation.start();
+    return () => {
+      logoAnimation.stop();
+      handAnimation.stop();
+    };
+  }, [handWave, logoScale]);
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -95,23 +142,48 @@ const EarningsScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-        
-          <View style={styles.headerCopy}>
-            <Text style={styles.title}>My Earnings</Text>
-            <Text style={styles.subtitle}>
-              {riderProfile?.name || 'Suresh Kumar'} · 🛵 {riderProfile?.veh_type || 'Bike'}
+          <View style={styles.ring} />
+          <View style={styles.greetingRow}>
+            <Animated.Image
+              source={require('../../assets/yogayoglogo1.png')}
+              style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+              resizeMode="contain"
+            />
+            <Text style={styles.greeting}>
+              {getTimeBasedGreeting()}{' '}
+              <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
+                ✋︎
+              </Animated.Text>
             </Text>
+            <Pressable
+              style={styles.walletButton}
+              onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
+            >
+              <Text style={styles.walletButtonText}>Wallet</Text>
+            </Pressable>
+            <Pressable
+              style={[styles.avatar, styles.headerAvatar]}
+              onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
+            >
+              <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
+            </Pressable>
           </View>
+          {/* <View style={styles.nameRow}>
+            <Text style={styles.name}>{riderName}</Text>
+          </View> */}
+          {/* <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text> */}
+          
+      
+          
+        </View>
+
+        <View style={styles.balanceCard}>
           <Pressable
-            style={styles.headerAction}
+            style={[styles.headerAction, styles.balanceCardAction]}
             onPress={() => navigation.navigate(navigationStrings.CODHANDOVER)}
           >
             <Text style={styles.headerActionText}>COD Handover</Text>
           </Pressable>
-          <View style={styles.headerRing} />
-        </View>
-
-        <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>{selectedPeriod.toUpperCase()} EARNINGS</Text>
           <Text style={styles.balanceValue}>₹{totalEarnings.toFixed(2)}</Text>
           <Text style={styles.payoutText}>

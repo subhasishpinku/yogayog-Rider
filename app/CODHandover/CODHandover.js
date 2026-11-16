@@ -146,7 +146,7 @@ const CODHandover = () => {
           <Text style={styles.fieldLabel}>STAFF NAME</Text>
           <TextInput
             value={staffName}
-            onChangeText={setStaffName}
+            onChangeText={(value) => setStaffName(value.replace(/[^a-zA-Z\s]/g, ''))}
             placeholder="Branch staff receiving"
             placeholderTextColor="#77777F"
             style={styles.input}

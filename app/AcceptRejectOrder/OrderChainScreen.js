@@ -19,7 +19,6 @@ const STATUS_FLOW = [
   { key: 'on_the_way', label: 'On the Way', description: 'Start pickup' },
   { key: 'reached', label: 'Reached', description: 'Reached pickup point' },
   { key: 'picked_up', label: 'Picked Up', description: 'Package collected' },
-  { key: 'hand_over_branch', label: 'Hand Over Branch', description: 'Package handed to branch' },
   { key: 'delivery_started', label: 'Delivery Started', description: 'Delivery is in progress' },
   { key: 'out_for_delivery', label: 'Out for Delivery', description: 'Heading to customer' },
   { key: 'at_your_door', label: 'At Your Door', description: 'Arrived at destination' },

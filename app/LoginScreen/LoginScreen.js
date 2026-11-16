@@ -7,12 +7,11 @@ import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
 
-const bikeLogo = require('../../assets/bike_logo.png');
 const yogayogLogo = require('../../assets/yogayoglogo1.png');
 
 const LoginScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
-  const [role, setRole] = useState('bike');
+  const [role] = useState('bike');
   const logoScale = useRef(new Animated.Value(1)).current;
   const logoTranslateY = useRef(new Animated.Value(0)).current;
   const { authError, clearAuthError, isSendingOtp, sendOtp } = useAuth();
@@ -99,24 +98,33 @@ const LoginScreen = ({ navigation }) => {
 
       <View style={styles.header}>
         <View style={styles.headerRing} />
-        <Text style={styles.welcomeEmoji}>👋</Text>
-        <Text style={styles.title}>Welcome, Rider!</Text>
-        <Text style={styles.description}>Enter your mobile number to continue</Text>
-        <Animated.Image
-          source={yogayogLogo}
+        <View style={styles.headerRoad} />
+        <Animated.View
           style={[
-            styles.headerLogo,
-            {
-              transform: [{ translateY: logoTranslateY }, { scale: logoScale }],
-            },
+            styles.logoBadge,
+            { transform: [{ translateY: logoTranslateY }, { scale: logoScale }] },
           ]}
-          resizeMode="contain"
-          accessibilityLabel="Yogayog logo"
-        />
+        >
+          <Image
+            source={yogayogLogo}
+            style={styles.headerLogo}
+            resizeMode="contain"
+            accessibilityLabel="Yogayog logo"
+          />
+        </Animated.View>
+        <View style={styles.heroVehicle}>
+          <View style={styles.heroVehicleRing} />
+          <Text style={styles.heroVehicleIcon}>🛵</Text>
+        </View>
+        <View style={styles.heroCopy}>
+          <Text style={styles.welcomeEmoji}>👋</Text>
+          <Text style={styles.title}>Welcome, Rider!</Text>
+          <Text style={styles.description}>Enter your mobile number to{`\n`}continue</Text>
+        </View>
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.sectionLabel}>I AM A</Text>
+        {/* <Text style={styles.sectionLabel}>I AM A</Text>
 
         <View style={styles.roleRow}>
           <Pressable
@@ -142,6 +150,11 @@ const LoginScreen = ({ navigation }) => {
               Truck Driver
             </Text>
           </Pressable>
+        </View> */}
+
+        <View style={styles.formIntro}>
+          <Text style={styles.formTitle}>Sign in to your account</Text>
+          <Text style={styles.formSubtitle}>Use your registered number to receive a secure OTP.</Text>
         </View>
 
         <Text style={styles.fieldLabel}>MOBILE NUMBER</Text>
@@ -162,6 +175,7 @@ const LoginScreen = ({ navigation }) => {
             onFocus={clearAuthError}
           />
         </View>
+        <Text style={styles.helperText}>We&apos;ll send a one-time verification code to this number.</Text>
 
         {!!authError && !isUserNotFoundError && (
           <Text style={styles.errorText}>{authError}</Text>

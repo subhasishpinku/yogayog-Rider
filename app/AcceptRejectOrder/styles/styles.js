@@ -302,6 +302,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 22,
     marginTop: 'auto',
+    marginBottom: 25,
   },
   rejectButton: {
     width: '47%',

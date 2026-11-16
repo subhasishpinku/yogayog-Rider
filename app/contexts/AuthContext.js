@@ -276,6 +276,74 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const verifyPan = useCallback(async (pan) => {
+    const response = await axiosInstance.post(
+      'kyc/verify-pan',
+      new URLSearchParams({ pan }).toString(),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+    console.log('[AuthContext] kyc/verify-pan response:', response.data);
+
+    if (!response.data?.success || !response.data?.data?.success) {
+      throw new Error(response.data?.message || 'PAN verification failed.');
+    }
+
+    return response.data;
+  }, []);
+
+  const verifyDrivingLicence = useCallback(async (licenceNumber, dob) => {
+    try {
+      const response = await axiosInstance.post(
+        'kyc/verify-driving-license',
+        new URLSearchParams({ license_number: licenceNumber, dob }).toString(),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+      console.log('[AuthContext] kyc/verify-driving-license response:', response.data);
+
+      if (!response.data?.success || !response.data?.data?.success) {
+        throw new Error(response.data?.message || 'Driving licence verification failed.');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.warn('[AuthContext] kyc/verify-driving-license error:', error.response?.data || error.message);
+      throw error;
+    }
+  }, []);
+
+  const verifyBankAccount = useCallback(async (accountNumber, ifsc) => {
+    const response = await axiosInstance.post(
+      'kyc/verify-bank',
+      new URLSearchParams({ account_number: accountNumber, ifsc }).toString(),
+      { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+    );
+    console.log('[AuthContext] kyc/verify-bank response:', response.data);
+
+    if (!response.data?.success || !response.data?.data?.success || !response.data?.data?.account_exists) {
+      throw new Error(response.data?.message || 'Bank account verification failed.');
+    }
+
+    return response.data;
+  }, []);
+
+  const verifyRiderKyc = useCallback(async ({ pan, licenceNumber, dob, accountNumber, ifsc }) => {
+    setAuthError('');
+
+    try {
+      const [panResult, licenceResult, bankResult] = await Promise.all([
+        verifyPan(pan),
+        verifyDrivingLicence(licenceNumber, dob),
+        verifyBankAccount(accountNumber, ifsc),
+      ]);
+
+      return { pan: panResult.data, licence: licenceResult.data, bank: bankResult.data };
+    } catch (error) {
+      const message = error.response?.data?.message || error.message || 'Unable to verify KYC details. Please try again.';
+      setAuthError(message);
+      throw new Error(message);
+    }
+  }, [verifyBankAccount, verifyDrivingLicence, verifyPan]);
+
   const fetchRiderProfile = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -343,6 +411,10 @@ export const AuthProvider = ({ children }) => {
         registerRider,
         sendEmailOtp,
         sendOtp,
+        verifyBankAccount,
+        verifyDrivingLicence,
+        verifyPan,
+        verifyRiderKyc,
         verifyEmailOtp,
         verifyOtp,
         clearAuthError: () => setAuthError(''),

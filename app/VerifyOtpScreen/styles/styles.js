@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     right: 12,
     left: 12,
     alignItems: 'center',
-    transform: [{ translateY: -51 }],
+    transform: [{ translateY: -120 }],
   },
   otpInput: {
     width: 56,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   button: {
     position: 'absolute',
     right: 12,
-    bottom: 45,
+    bottom: 50,
     left: 12,
     height: 58,
     alignItems: 'center',

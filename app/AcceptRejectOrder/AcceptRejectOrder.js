@@ -62,7 +62,6 @@ const AcceptRejectOrder = ({ route }) => {
   const routeOrder = useMemo(() => route?.params?.order || {}, [route?.params?.order]);
   const [order, setOrder] = useState(routeOrder);
   const { acceptRiderOrder, fetchRiderTripDetails } = useHome();
-  const [secondsLeft, setSecondsLeft] = useState(18);
   const [isAccepting, setIsAccepting] = useState(false);
   const [isFullMapVisible, setIsFullMapVisible] = useState(false);
   const [pickupPoint, setPickupPoint] = useState(() =>
@@ -107,7 +106,7 @@ const AcceptRejectOrder = ({ route }) => {
     setIsAccepting(true);
     try {
       await acceptRiderOrder(order.id || order.order_pk_id);
-      navigation.navigate(navigationStrings.ORDERCHAINSCREEN, {
+      navigation.navigate(navigationStrings.ACTIVESCREEN, {
         order,
         orderId: order.id || order.order_pk_id,
       });
@@ -170,14 +169,6 @@ const AcceptRejectOrder = ({ route }) => {
     longitudeDelta: Math.max(Math.abs(pickupPoint.longitude - dropPoint.longitude) * 2.2, 0.025),
   };
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft((seconds) => (seconds > 0 ? seconds - 1 : 0));
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -230,9 +221,6 @@ const AcceptRejectOrder = ({ route }) => {
                 <Text style={styles.orderMeta}>Order #{order.code || order.id || 'Order'}</Text>
                 <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)} Est. Fare</Text>
               </View>
-              <View style={styles.timer}>
-                <Text style={styles.timerText}>{secondsLeft}s</Text>
-              </View>
             </View>
 
             <View style={styles.locationRow}>
@@ -252,9 +240,9 @@ const AcceptRejectOrder = ({ route }) => {
             </View>
 
             <View style={styles.orderTags}>
-              <View style={[styles.tag, styles.goldTag]}><Text style={[styles.tagText, styles.goldTagText]}>📦 2 kg</Text></View>
-              <View style={styles.tag}><Text style={styles.tagText}>COD</Text></View>
-              <View style={styles.tag}><Text style={styles.tagText}>Local Bike</Text></View>
+              <View style={[styles.tag, styles.goldTag]}><Text style={[styles.tagText, styles.goldTagText]}>📦 {order?.pack_weight || 0} kg</Text></View>
+              <View style={styles.tag}><Text style={styles.tagText}>{order?.payment_method || 'Payment'}</Text></View>
+              <View style={styles.tag}><Text style={styles.tagText}>{Number(order?.sub_service_id) === 2 ? 'Bike' : Number(order?.sub_service_id) === 3 ? 'Truck' : order?.vehicle_type || order?.delivery_type || order?.veh_type || order?.vehicle || 'Vehicle'}</Text></View>
               <View style={[styles.tag, styles.greenTag]}><Text style={[styles.tagText, styles.greenTagText]}>{order.customer_name || 'Customer'}</Text></View>
             </View>
           </View>
@@ -269,9 +257,6 @@ const AcceptRejectOrder = ({ route }) => {
                   <Text style={styles.acceptText}>{isAccepting ? 'Accepting...' : '✓ Accept'}</Text>
                 </Pressable>
               </View>
-
-              <View style={styles.progressTrack}><View style={styles.progress} /></View>
-              <Text style={styles.autoReject}>Auto-reject in {secondsLeft} seconds</Text>
             </>
           )}
         </View>

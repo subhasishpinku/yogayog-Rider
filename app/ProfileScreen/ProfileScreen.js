@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Animated, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -8,6 +8,15 @@ import navigationStrings from '../constants/navigationStrings';
 import { useHome } from '../contexts/HomeContext';
 import imagePath from '../constants/imagePath';
 import styles from './styles/styles';
+
+const getTimeBasedGreeting = () => {
+  const hour = new Date().getHours();
+
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  if (hour < 21) return 'Good evening';
+  return 'Good night';
+};
 
 const DetailSection = ({ title, rows }) => (
   <View style={styles.detailCard}>
@@ -28,6 +37,8 @@ const ProfileScreen = () => {
   const { fetchRiderProfile, riderProfile, uploadRiderDocument } = useHome();
   const [profileImageFailed, setProfileImageFailed] = useState(false);
   const [isUpdatingProfileImage, setIsUpdatingProfileImage] = useState(false);
+  const logoScale = useRef(new Animated.Value(1)).current;
+  const handWave = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     fetchRiderProfile().catch(() => {});
@@ -41,6 +52,41 @@ const ProfileScreen = () => {
   }, [profileImageUrl]);
 
   const riderName = profile.name || 'Suresh Kumar';
+  const riderInitials = riderName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('')
+    .toUpperCase();
+  const handRotation = handWave.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-18deg', '0deg', '18deg'],
+  });
+
+  useEffect(() => {
+    const logoAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(logoScale, { toValue: 1.08, duration: 900, useNativeDriver: true }),
+        Animated.timing(logoScale, { toValue: 1, duration: 900, useNativeDriver: true }),
+      ])
+    );
+    const handAnimation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(handWave, { toValue: 1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: -1, duration: 180, useNativeDriver: true }),
+        Animated.timing(handWave, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.delay(1200),
+      ])
+    );
+
+    logoAnimation.start();
+    handAnimation.start();
+    return () => {
+      logoAnimation.stop();
+      handAnimation.stop();
+    };
+  }, [handWave, logoScale]);
   const formattedDob = profile.dob
     ? new Date(`${profile.dob}T00:00:00`).toLocaleDateString('en-IN', {
         day: '2-digit',
@@ -121,47 +167,79 @@ const ProfileScreen = () => {
     <View style={styles.screen}>
       {/* <StatusBar style="hidden" /> */}
        <StatusBar hidden={true} />
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+        <View style={styles.titleBar}>
+          <View style={styles.titleBarRing} />
+          <View style={styles.titleBarGreetingRow}>
+            <Animated.Image
+              source={require('../../assets/yogayoglogo1.png')}
+              style={[styles.titleBarLogo, { transform: [{ scale: logoScale }] }]}
+              resizeMode="contain"
+            />
+            <Text style={styles.titleBarGreeting}>
+              {getTimeBasedGreeting()}{' '}
+              <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
+                ✋︎
+              </Animated.Text>
+            </Text>
+            <Pressable
+              style={styles.titleBarWalletButton}
+              onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
+            >
+              <Text style={styles.titleBarWalletButtonText}>Wallet</Text>
+            </Pressable>
+            <Pressable
+              style={styles.titleBarAvatar}
+              onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
+            >
+              <Text style={styles.titleBarAvatarText}>{riderInitials || 'SK'}</Text>
+            </Pressable>
+          </View>
+        </View>
         <View style={styles.header}>
           <View style={styles.headerRing} />
-          <Pressable style={styles.avatar} onPress={handleProfileImagePress} disabled={isUpdatingProfileImage}>
-            <Image
-              source={profileImageUrl && !profileImageFailed ? { uri: profileImageUrl } : imagePath.demoImage}
-              style={styles.avatarImage}
-              resizeMode="cover"
-              onError={() => setProfileImageFailed(true)}
-            />
-            <Pressable
-              style={styles.avatarCameraButton}
-              onPress={(event) => {
-                event.stopPropagation?.();
-                handleProfileImagePress();
-              }}
-              disabled={isUpdatingProfileImage}
-              accessibilityRole="button"
-              accessibilityLabel="Update profile photo"
-            >
-              <Text style={styles.avatarCameraIcon}>📷</Text>
+          <View style={styles.profileSummaryRow}>
+            <Pressable style={styles.avatar} onPress={handleProfileImagePress} disabled={isUpdatingProfileImage}>
+              <Image
+                source={profileImageUrl && !profileImageFailed ? { uri: profileImageUrl } : imagePath.demoImage}
+                style={styles.avatarImage}
+                resizeMode="cover"
+                onError={() => setProfileImageFailed(true)}
+              />
+              <Pressable
+                style={styles.avatarCameraButton}
+                onPress={(event) => {
+                  event.stopPropagation?.();
+                  handleProfileImagePress();
+                }}
+                disabled={isUpdatingProfileImage}
+                accessibilityRole="button"
+                accessibilityLabel="Update profile photo"
+              >
+                <Text style={styles.avatarCameraIcon}>📷</Text>
+              </Pressable>
             </Pressable>
-          </Pressable>
-          <Text style={styles.name}>{riderName}</Text>
-          <Text style={styles.role}>🛵 {profile.veh_type || 'Bike'} · {profile.rider_code || 'YCG-RDR-0042'}</Text>
-          <View style={styles.statusRow}>
-            <View style={[styles.statusChip, styles.onlineChip]}>
-              <Text style={styles.onlineText}>• Online</Text>
-            </View>
-            <View style={[styles.statusChip, styles.ratingChip]}>
-              <Text style={styles.ratingText}>★ 4.8 Rating</Text>
-            </View>
-            <View style={styles.statusChip}>
-              <Text style={styles.statusText}>312 Deliveries</Text>
+            <View style={styles.profileSummaryInfo}>
+              <Text style={[styles.name, styles.profileSummaryName]}>{riderName}</Text>
+              <Text style={styles.role}>🛵 {profile.veh_type || 'Bike'} · {profile.rider_code || 'YCG-RDR-0042'}</Text>
+              <View style={styles.statusRow}>
+                <View style={[styles.statusChip, styles.onlineChip]}>
+                  <Text style={styles.onlineText}>• Online</Text>
+                </View>
+                <View style={[styles.statusChip, styles.ratingChip]}>
+                  <Text style={styles.ratingText}>★ 4.8 Rating</Text>
+                </View>
+                <View style={styles.statusChip}>
+                  <Text style={styles.statusText}>312 Deliveries</Text>
+                </View>
+              </View>
             </View>
           </View>
         </View>
 
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
         <DetailSection title="PERSONAL INFORMATION" rows={personalInformation} />
         <DetailSection title="CONTACT NUMBERS" rows={contactNumbers} />
         <DetailSection title="VEHICLE DETAILS" rows={vehicleDetails} />

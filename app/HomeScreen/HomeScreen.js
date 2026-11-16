@@ -84,26 +84,28 @@ const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scr
         <Text style={styles.orderDetail}>Drop: {order.drop_area || 'Not available'}</Text>
         <Text style={styles.fare}>₹{Number(order.amount || 0).toFixed(2)}</Text>
         <Text style={styles.fareLabel}>{statusText}</Text>
-        <Pressable
-          style={{
-            alignSelf: 'flex-end',
-            marginTop: 8,
-            paddingHorizontal: 10,
-            paddingVertical: 6,
-            borderRadius: 10,
-            backgroundColor: colors.gold,
-          }}
-          onPress={(event) => {
-            event.stopPropagation?.();
-            navigation.navigate(navigationStrings.RESCHEDULEDELIVERY, {
-              order,
-              id: order.id || order.order_pk_id,
-              orderId: order.id || order.order_pk_id,
-            });
-          }}
-        >
-          <Text style={{ color: '#080808', fontSize: 11, fontWeight: '900' }}>Reschedule</Text>
-        </Pressable>
+        {!isAssigned && (
+          <Pressable
+            style={{
+              alignSelf: 'flex-end',
+              marginTop: 8,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              borderRadius: 10,
+              backgroundColor: colors.gold,
+            }}
+            onPress={(event) => {
+              event.stopPropagation?.();
+              navigation.navigate(navigationStrings.RESCHEDULEDELIVERY, {
+                order,
+                id: order.id || order.order_pk_id,
+                orderId: order.id || order.order_pk_id,
+              });
+            }}
+          >
+            <Text style={{ color: '#080808', fontSize: 11, fontWeight: '900' }}>Reschedule</Text>
+          </Pressable>
+        )}
         <Text style={styles.orderDate}>
           {order.created_at || ''}
           {order.status ? (isAssigned ? (
@@ -230,7 +232,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     return !['delivered', 'cancelled', 'canceled', 'non_delivery', 'rto'].includes(status);
   }).length;
   const availableOrders = riderOrders.filter(
-    (order) => String(order.status || '').toLowerCase() !== 'delivered'
+    (order) => String(order.status || '').toLowerCase() === 'assigned'
   );
 
   useEffect(() => {
@@ -287,9 +289,6 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     .map((part) => part[0])
     .join('')
     .toUpperCase();
-  const vehicleDetails = [riderProfile?.veh_type, riderProfile?.veh_number]
-    .filter(Boolean)
-    .join(' · ');
   const riderLocation = latitude !== null && longitude !== null
     ? { latitude, longitude }
     : fallbackLocation;
@@ -426,10 +425,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
             style={[styles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-         <Text style={styles.greeting}>
-           {getTimeBasedGreeting()}{' '}
-           <Animated.Text style={{ transform: [{ rotate: handRotation }] }}>👋</Animated.Text>
-         </Text>
+          <Text style={styles.greeting}>
+            {getTimeBasedGreeting()}{' '}
+            <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
+              ✋︎
+            </Animated.Text>
+          </Text>
            <Pressable
             style={styles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
@@ -443,13 +444,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
             <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
           </Pressable>
         </View>
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>{riderName}</Text>
-         
-        </View>
-        <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>
+       
+        {/* <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>  */}
       </View>
-
+     <View style={styles.nameHomeRow}>
+          <Text style={styles.name}>{riderName}</Text>
+        </View> 
       <View style={styles.statusCard}>
         <View>
           <Text style={styles.statusTitle}>Status: <Text style={styles.online}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
