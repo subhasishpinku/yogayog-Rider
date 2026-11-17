@@ -46,6 +46,7 @@ const RegisterScreen = ({ navigation, route }) => {
   const [bankAccountNumber, setBankAccountNumber] = useState('');
   const [bankIfscCode, setBankIfscCode] = useState('');
   const [bankVerificationError, setBankVerificationError] = useState('');
+  const [secondaryBankVerificationError, setSecondaryBankVerificationError] = useState('');
   const [kycNames, setKycNames] = useState({ pan: '', licence: '', bank: '' });
   const [secondaryAccountNumber, setSecondaryAccountNumber] = useState('');
   const [secondaryIfscCode, setSecondaryIfscCode] = useState('');
@@ -81,6 +82,31 @@ const RegisterScreen = ({ navigation, route }) => {
   const hasAllKycNames = normalizedKycNames.every(Boolean);
   const areKycNamesMatching = hasAllKycNames && new Set(normalizedKycNames).size === 1;
   const kycNamesMismatch = hasAllKycNames && !areKycNamesMatching;
+  const isRegistrationFormComplete = [
+    profileImage,
+    drivingLicenceImage,
+    panImage,
+    aadhaarImage,
+    fullName,
+    phone,
+    secondaryPhone,
+    dateOfBirth,
+    accountType,
+    email,
+    pincode,
+    city,
+    state,
+    address,
+    bankAccountNumber,
+    bankIfscCode,
+    secondaryAccountNumber,
+    secondaryIfscCode,
+    upiId,
+    vehicleNumber,
+    drivingLicenceNumber,
+    panNumber,
+    aadhaarNumber,
+  ].every((value) => String(value || '').trim()) && isEmailVerified;
 
   const formatDate = (date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -385,6 +411,22 @@ const RegisterScreen = ({ navigation, route }) => {
       });
   };
 
+  const handleSecondaryBankDetailsBlur = (accountValue = secondaryAccountNumber, ifscValue = secondaryIfscCode) => {
+    const accountNumber = String(accountValue || '').trim();
+    const ifsc = String(ifscValue || '').trim().toUpperCase();
+    if (!/^\d{9,18}$/.test(accountNumber) || !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) return;
+
+    verifyBankAccount(accountNumber, ifsc)
+      .then(() => {
+        setSecondaryBankVerificationError('');
+      })
+      .catch((error) => {
+        const message = error.response?.data?.message || error.message || 'Secondary bank account verification failed.';
+        setSecondaryBankVerificationError(message);
+        console.warn('[RegisterScreen] Secondary bank account verification failed:', message);
+      });
+  };
+
   const handleEmailChange = (value) => {
     setEmail(value);
     setIsEmailVerified(false);
@@ -452,32 +494,32 @@ const RegisterScreen = ({ navigation, route }) => {
     <View style={styles.screen}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.flex}>
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Text style={styles.backArrow}>‹</Text>
+        <View style={styles.header}>
+          <Pressable accessibilityLabel="Go back" accessibilityRole="button" onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backArrow}>‹</Text>
+          </Pressable>
+          <View style={styles.logoRow}>
+            <Image accessibilityLabel="Yogayog logo" source={logo} style={styles.logo} resizeMode="contain" />
+            <Pressable accessibilityRole="button" onPress={() => pickDocument(setProfileImage)} style={styles.profileUpload}>
+              {profileImage ? (
+                <Image
+                  key={profileImage}
+                  source={{ uri: profileImage }}
+                  style={styles.profilePreview}
+                  resizeMode="cover"
+                  onError={() => console.warn('[RegisterScreen] Unable to render profile image preview.')}
+                />
+              ) : (
+                <Text style={styles.profileUploadIcon}>↑</Text>
+              )}
+              <Text style={styles.profileUploadText}>{profileImage ? 'Replace' : 'Upload Photo'}</Text>
             </Pressable>
-            <View style={styles.logoRow}>
-              <Image accessibilityLabel="Yogayog logo" source={logo} style={styles.logo} resizeMode="contain" />
-              <Pressable accessibilityRole="button" onPress={() => pickDocument(setProfileImage)} style={styles.profileUpload}>
-                {profileImage ? (
-                  <Image
-                    key={profileImage}
-                    source={{ uri: profileImage }}
-                    style={styles.profilePreview}
-                    resizeMode="cover"
-                    onError={() => console.warn('[RegisterScreen] Unable to render profile image preview.')}
-                  />
-                ) : (
-                  <Text style={styles.profileUploadIcon}>↑</Text>
-                )}
-                <Text style={styles.profileUploadText}>{profileImage ? 'Replace' : 'Upload Photo'}</Text>
-              </Pressable>
-            </View>
-            <Text style={styles.title}>Create Your Profile</Text>
-            {/* <Text style={styles.subtitle}>Join us to securely manage your shipments</Text> */}
           </View>
+          <Text style={styles.title}>Create Your Profile</Text>
+          {/* <Text style={styles.subtitle}>Join us to securely manage your shipments</Text> */}
+        </View>
 
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
           <View style={styles.form}>
             {renderInput('Enter Full Name', fullName, setFullName, { autoCapitalize: 'words' })}
             <TextInput
@@ -589,8 +631,21 @@ const RegisterScreen = ({ navigation, route }) => {
               }
             }, { autoCapitalize: 'characters' })}
             {!!bankVerificationError && <Text style={styles.errorText}>{bankVerificationError}</Text>}
-            {renderInput('Secondary Account Number', secondaryAccountNumber, setSecondaryAccountNumber, { keyboardType: 'number-pad' })}
-            {renderInput('Secondary IFSC Code', secondaryIfscCode, setSecondaryIfscCode, { autoCapitalize: 'characters' })}
+            {renderInput('Secondary Account Number', secondaryAccountNumber, (value) => {
+              setSecondaryAccountNumber(value);
+              setSecondaryBankVerificationError('');
+              if (/^\d{9,18}$/.test(value.trim()) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(secondaryIfscCode.trim().toUpperCase())) {
+                handleSecondaryBankDetailsBlur(value, secondaryIfscCode);
+              }
+            }, { keyboardType: 'number-pad' })}
+            {renderInput('Secondary IFSC Code', secondaryIfscCode, (value) => {
+              setSecondaryIfscCode(value);
+              setSecondaryBankVerificationError('');
+              if (/^\d{9,18}$/.test(secondaryAccountNumber.trim()) && /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value.trim().toUpperCase())) {
+                handleSecondaryBankDetailsBlur(secondaryAccountNumber, value);
+              }
+            }, { autoCapitalize: 'characters' })}
+            {!!secondaryBankVerificationError && <Text style={styles.errorText}>{secondaryBankVerificationError}</Text>}
 
             <Text style={styles.sectionTitle}>◉  UPI Details</Text>
             {renderInput('Enter UPI ID', upiId, setUpiId, { autoCapitalize: 'none', keyboardType: 'email-address' })}
@@ -644,9 +699,13 @@ const RegisterScreen = ({ navigation, route }) => {
                 Alert.alert('Verify email', 'Please verify your email before accepting the terms.');
                 return;
               }
+              if (!isRegistrationFormComplete) {
+                Alert.alert('Details required', 'Please complete all required profile, address, bank, UPI, vehicle and KYC details first.');
+                return;
+              }
               setAcceptedTerms((value) => !value);
             }} style={styles.termsRow}>
-              <View style={[styles.checkbox, acceptedTerms && styles.checkboxSelected, !isEmailVerified && styles.checkboxDisabled]}>{acceptedTerms && <Text style={styles.checkmark}>✓</Text>}</View>
+              <View style={[styles.checkbox, acceptedTerms && isRegistrationFormComplete && styles.checkboxSelected, (!isEmailVerified || !isRegistrationFormComplete) && styles.checkboxDisabled]}>{acceptedTerms && isRegistrationFormComplete && <Text style={styles.checkmark}>✓</Text>}</View>
               <Text style={styles.termsText}>I accept the terms and conditions</Text>
             </Pressable>
             {!!authError && <Text style={styles.errorText}>{authError}</Text>}

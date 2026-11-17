@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  BackHandler,
   Image,
   Linking,
   Platform,
@@ -50,6 +51,16 @@ const OrderChainScreen = ({ route, navigation }) => {
   const [currentStatus, setCurrentStatus] = useState(initialStatus);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  useEffect(() => {
+    const handleHardwareBackPress = () => {
+      navigation.navigate(navigationStrings.ACTIVESCREEN, { orderId });
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+    return () => subscription.remove();
+  }, [navigation, orderId]);
+
   const currentIndex = useMemo(
     () => STATUS_FLOW.findIndex(({ key }) => key === currentStatus),
     [currentStatus]
@@ -65,7 +76,9 @@ const OrderChainScreen = ({ route, navigation }) => {
       await updateRiderOrderStatus(orderId, nextStatus.key);
       setCurrentStatus(nextStatus.key);
 
-      if (nextStatus.key === 'delivered') {
+      if (nextStatus.key === 'at_your_door') {
+        navigation.navigate(navigationStrings.ACTIVESCREEN, { orderId });
+      } else if (nextStatus.key === 'delivered') {
         navigation.replace(navigationStrings.DASHBOARDSCREEN);
       } else if (nextStatus.key === 'on_the_way') {
         openLiveLocationMap();
@@ -94,11 +107,18 @@ const OrderChainScreen = ({ route, navigation }) => {
   return (
     <View style={styles.chainScreen}>
       <StatusBar style="light" />
+      <View style={styles.titleBar}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.navigate(navigationStrings.ACTIVESCREEN, { orderId })}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Order Chain</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
       <ScrollView contentContainerStyle={styles.chainContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
             <Text style={styles.eyebrow}>ACCEPTED ORDER</Text>
-            <Text style={styles.title}>Order Chain</Text>
+            {/* <Text style={styles.title}>Order Chain</Text> */}
           </View>
           <View style={styles.statusBadge}>
             <Text style={styles.statusBadgeText}>{STATUS_FLOW[currentIndex]?.label || 'In Progress'}</Text>

@@ -8,7 +8,7 @@ import EarningsScreen from '../EarningsScreen/EarningsScreen';
 import HomeScreen from '../HomeScreen/HomeScreen';
 import ProfileScreen from '../ProfileScreen/ProfileScreen';
 import ActiveList from '../ActiveScreen/ActiveList';
-const DashboardScreen = () => {
+const DashboardScreen = ({ route }) => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
   const [activeListFilter, setActiveListFilter] = useState('all');
@@ -18,6 +18,9 @@ const DashboardScreen = () => {
     if (tab === 'active') setActiveListFilter(filter);
     setActiveTab(tab);
   };
+  useEffect(() => {
+    if (route?.params?.activeTab === 'active') setActiveTab('active');
+  }, [route?.params?.activeTab]);
   const screens = { home: <HomeScreen navigation={navigation} onNavigateToTab={navigateToTab} />, active: <ActiveList initialStatus={activeListFilter} />, earnings: <EarningsScreen />, profile: <ProfileScreen /> };
   const tabs = [['home', '🏠', 'Home'], ['active', '📦', 'Active'], ['earnings', '💰', 'Earnings'], ['profile', '👤', 'Profile']];
 

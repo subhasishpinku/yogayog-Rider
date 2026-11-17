@@ -3,7 +3,6 @@ import { Animated, Modal, Pressable, RefreshControl, Switch, Text, View } from '
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
-
 import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
 import { useHome } from '../contexts/HomeContext';
@@ -281,7 +280,8 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       subscription?.remove();
     };
   }, []);
-  const riderName = riderProfile?.name || 'Suresh Kumar';
+  const riderName = riderProfile?.name || 'User Name';
+  const hasRiderName = Boolean(String(riderProfile?.name || '').trim());
   const riderInitials = riderName
     .split(' ')
     .filter(Boolean)
@@ -401,22 +401,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     await stopTracking();
   };
   return (
-    <Animated.ScrollView
-      contentContainerStyle={styles.content}
-      refreshControl={(
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
-          colors={[colors.gold]}
-          tintColor={colors.gold}
-        />
-      )}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true }
-      )}
-      scrollEventThrottle={16}
-    >
+    <View style={styles.screen}>
       <View style={styles.header}>
         <View style={styles.ring} />
         <View style={styles.greetingRow}>
@@ -447,9 +432,29 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
        
         {/* <Text style={styles.vehicle}>🏍️ {vehicleDetails || 'Bike · KA 01 AB 1234'}</Text>  */}
       </View>
-     <View style={styles.nameHomeRow}>
+
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.content}
+        refreshControl={(
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.gold]}
+            tintColor={colors.gold}
+          />
+        )}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+      {hasRiderName && (
+        <View style={styles.nameHomeRow}>
           <Text style={styles.name}>{riderName}</Text>
-        </View> 
+        </View>
+      )}
       <View style={styles.statusCard}>
         <View>
           <Text style={styles.statusTitle}>Status: <Text style={styles.online}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
@@ -594,7 +599,8 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
           </View>
         </View>
       </Modal>
-    </Animated.ScrollView>
+      </Animated.ScrollView>
+    </View>
   );
 };
 

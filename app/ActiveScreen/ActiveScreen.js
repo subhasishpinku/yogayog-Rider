@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
+import { Alert, BackHandler, Linking, Platform, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -35,9 +35,19 @@ const ActiveScreen = ({ route }) => {
       .catch(() => {});
   }, [fetchRiderOrderById, orderId]);
 
+  useEffect(() => {
+    const handleHardwareBackPress = () => {
+      navigation.navigate(navigationStrings.DASHBOARDSCREEN, { activeTab: 'active' });
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener('hardwareBackPress', handleHardwareBackPress);
+    return () => subscription.remove();
+  }, [navigation]);
+
   const orderCode = order?.order_id || orderId || '1222000010';
   const rawOrderStatus = order?.status || order?.order_status || order?.delivery_status || order?.orderStatus || '';
-  const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase();
+  const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase().replace(/[_-]+/g, ' ');
   const pickupStatusesWithoutCheck = [
     'assigned',
     'on_the_way',
@@ -46,6 +56,7 @@ const ActiveScreen = ({ route }) => {
   ];
   const isPickedUp = !pickupStatusesWithoutCheck.includes(normalizedOrderStatus);
   const isDelivered = normalizedOrderStatus === 'delivered';
+  const isAtYourDoor = normalizedOrderStatus === 'at your door';
   const isPaymentDone = String(order?.payment_status || '').trim().toLowerCase() === 'done';
   const orderStatus = isDelivered
     ? 'Delivered'
@@ -59,8 +70,10 @@ const ActiveScreen = ({ route }) => {
   const isCodOrder = ['cod', 'cashondelivery', 'cash'].includes(paymentMethod);
   const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
   const isWalletOrder = paymentMethod === 'wallet';
-  const canUseDeliveryActions = isPaymentDone && (isWalletOrder || isPrepaidOrder);
-  const isDeliveryActionDisabled = !canUseDeliveryActions && (!isDelivered || isPaymentDone);
+  const isCodPaymentPending = isCodOrder && !isPaymentDone;
+  const isDigitalPaymentOrder = isWalletOrder || isPrepaidOrder;
+  const canUseDeliveryActions = isAtYourDoor && (isCodPaymentPending || isDigitalPaymentOrder);
+  const isDeliveryActionDisabled = !canUseDeliveryActions;
   const deliveryParams = {
     orderId: orderCode,
     id: order?.id || order?.order_pk_id || orderId,
@@ -110,15 +123,38 @@ const ActiveScreen = ({ route }) => {
 
     if (!destination) return;
 
-    const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-    await Linking.openURL(mapsUrl);
+    const encodedDestination = encodeURIComponent(destination);
+    const browserFallback = `https://www.google.com/maps/dir/?api=1&destination=${encodedDestination}&travelmode=driving`;
+    const mapUrls = Platform.OS === 'android'
+      ? [
+        `google.navigation:q=${encodedDestination}&mode=d`,
+        `geo:0,0?q=${encodedDestination}`,
+        browserFallback,
+      ]
+      : [
+        `http://maps.apple.com/?daddr=${encodedDestination}&dirflg=d`,
+        browserFallback,
+      ];
+
+    for (const mapUrl of mapUrls) {
+      try {
+        if (await Linking.canOpenURL(mapUrl)) {
+          await Linking.openURL(mapUrl);
+          return;
+        }
+      } catch (error) {
+        console.warn('[ActiveScreen] Unable to open map URL:', error.message);
+      }
+    }
+
+    Alert.alert('Map unavailable', 'Please install Google Maps or Apple Maps to navigate.');
   };
 
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
   <View style={styles.titleBar}>
-        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.navigate(navigationStrings.DASHBOARDSCREEN, { activeTab: 'active' })}>
           <Text style={styles.titleBarBackText}>‹</Text>
         </Pressable>
         <Text style={styles.titleBarText}>Order Active</Text>
@@ -284,16 +320,17 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.summaryValue}>{order?.pack_weight || 0} kg</Text>
           </View>
         </View>
-        <View style={styles.deliveryButtonRow}>
+        {canUseDeliveryActions && (
+          <View style={styles.deliveryButtonRow}>
           <Pressable
             style={[
               styles.deliveredButton,
               styles.deliveryActionButton,
               styles.nonDeliveryActionButton,
-              (!isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
+              !canUseDeliveryActions && styles.disabledDeliveryActionButton,
             ]}
             onPress={handleNonDeliveryAction}
-            disabled={!isDelivered || isPaymentDone}
+            disabled={!canUseDeliveryActions}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
           </Pressable>
@@ -301,16 +338,17 @@ const ActiveScreen = ({ route }) => {
             style={[
               styles.deliveredButton,
               styles.deliveryActionButton,
-              !canUseDeliveryActions && (!isDelivered || isPaymentDone) && styles.disabledDeliveryActionButton,
+              !canUseDeliveryActions && styles.disabledDeliveryActionButton,
             ]}
             onPress={handleDeliveryAction}
-            disabled={!canUseDeliveryActions && (!isDelivered || isPaymentDone)}
+            disabled={!canUseDeliveryActions}
           >
             <Text style={styles.deliveredText}>
               {isDeliveryActionDisabled ? 'Collected ✓' : isPaymentDone ? 'View payment ✓' : 'Collect payment X'}
             </Text>
           </Pressable>
-        </View>
+          </View>
+        )}
         
       </View>
     </View>

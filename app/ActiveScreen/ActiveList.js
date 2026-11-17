@@ -62,6 +62,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
   const { fetchRiderOrders, riderOrders } = useHome();
   const [selectedStatus, setSelectedStatus] = useState(initialStatus);
   const [listTab, setListTab] = useState('pending');
+  const [activeTabGroup, setActiveTabGroup] = useState(initialStatus === 'all' ? 'list' : 'status');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -238,12 +239,13 @@ const ActiveList = ({ initialStatus = 'all' }) => {
             <Pressable
               key={tab.key}
               onPress={() => {
+                setActiveTabGroup('list');
                 setListTab(tab.key);
                 setSelectedStatus('all');
               }}
-              style={[styles.listTab, selected && styles.selectedListTab]}
+              style={[styles.listTab, selected && activeTabGroup === 'list' && styles.selectedListTab]}
             >
-              <Text style={[styles.listTabText, selected && styles.selectedListTabText]}>{tab.label}</Text>
+              <Text style={[styles.listTabText, selected && activeTabGroup === 'list' && styles.selectedListTabText]}>{tab.label}</Text>
             </Pressable>
           );
         })}
@@ -255,13 +257,14 @@ const ActiveList = ({ initialStatus = 'all' }) => {
             <Pressable
               key={tab.key}
               onPress={() => {
+                setActiveTabGroup('status');
                 setSelectedStatus(tab.key);
-                if (tab.key === 'all') setListTab('all');
+                setListTab('all');
               }}
-              style={[styles.statusTab, selected && styles.selectedStatusTab]}
+              style={[styles.statusTab, selected && activeTabGroup === 'status' && styles.selectedStatusTab]}
             >
-              <Text style={[styles.statusDot, selected && styles.selectedStatusDot]}>•</Text>
-              <Text style={[styles.statusTabText, selected && styles.selectedStatusTabText]}>{tab.label} {countForStatus(tab.key)}</Text>
+              <Text style={[styles.statusDot, selected && activeTabGroup === 'status' && styles.selectedStatusDot]}>•</Text>
+              <Text style={[styles.statusTabText, selected && activeTabGroup === 'status' && styles.selectedStatusTabText]}>{tab.label} {countForStatus(tab.key)}</Text>
             </Pressable>
           );
         })}
