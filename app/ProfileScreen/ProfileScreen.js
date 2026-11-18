@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -34,24 +34,36 @@ const DetailSection = ({ title, rows }) => (
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
-  const { fetchRiderProfile, riderProfile, uploadRiderDocument } = useHome();
+  const { fetchRiderProfile, fetchRiderStats, riderProfile, riderStats, uploadRiderDocument } = useHome();
+  const [isProfileLoading, setIsProfileLoading] = useState(!riderProfile);
+  const [isProfileImageLoading, setIsProfileImageLoading] = useState(false);
   const [profileImageFailed, setProfileImageFailed] = useState(false);
   const [isUpdatingProfileImage, setIsUpdatingProfileImage] = useState(false);
   const logoScale = useRef(new Animated.Value(1)).current;
   const handWave = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    fetchRiderProfile().catch(() => {});
-  }, [fetchRiderProfile]);
+    setIsProfileLoading(true);
+    Promise.all([
+      fetchRiderProfile(),
+      fetchRiderStats().catch(() => null),
+    ])
+      .catch(() => {})
+      .finally(() => setIsProfileLoading(false));
+  }, [fetchRiderProfile, fetchRiderStats]);
 
   const profile = riderProfile || {};
   const profileImageUrl = profile.profile_picture;
 
   useEffect(() => {
     setProfileImageFailed(false);
+    setIsProfileImageLoading(Boolean(profileImageUrl));
   }, [profileImageUrl]);
 
   const riderName = profile.name || 'Suresh Kumar';
+  const isOnline = Number(riderStats?.online_status) === 1;
+  const rating = riderStats?.rating || '4.8';
+  const deliveredCount = riderStats?.delivered ?? 312;
   const riderInitials = riderName
     .split(' ')
     .filter(Boolean)
@@ -167,7 +179,14 @@ const ProfileScreen = () => {
     <View style={styles.screen}>
       {/* <StatusBar style="hidden" /> */}
        <StatusBar hidden={true} />
-        <View style={styles.titleBar}>
+        <View style={styles.titleBars}>
+        <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
+          <Text style={styles.titleBarBackText}>‹</Text>
+        </Pressable>
+        <Text style={styles.titleBarText}>Profile</Text>
+        <View style={styles.titleBarSpacer} />
+      </View>
+        {/* <View style={styles.titleBar}>
           <View style={styles.titleBarRing} />
           <View style={styles.titleBarGreetingRow}>
             <Animated.Image
@@ -194,7 +213,14 @@ const ProfileScreen = () => {
               <Text style={styles.titleBarAvatarText}>{riderInitials || 'SK'}</Text>
             </Pressable>
           </View>
-        </View>
+        </View> */}
+        {isProfileLoading ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#D4AF37" />
+          </View>
+        ) : riderProfile ? (
+          <>
+        <View style={{ flex: 1, opacity: isProfileImageLoading ? 0 : 1 }}>
         <View style={styles.header}>
           <View style={styles.headerRing} />
           <View style={styles.profileSummaryRow}>
@@ -203,7 +229,12 @@ const ProfileScreen = () => {
                 source={profileImageUrl && !profileImageFailed ? { uri: profileImageUrl } : imagePath.demoImage}
                 style={styles.avatarImage}
                 resizeMode="cover"
-                onError={() => setProfileImageFailed(true)}
+                onLoadStart={() => setIsProfileImageLoading(true)}
+                onLoadEnd={() => setIsProfileImageLoading(false)}
+                onError={() => {
+                  setProfileImageFailed(true);
+                  setIsProfileImageLoading(false);
+                }}
               />
               <Pressable
                 style={styles.avatarCameraButton}
@@ -223,13 +254,13 @@ const ProfileScreen = () => {
               <Text style={styles.role}>🛵 {profile.veh_type || 'Bike'} · {profile.rider_code || 'YCG-RDR-0042'}</Text>
               <View style={styles.statusRow}>
                 <View style={[styles.statusChip, styles.onlineChip]}>
-                  <Text style={styles.onlineText}>• Online</Text>
+                  <Text style={styles.onlineText}>• {isOnline ? 'Online' : 'Offline'}</Text>
                 </View>
                 <View style={[styles.statusChip, styles.ratingChip]}>
-                  <Text style={styles.ratingText}>★ 4.8 Rating</Text>
+                  <Text style={styles.ratingText}>★ {rating} Rating</Text>
                 </View>
                 <View style={styles.statusChip}>
-                  <Text style={styles.statusText}>312 Deliveries</Text>
+                  <Text style={styles.statusText}>{deliveredCount} Deliveries</Text>
                 </View>
               </View>
             </View>
@@ -253,6 +284,14 @@ const ProfileScreen = () => {
           <Text style={styles.editText}>Edit Profile</Text>
         </Pressable>
       </ScrollView>
+        </View>
+        {isProfileImageLoading ? (
+          <View style={{ flex: 1, position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#D4AF37" />
+          </View>
+        ) : null}
+          </>
+        ) : null}
     </View>
   );
 };

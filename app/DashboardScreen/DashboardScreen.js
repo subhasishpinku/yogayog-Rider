@@ -6,8 +6,11 @@ import styles from './styles/styles';
 
 import EarningsScreen from '../EarningsScreen/EarningsScreen';
 import HomeScreen from '../HomeScreen/HomeScreen';
-import ProfileScreen from '../ProfileScreen/ProfileScreen';
 import ActiveList from '../ActiveScreen/ActiveList';
+import EarningsScreenTab from '../EarningsScreen/EarningsScreenTab';
+import NonDeliveryReportBottom from '../NonDeliveryReport/NonDeliveryReportBottom';
+import CODHandover from '../CODHandover/CODHandover';
+
 const DashboardScreen = ({ route }) => {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
@@ -21,8 +24,8 @@ const DashboardScreen = ({ route }) => {
   useEffect(() => {
     if (route?.params?.activeTab === 'active') setActiveTab('active');
   }, [route?.params?.activeTab]);
-  const screens = { home: <HomeScreen navigation={navigation} onNavigateToTab={navigateToTab} />, active: <ActiveList initialStatus={activeListFilter} />, earnings: <EarningsScreen />, profile: <ProfileScreen /> };
-  const tabs = [['home', '🏠', 'Home'], ['active', '📦', 'Active'], ['earnings', '💰', 'Earnings'], ['profile', '👤', 'Profile']];
+  const screens = { home: <HomeScreen navigation={navigation} onNavigateToTab={navigateToTab} />, active: <ActiveList initialStatus={activeListFilter} />, earnings: <EarningsScreen />, nonDelivery: <NonDeliveryReportBottom />, codHandover: <CODHandover /> };
+  const tabs = [['home', '🏠', 'Home'], ['active', '📦', 'Active'], ['earnings', '💰', 'Earnings'], ['nonDelivery', '⚠️', 'Non-Delivery'], ['codHandover', '💵', 'COD Handover']];
 
   useFocusEffect(
     useCallback(() => {

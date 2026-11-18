@@ -173,7 +173,6 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     outputRange: ['-18deg', '0deg', '18deg'],
   });
 
-  const [isOnline, setIsOnline] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     fetchRiderProfile,
@@ -182,33 +181,14 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const {
     fetchRiderOrders,
     fetchRiderTodaysEarnings,
+    updateRiderOnlineStatus,
+    riderOnlineStatus,
     riderOrders,
     todayEarnings,
     todayDelivered,
     earningsByPeriod,
   } = useHome();
-
-  useEffect(() => {
-    let mounted = true;
-
-    const restoreAvailability = async () => {
-      try {
-        const savedAvailability = await AsyncStorage.getItem(RIDER_AVAILABILITY_KEY);
-
-        if (mounted && savedAvailability) {
-          setIsOnline(savedAvailability === 'online');
-        }
-      } catch (error) {
-        console.log('Availability restore error:', error);
-      }
-    };
-
-    restoreAvailability();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const isOnline = riderOnlineStatus;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -382,15 +362,15 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     }
   };
   const handleOnlineToggle = async (nextIsOnline) => {
-    setIsOnline(nextIsOnline);
-
     try {
+      await updateRiderOnlineStatus(nextIsOnline);
       await AsyncStorage.setItem(
         RIDER_AVAILABILITY_KEY,
         nextIsOnline ? 'online' : 'offline'
       );
     } catch (error) {
-      console.log('Availability save error:', error);
+      console.log('Online status update error:', error);
+      return;
     }
 
     if (nextIsOnline) {
@@ -457,7 +437,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       )}
       <View style={styles.statusCard}>
         <View>
-          <Text style={styles.statusTitle}>Status: <Text style={styles.online}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
+          <Text style={styles.statusTitle}>Status: <Text style={isOnline ? styles.online : styles.offline}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
           <Text style={styles.statusSubtext}>
             {isOnline ? 'You are receiving new orders' : 'You are offline and not receiving new orders'}
           </Text>
@@ -488,12 +468,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       </View>
 
       {/* <Text style={styles.sectionTitle}>Your Location</Text> */}
-       <Pressable style={styles.locationPill} onPress={handleLocationPillPress}>
+       {/* <Pressable style={styles.locationPill} onPress={handleLocationPillPress}>
           <Text style={styles.locationText}>
             📍 {latitude !== null && longitude !== null ? 'Live rider location' : 'Jodhpur Park, Kolkata'}
           </Text>
-        </Pressable>
-      <View style={styles.map}>
+        </Pressable> */}
+      {/* <View style={styles.map}>
         <MapView
           ref={mapRef}
           provider={PROVIDER_GOOGLE}
@@ -526,13 +506,13 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
               </View>
             </Callout>
           </Marker>
-        </MapView>
+        </MapView> */}
         {/* <Pressable style={styles.locationPill} onPress={handleRiderMarkerPress}>
           <Text style={styles.locationText}>
             📍 {latitude !== null && longitude !== null ? 'Live rider location' : 'Jodhpur Park, Kolkata'}
           </Text>
         </Pressable> */}
-      </View>
+      {/* </View> */}
 
       {isOnline ? (
         <>

@@ -31,6 +31,7 @@ const styles = StyleSheet.create({
   statusCard: { height: 65, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, backgroundColor: colors.card , marginLeft: 5},
   statusTitle: { color: colors.white, fontSize: 14, fontWeight: '800' },
   online: { color: colors.green },
+  offline: { color: '#EF4444' },
   statusSubtext: { marginTop: 3, color: colors.muted, fontSize: 12 },
   metrics: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, padding: 8 },
   metricCard: { width: '48.5%', height: 72, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 16, backgroundColor: colors.card },

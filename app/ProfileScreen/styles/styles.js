@@ -9,6 +9,37 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 112,
   },
+  titleBars: {
+    height: 70,
+    paddingHorizontal: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    backgroundColor: colors.gold,
+  },
+  titleBarBack: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  titleBarBackText: {
+    color: '#080808',
+    fontSize: 34,
+    lineHeight: 36,
+  },
+  titleBarText: {
+    marginLeft: 8,
+    marginTop:7,
+    color: '#080808',
+    fontSize: 18,
+    fontWeight: '900',
+    alignItems: 'left',
+
+  },
+  titleBarSpacer: {
+    width: 36,
+  },
   titleBar: { height: 80, paddingHorizontal: 12, paddingTop: 30, overflow: 'hidden', backgroundColor: colors.gold },
   titleBarRing: { position: 'absolute', top: -30, right: -27, width: 118, height: 118, borderWidth: 14, borderColor: '#302812', borderRadius: 999 },
   titleBarGreetingRow: { flexDirection: 'row', alignItems: 'center' },

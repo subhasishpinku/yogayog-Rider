@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Alert, Platform, ToastAndroid } from 'react-native';
@@ -46,6 +46,8 @@ const normalizeRiderProfile = (rider) => (
 export const HomeProvider = ({ children }) => {
   const [riderOrders, setRiderOrders] = useState([]);
   const [riderProfile, setRiderProfile] = useState(null);
+  const [riderStats, setRiderStats] = useState(null);
+  const [riderOnlineStatus, setRiderOnlineStatus] = useState(false);
   const [riderDocuments, setRiderDocuments] = useState([]);
   const [nonDeliveryReasons, setNonDeliveryReasons] = useState([]);
   const [walletBalance, setWalletBalance] = useState(0);
@@ -57,6 +59,16 @@ export const HomeProvider = ({ children }) => {
     month: null,
     year: null,
   });
+
+  useEffect(() => {
+    AsyncStorage.getItem('riderAvailability')
+      .then((savedAvailability) => {
+        if (savedAvailability) {
+          setRiderOnlineStatus(savedAvailability === 'online');
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchRiderOrders = useCallback(async () => {
     try {
@@ -526,6 +538,44 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchRiderStats = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/stats', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load rider stats.');
+      }
+
+      setRiderStats(response.data);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
+  const updateRiderOnlineStatus = useCallback(async (isOnline) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/update-online-status', {
+        is_online: isOnline ? 1 : 0,
+      }, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to update online status.');
+      }
+
+      setRiderOnlineStatus(isOnline);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
   const updateRiderProfile = useCallback(async (payload) => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -795,6 +845,8 @@ export const HomeProvider = ({ children }) => {
         acceptRiderOrder,
         updateRiderOrderStatus,
         fetchRiderProfile,
+        fetchRiderStats,
+        updateRiderOnlineStatus,
         fetchRiderDocuments,
         fetchNonDeliveryReasons,
         cancelRiderDelivery,
@@ -803,6 +855,8 @@ export const HomeProvider = ({ children }) => {
         uploadRiderDocument,
         riderOrders,
         riderProfile,
+        riderStats,
+        riderOnlineStatus,
         riderDocuments,
         nonDeliveryReasons,
         walletBalance,

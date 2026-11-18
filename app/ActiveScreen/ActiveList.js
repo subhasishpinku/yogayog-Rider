@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { StatusBar } from 'expo-status-bar';
 
 import { useHome } from '../contexts/HomeContext';
 import { useAuth } from '../contexts/AuthContext';
 import navigationStrings from '../constants/navigationStrings';
 import colors from './styles/colors';
 import styles from './styles/ActiveListstyles';
+import homeStyles from '../HomeScreen/styles/styles';
 
 const statusTabs = [
   { key: 'all', label: 'All' },
@@ -187,31 +189,32 @@ const ActiveList = ({ initialStatus = 'all' }) => {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.header}>
-        <View style={styles.ring} />
-        <View style={styles.greetingRow}>
+      <StatusBar style="dark" />
+      <View style={[homeStyles.header, { height: 68, paddingTop: 18 }]}>
+        <View style={homeStyles.ring} />
+        <View style={homeStyles.greetingRow}>
           <Animated.Image
             source={require('../../assets/yogayoglogo1.png')}
-            style={[styles.logo, { transform: [{ scale: logoScale }] }]}
+            style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Text style={styles.greeting}>
+          <Text style={homeStyles.greeting}>
             {getTimeBasedGreeting()}{' '}
             <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
               ✋︎
             </Animated.Text>
           </Text>
           <Pressable
-            style={styles.walletButton}
+            style={homeStyles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
-            <Text style={styles.walletButtonText}>Wallet</Text>
+            <Text style={homeStyles.walletButtonText}>Wallet</Text>
           </Pressable>
           <Pressable
-            style={[styles.avatar, styles.headerAvatar]}
+            style={[homeStyles.avatar, homeStyles.headerAvatar]}
             onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
           >
-            <Text style={styles.avatarText}>{riderInitials || 'SK'}</Text>
+            <Text style={homeStyles.avatarText}>{riderInitials || 'SK'}</Text>
           </Pressable>
         </View>
         {/* <View style={styles.nameRow}>

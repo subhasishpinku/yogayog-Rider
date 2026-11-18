@@ -178,12 +178,12 @@ const EarningsScreen = () => {
         </View>
 
         <View style={styles.balanceCard}>
-          <Pressable
+          {/* <Pressable
             style={[styles.headerAction, styles.balanceCardAction]}
             onPress={() => navigation.navigate(navigationStrings.CODHANDOVER)}
           >
             <Text style={styles.headerActionText}>COD Handover</Text>
-          </Pressable>
+          </Pressable> */}
           <Text style={styles.balanceLabel}>{selectedPeriod.toUpperCase()} EARNINGS</Text>
           <Text style={styles.balanceValue}>₹{totalEarnings.toFixed(2)}</Text>
           <Text style={styles.payoutText}>

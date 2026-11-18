@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   fare: { position: 'absolute', top: 17, right: 14, color: colors.gold, fontSize: 17, fontWeight: '900' },
   fareLabel: { position: 'absolute', top: 40, right: 14, color: colors.muted, fontSize: 11 },
   bottomTabs: { position: 'absolute', right: 0, bottom: 0, left: 0, height: 120, flexDirection: 'row', justifyContent: 'space-around', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#333336', backgroundColor: '#151517' },
-  tab: { alignItems: 'center', width: '25%' },
+  tab: { alignItems: 'center', width: '20%' },
   tabIcon: { fontSize: 21 },
   tabLabel: { marginTop: 3, color: colors.muted, fontSize: 10 },
   activeTab: { marginTop: 3, color: colors.gold, fontSize: 10, fontWeight: '800' },

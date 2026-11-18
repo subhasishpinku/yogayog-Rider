@@ -11,6 +11,7 @@ import {
   stopBackgroundLocation,
 } from '../Services/BackgroundLocation';
 const profileItems = [
+  { icon: '◉', title: 'Profile Info', subtitle: 'View and manage your rider profile', tone: 'green', route: navigationStrings.PROFILESCREEN },
   { icon: '✓', title: 'KYC Page & Verification', subtitle: 'Verify your identity and rider account', badge: 'New', tone: 'gold',route: navigationStrings.KYCVERIFICATION  },
   { icon: '▣', title: 'Documents Upload Section', subtitle: 'Upload licence, RC, insurance and ID proof', route: navigationStrings.DOCUMENTSUPLOADSECTION },
   // { icon: '⌖', title: 'Live Location on Map', subtitle: 'Share your current delivery location', tone: 'green',route: navigationStrings.LIVELOCATIONMAP  },
