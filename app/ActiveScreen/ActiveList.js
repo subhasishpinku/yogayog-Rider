@@ -12,14 +12,8 @@ import homeStyles from '../HomeScreen/styles/styles';
 
 const statusTabs = [
   { key: 'all', label: 'All' },
-  { key: 'order_in_queue', label: 'Order in Queue' },
   { key: 'rider_accepted', label: 'Accepted' },
-  { key: 'out_for_delivery', label: 'Out for delivery' },
-  { key: 'delivered', label: 'Delivered' },
-  { key: 'payment_done', label: 'Done' },
-  { key: 'payment_pending', label: 'Pending' },
-  { key: 'today_payment_done', label: 'Today Done' },
-  { key: 'today_payment_pending', label: 'Today Pending' },
+  { key: 'out_for_delivery', label: 'Out for Delivery' },
 ];
 
 const getTimeBasedGreeting = () => {
@@ -33,6 +27,7 @@ const getTimeBasedGreeting = () => {
 
 const statusLabel = (status) => {
   if (status === 'rider_accepted') return 'Accepted';
+  if (status === 'order_in_queue') return 'In queue';
   if (status === 'out_for_delivery') return 'Out for delivery';
   if (status === 'delivered') return 'Delivered';
   return String(status || 'Unknown').replace(/_/g, ' ');
@@ -224,13 +219,16 @@ const ActiveList = ({ initialStatus = 'all' }) => {
       </View>
 
 
-      <TextInput
-        value={search}
-        onChangeText={setSearch}
-        placeholder="Search order, city or customer..."
-        placeholderTextColor={colors.muted}
-        style={styles.searchInput}
-      />
+      <View style={styles.searchBox}>
+        <Text style={styles.searchIcon}>⌕</Text>
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search order, city or customer..."
+          placeholderTextColor={colors.muted}
+          style={styles.searchInput}
+        />
+      </View>
 
       <View style={styles.listTabs}>
         {[
@@ -253,7 +251,12 @@ const ActiveList = ({ initialStatus = 'all' }) => {
           );
         })}
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.statusTabs}>
+      <ScrollView
+        horizontal
+        style={styles.statusTabsScroll}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.statusTabs}
+      >
         {statusTabs.map((tab) => {
           const selected = selectedStatus === tab.key;
           return (
@@ -266,19 +269,26 @@ const ActiveList = ({ initialStatus = 'all' }) => {
               }}
               style={[styles.statusTab, selected && activeTabGroup === 'status' && styles.selectedStatusTab]}
             >
-              <Text style={[styles.statusDot, selected && activeTabGroup === 'status' && styles.selectedStatusDot]}>•</Text>
-              <Text style={[styles.statusTabText, selected && activeTabGroup === 'status' && styles.selectedStatusTabText]}>{tab.label} {countForStatus(tab.key)}</Text>
+              <View style={[styles.statusCount, selected && activeTabGroup === 'status' && styles.selectedStatusCount]}>
+                <Text style={[styles.statusCountText, selected && activeTabGroup === 'status' && styles.selectedStatusCountText]}>
+                  {countForStatus(tab.key)}
+                </Text>
+              </View>
+              <Text style={[styles.statusTabText, selected && activeTabGroup === 'status' && styles.selectedStatusTabText]}>{tab.label}</Text>
+              <View style={[styles.statusIndicator, !(selected && activeTabGroup === 'status') && styles.statusIndicatorHidden]} />
             </Pressable>
           );
         })}
       </ScrollView>
 
       <ScrollView
+        style={styles.orderScroll}
         contentContainerStyle={styles.listContent}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadOrders(true)} tintColor={colors.gold} />}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator
+        persistentScrollbar
       >
-        <Text style={styles.resultText}>{filteredOrders.length} orders found</Text>
+        {/* <Text style={styles.resultText}>{filteredOrders.length} orders found</Text> */}
 
         {loading ? (
           <ActivityIndicator size="large" color={colors.gold} style={styles.loader} />
@@ -324,8 +334,8 @@ const ActiveList = ({ initialStatus = 'all' }) => {
               </View>
               <Text style={styles.customerName}>{order.customer_name || 'Customer'}</Text>
               <Text style={styles.customerPhone}>{order.customer_phone || 'Phone unavailable'}</Text>
+              <View style={styles.routeSectionDivider} />
               <View style={styles.routeRow}><Text style={styles.routeDot}>●</Text><Text style={styles.routeText} numberOfLines={1}>{order.pickup_area || 'Pickup unavailable'}</Text></View>
-              <View style={styles.routeDivider} />
               <View style={styles.routeRow}><Text style={styles.dropDot}>●</Text><Text style={styles.routeText} numberOfLines={1}>{order.drop_area || 'Drop unavailable'}</Text></View>
               <View style={styles.orderBottomRow}><Text style={styles.createdAt}>{order.created_at || ''}</Text><Text style={styles.amount}>₹{Number(order.amount || 0).toFixed(2)}</Text></View>
               </Pressable>

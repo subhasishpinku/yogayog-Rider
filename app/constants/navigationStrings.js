@@ -34,5 +34,6 @@ export default {
   ORDERCHAINSCREEN: 'OrderChainScreen',
   NETWORKSCREEN: 'NetworkScreen',
   GPSSCREEN: 'GpsScreen',
+  CODLEDGERSCREEN: 'CodLedgerScreen',
 };
 

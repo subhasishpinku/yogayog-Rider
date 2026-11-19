@@ -154,6 +154,9 @@ const styles = StyleSheet.create({
     paddingBottom: 13,
     borderTopLeftRadius: 23,
     borderTopRightRadius: 23,
+        marginLeft: 10,
+    marginRight: 10,
+
     backgroundColor: colors.background,
   },
   orderActionRow: {
@@ -200,12 +203,15 @@ const styles = StyleSheet.create({
   orderId: {
     color: colors.muted,
     fontSize: 12,
+    marginLeft: 10,
   },
   orderTitle: {
     marginTop: 2,
     color: colors.white,
     fontSize: 18,
     fontWeight: '900',
+        marginLeft: 10,
+
   },
   activeBadge: {
     paddingHorizontal: 11,
@@ -369,6 +375,8 @@ const styles = StyleSheet.create({
   },
   deliveryActionButton: {
     flex: 1,
+    flexBasis: 0,
+    width: 0,
   },
   disabledDeliveryActionButton: {
     opacity: 0.45,

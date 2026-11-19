@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, BackHandler, Linking, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, BackHandler, Linking, Platform, Pressable, Text, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -10,6 +10,16 @@ import navigationStrings from '../constants/navigationStrings';
 import { useHome } from '../contexts/HomeContext';
 const pickup = { latitude: 22.5096, longitude: 88.3456 };
 const drop = { latitude: 22.5198, longitude: 88.3469 };
+const STATUS_FLOW = [
+  { key: 'rider_accepted', label: 'Rider Accepted' },
+  { key: 'on_the_way', label: 'On the Way' },
+  { key: 'reached', label: 'Reached' },
+  { key: 'picked_up', label: 'Picked Up' },
+  { key: 'delivery_started', label: 'Delivery Started' },
+  { key: 'out_for_delivery', label: 'Out for Delivery' },
+  { key: 'at_your_door', label: 'At Your Door' },
+  { key: 'delivered', label: 'Delivered' },
+];
 
 const mapStyle = [
   { elementType: 'geometry', stylers: [{ color: '#12121d' }] },
@@ -23,9 +33,10 @@ const mapStyle = [
 
 const ActiveScreen = ({ route }) => {
   const navigation = useNavigation();
-  const { fetchRiderOrderById } = useHome();
+  const { fetchRiderOrderById, updateRiderOrderStatus } = useHome();
   const orderId = route?.params?.orderId;
   const [order, setOrder] = useState(null);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -48,6 +59,13 @@ const ActiveScreen = ({ route }) => {
   const orderCode = order?.order_id || orderId || '1222000010';
   const rawOrderStatus = order?.status || order?.order_status || order?.delivery_status || order?.orderStatus || '';
   const normalizedOrderStatus = String(rawOrderStatus).trim().toLowerCase().replace(/[_-]+/g, ' ');
+  const normalizedStatusKey = String(rawOrderStatus).trim().toLowerCase().replace(/[\s-]+/g, '_');
+  const currentStatusKey = normalizedStatusKey === 'assigned' || !STATUS_FLOW.some(({ key }) => key === normalizedStatusKey)
+    ? 'rider_accepted'
+    : normalizedStatusKey;
+  const currentStatusIndex = STATUS_FLOW.findIndex(({ key }) => key === currentStatusKey);
+  const currentStatusStep = STATUS_FLOW[currentStatusIndex];
+  const nextStatus = STATUS_FLOW[currentStatusIndex + 1];
   const pickupStatusesWithoutCheck = [
     'assigned',
     'on_the_way',
@@ -70,9 +88,7 @@ const ActiveScreen = ({ route }) => {
   const isCodOrder = ['cod', 'cashondelivery', 'cash'].includes(paymentMethod);
   const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
   const isWalletOrder = paymentMethod === 'wallet';
-  const isCodPaymentPending = isCodOrder && !isPaymentDone;
-  const isDigitalPaymentOrder = isWalletOrder || isPrepaidOrder;
-  const canUseDeliveryActions = isAtYourDoor && (isCodPaymentPending || isDigitalPaymentOrder);
+  const canUseDeliveryActions = isAtYourDoor && !(isCodOrder && isPaymentDone);
   const isDeliveryActionDisabled = !canUseDeliveryActions;
   const deliveryParams = {
     orderId: orderCode,
@@ -150,6 +166,22 @@ const ActiveScreen = ({ route }) => {
     Alert.alert('Map unavailable', 'Please install Google Maps or Apple Maps to navigate.');
   };
 
+  const handleStatusUpdate = async () => {
+    if (!nextStatus || isUpdatingStatus) return;
+
+    const statusOrderId = order?.id || order?.order_pk_id || orderId || order?.order_id;
+    setIsUpdatingStatus(true);
+
+    try {
+      await updateRiderOrderStatus(statusOrderId, nextStatus.key);
+      setOrder((previousOrder) => ({ ...previousOrder, status: nextStatus.key }));
+    } catch (error) {
+      Alert.alert('Status update failed', error.message || 'Please try again.');
+    } finally {
+      setIsUpdatingStatus(false);
+    }
+  };
+
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
@@ -204,17 +236,22 @@ const ActiveScreen = ({ route }) => {
           <Text style={styles.hereText}>🛵 You are here</Text>
           <View style={styles.hereArrow} />
         </View> */}
-        
+
       </View>
 
       <View style={styles.orderPanel}>
         <View style={styles.orderActionRow}>
           {isCodOrder && (
             <Pressable
-              style={[styles.orderActionButton, styles.codButton]}
+              style={[
+                styles.orderActionButton,
+                styles.codButton,
+                (!isAtYourDoor || isPaymentDone) && styles.disabledDeliveryActionButton,
+              ]}
               onPress={() => navigation.navigate(navigationStrings.CODAMOUNTCOLLECT, deliveryParams)}
+              disabled={!isAtYourDoor || isPaymentDone}
             >
-              <Text style={styles.orderActionText}>{isPaymentDone ? 'Collected ✓' : 'Collect payment'}</Text>
+              <Text style={styles.orderActionText}>{isPaymentDone ? 'Collected Done' : 'Collect payment'}</Text>
             </Pressable>
           )}
           {/* <Pressable
@@ -239,15 +276,19 @@ const ActiveScreen = ({ route }) => {
               <Text style={styles.orderActionText}>Online</Text>
             </Pressable>
           )}
-           <Pressable
-          style={styles.statusUpdateButton}
-          onPress={() => navigation.navigate(navigationStrings.ORDERCHAINSCREEN, {
-            order,
-            orderId: order?.id || order?.order_pk_id || orderId,
-          })}
-        >
-          <Text style={styles.statusUpdateButtonText}>Rider Update Status</Text>
-        </Pressable>
+          {/* {!isDelivered && (
+            <Pressable
+              style={[styles.statusUpdateButton, isUpdatingStatus && styles.disabledDeliveryActionButton]}
+              onPress={handleStatusUpdate}
+              disabled={isUpdatingStatus || !nextStatus}
+            >
+              {isUpdatingStatus ? (
+                <ActivityIndicator color="#080808" />
+              ) : (
+                <Text style={styles.statusUpdateButtonText}>{currentStatusStep?.label || 'Rider Accepted'}</Text>
+              )}
+            </Pressable>
+          )} */}
         </View>
 
         <View style={styles.orderHeader}>
@@ -255,17 +296,19 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.orderId}>Order #{orderCode}</Text>
             <Text style={styles.orderTitle}>{orderStatus}</Text>
           </View>
-          {!isDelivered && (
+          {/* {!isDelivered && (
             <Pressable
               style={styles.rescheduleButton}
               onPress={() => navigation.navigate(navigationStrings.RESCHEDULEDELIVERY, deliveryParams)}
             >
               <Text style={styles.rescheduleText}>Reschedule</Text>
             </Pressable>
+          )} */}
+          {!isDelivered && (
+            <View style={styles.activeBadge}>
+              <Text style={styles.activeText}>• Active</Text>
+            </View>
           )}
-          <View style={styles.activeBadge}>
-            <Text style={styles.activeText}>• Active</Text>
-          </View>
         </View>
 
         <View style={styles.routeCard}>
@@ -307,7 +350,7 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.callText}>📞 Call</Text>
 
           </Pressable>
-          
+
         </View>
 
         <View style={styles.summaryRow}>
@@ -320,9 +363,10 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.summaryValue}>{order?.pack_weight || 0} kg</Text>
           </View>
         </View>
-        {canUseDeliveryActions && (
+
+        {!isDelivered && (
           <View style={styles.deliveryButtonRow}>
-          <Pressable
+          {/* <Pressable
             style={[
               styles.deliveredButton,
               styles.deliveryActionButton,
@@ -333,7 +377,23 @@ const ActiveScreen = ({ route }) => {
             disabled={!canUseDeliveryActions}
           >
             <Text style={styles.deliveredText}>Non-delivery</Text>
+          </Pressable> */}
+            <Pressable
+              style={[
+                styles.deliveredButton,
+                styles.deliveryActionButton,
+                isUpdatingStatus && styles.disabledDeliveryActionButton,
+              ]}
+              onPress={handleStatusUpdate}
+              disabled={isUpdatingStatus || !nextStatus}
+            >
+              {isUpdatingStatus ? (
+                <ActivityIndicator color="#080808" />
+              ) : (
+                <Text style={styles.deliveredText}>{currentStatusStep?.label || 'Rider Accepted'}</Text>
+              )}
           </Pressable>
+
           <Pressable
             style={[
               styles.deliveredButton,
@@ -344,7 +404,13 @@ const ActiveScreen = ({ route }) => {
             disabled={!canUseDeliveryActions}
           >
             <Text style={styles.deliveredText}>
-              {isDeliveryActionDisabled ? 'Collected ✓' : isPaymentDone ? 'View payment ✓' : 'Collect payment X'}
+              {isCodOrder && isPaymentDone
+                ? 'Collected Done'
+                : isDeliveryActionDisabled
+                  ? 'Collected Not Done X'
+                  : isPaymentDone
+                    ? 'View payment ✓'
+                  : 'Collect payment X'}
             </Text>
           </Pressable>
           </View>

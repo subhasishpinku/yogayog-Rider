@@ -175,6 +175,23 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const fetchRiderCodLedger = useCallback(async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.get('rider/cod-ledger', {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Unable to load COD ledger.');
+      }
+
+      return response.data?.data || {};
+    } catch (error) {
+      throw error;
+    }
+  }, []);
+
   const submitRiderCod = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -834,6 +851,7 @@ export const HomeProvider = ({ children }) => {
         fetchRiderOrderById,
         fetchRiderOrderPaymentDetails,
         fetchRiderWalletLedger,
+        fetchRiderCodLedger,
         submitRiderCod,
         fetchRiderWalletBalance,
         makeRiderWithdrawalRequest,
