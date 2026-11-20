@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, BackHandler, Linking, Platform, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, BackHandler, Linking, Platform, Pressable, Text, ToastAndroid, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -168,6 +168,21 @@ const ActiveScreen = ({ route }) => {
 
   const handleStatusUpdate = async () => {
     if (!nextStatus || isUpdatingStatus) return;
+
+    if (
+      (nextStatus.key === 'at_your_door' || nextStatus.key === 'delivered')
+      && isCodOrder
+      && !isPaymentDone
+    ) {
+      const targetStatus = nextStatus.key === 'delivered' ? 'Delivered' : 'At Your Door';
+      const message = `Please complete COD collection before marking the order ${targetStatus}.`;
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.LONG);
+      } else {
+        Alert.alert('Payment required', message);
+      }
+      return;
+    }
 
     const statusOrderId = order?.id || order?.order_pk_id || orderId || order?.order_id;
     setIsUpdatingStatus(true);

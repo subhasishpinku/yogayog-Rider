@@ -12,8 +12,13 @@ import homeStyles from '../HomeScreen/styles/styles';
 
 const statusTabs = [
   { key: 'all', label: 'All' },
-  { key: 'rider_accepted', label: 'Accepted' },
-  { key: 'out_for_delivery', label: 'Out for Delivery' },
+  { key: 'rider_accepted', label: 'Rider\nAccepted' },
+  { key: 'on_the_way', label: 'On the\nWay' },
+  { key: 'reached', label: 'Reached' },
+  { key: 'picked_up', label: 'Picked\nUp' },
+  { key: 'delivery_started', label: 'Delivery\nStarted' },
+  { key: 'out_for_delivery', label: 'Out for\nDelivery' },
+  { key: 'at_your_door', label: 'At Your\nDoor' },
 ];
 
 const getTimeBasedGreeting = () => {
@@ -257,7 +262,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.statusTabs}
       >
-        {statusTabs.map((tab) => {
+        {statusTabs.filter((tab) => countForStatus(tab.key) > 0).map((tab) => {
           const selected = selectedStatus === tab.key;
           return (
             <Pressable

@@ -25,9 +25,7 @@ const getTimeBasedGreeting = () => {
   return 'Good night';
 };
 
-const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scrollY }) => {
-  const [cardY, setCardY] = useState(null);
-  const showInitially = index < 2;
+const AnimatedOrderCard = ({ order, navigation, assignedBlinkOpacity }) => {
   const isAssigned = String(order.status || '').toLowerCase() === 'assigned';
   const statusText = order.status
     ? String(order.status).toLowerCase() === 'rider_accepted'
@@ -40,29 +38,8 @@ const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scr
     isAssigned && styles.assignedStatus,
   ];
 
-  const cardAnimation = showInitially || cardY === null
-    ? null
-    : scrollY.interpolate({
-        inputRange: [Math.max(0, cardY - 520), Math.max(1, cardY - 220)],
-        outputRange: [0, 1],
-        extrapolate: 'clamp',
-      });
-  const cardTranslateY = showInitially || cardY === null
-    ? 0
-    : scrollY.interpolate({
-        inputRange: [Math.max(0, cardY - 520), Math.max(1, cardY - 220)],
-        outputRange: [24, 0],
-        extrapolate: 'clamp',
-      });
-
   return (
-    <Animated.View
-      onLayout={(event) => setCardY(event.nativeEvent.layout.y)}
-      style={{
-        opacity: cardAnimation || 1,
-        transform: [{ translateY: cardTranslateY }],
-      }}
-    >
+    <View>
       <Pressable
         style={styles.orderCard}
         onPress={() => {
@@ -116,7 +93,7 @@ const AnimatedOrderCard = ({ order, index, navigation, assignedBlinkOpacity, scr
           )) : null}
         </Text>
       </Pressable>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -517,14 +494,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       {isOnline ? (
         <>
           <View style={styles.orderHeading}><Text style={styles.sectionTitle}>Available Orders</Text><Text style={styles.nearby}>{availableOrders.length} orders</Text></View>
-          {availableOrders.length > 0 ? availableOrders.map((order, index) => (
+          {availableOrders.length > 0 ? availableOrders.map((order) => (
             <AnimatedOrderCard
               key={order.id || order.order_pk_id}
               assignedBlinkOpacity={assignedBlinkOpacity}
-              index={index}
               navigation={navigation}
               order={order}
-              scrollY={scrollY}
             />
           )) : (
             <View style={styles.offlineCard}>

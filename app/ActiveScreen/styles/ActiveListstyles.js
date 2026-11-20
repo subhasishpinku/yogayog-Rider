@@ -28,6 +28,7 @@ const styles = StyleSheet.create({
   searchBox: { height: 39, flexDirection: 'row', alignItems: 'center', marginHorizontal: 14, marginTop: 10, paddingHorizontal: 12, borderWidth: 1, borderColor: '#38383B', borderRadius: 13, backgroundColor: '#29292B' },
   searchIcon: { marginRight: 8, color: colors.mutedLight, fontSize: 21, lineHeight: 22 },
   searchInput: { flex: 1, height: 39, paddingHorizontal: 0, color: colors.white, fontSize: 12 },
+  statusTabRows: { height: 168 },
   statusTabsScroll: { height: 84, flexGrow: 0 },
   statusTabs: { minWidth: '100%', height: 84, paddingHorizontal: 12, paddingTop: 8, paddingBottom: 0, borderBottomWidth: 1, borderBottomColor: '#2B2B2E' },
   statusTab: { position: 'relative', width: 84, height: 76, alignItems: 'center', justifyContent: 'flex-start', paddingTop: 2 },
