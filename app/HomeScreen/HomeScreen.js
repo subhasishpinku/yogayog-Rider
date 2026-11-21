@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, Modal, Pressable, RefreshControl, Switch, Text, View } from 'react-native';
+import { Alert, Animated, Modal, Platform, Pressable, RefreshControl, Switch, Text, ToastAndroid, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -15,6 +15,8 @@ import {
 } from '../Services/BackgroundLocation';
 const fallbackLocation = { latitude: 22.5186, longitude: 88.3477 };
 const RIDER_AVAILABILITY_KEY = 'riderAvailability';
+const LIVE_LOCATION_ORDER_ID_KEY = 'YOGAYOG_LIVE_LOCATION_ORDER_ID';
+const LIVE_LOCATION_FLAG_KEY = 'YOGAYOG_LIVE_LOCATION_FLAG';
 
 const getTimeBasedGreeting = () => {
   const hour = new Date().getHours();
@@ -322,10 +324,28 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     focusRiderLocation();
     loadRiderAddress();
   };
+
+  const logCurrentLocation = async (label) => {
+    try {
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const { latitude: currentLatitude, longitude: currentLongitude } = currentLocation.coords;
+
+      setLatitude(currentLatitude);
+      setLongitude(currentLongitude);
+      console.log(`${label} Latitude1:`, currentLatitude);
+      console.log(`${label} Longitude1:`, currentLongitude);
+    } catch (error) {
+      console.log(`${label} location error:`, error.message);
+    }
+  };
+
   const startTracking = async () => {
     try {
       await startBackgroundLocation();
       console.log('Background tracking started');
+      await logCurrentLocation('Background');
     } catch (error) {
       console.log('Tracking error:', error.message);
     }
@@ -334,11 +354,35 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     try {
       await stopBackgroundLocation();
       console.log('Background tracking stopped');
+      await logCurrentLocation('Background');
     } catch (error) {
       console.log('Stop error:', error.message);
     }
   };
   const handleOnlineToggle = async (nextIsOnline) => {
+    if (!nextIsOnline) {
+      try {
+        const [liveLocationFlag, liveLocationOrderId] = await Promise.all([
+          AsyncStorage.getItem(LIVE_LOCATION_FLAG_KEY),
+          AsyncStorage.getItem(LIVE_LOCATION_ORDER_ID_KEY),
+        ]);
+
+        if (['start', 'on_the_way'].includes(liveLocationFlag)) {
+          const message = `Order ${liveLocationOrderId || ''} is still active. Complete delivery before going offline.`.trim();
+
+          if (Platform.OS === 'android') {
+            ToastAndroid.show(message, ToastAndroid.LONG);
+          } else {
+            Alert.alert('Cannot go offline', message);
+          }
+
+          return;
+        }
+      } catch (error) {
+        console.log('Live location status check error:', error);
+      }
+    }
+
     try {
       await updateRiderOnlineStatus(nextIsOnline);
       await AsyncStorage.setItem(

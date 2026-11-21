@@ -6,6 +6,8 @@ import { Alert, Platform, ToastAndroid } from 'react-native';
 import axiosInstance from './axiosInstance';
 
 const HomeContext = createContext(null);
+const LIVE_LOCATION_ORDER_ID_KEY = 'YOGAYOG_LIVE_LOCATION_ORDER_ID';
+const LIVE_LOCATION_FLAG_KEY = 'YOGAYOG_LIVE_LOCATION_FLAG';
 
 const showErrorToast = (error, fallbackMessage = 'Something went wrong.') => {
   const message = error?.response?.data?.message || error?.message || fallbackMessage;
@@ -531,6 +533,46 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const updateRiderLiveLocation = useCallback(async ({ orderId, latitude, longitude, flag }) => {
+    if (!orderId || !Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude)) || !flag) {
+      throw new Error('Order ID, latitude, longitude, and flag are required to update live location.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/update-live-location', null, {
+        params: {
+          order_id: orderId,
+          lat: latitude,
+          lon: longitude,
+          flag,
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      await AsyncStorage.multiSet([
+        [LIVE_LOCATION_ORDER_ID_KEY, String(orderId)],
+        [LIVE_LOCATION_FLAG_KEY, flag],
+      ]);
+
+      console.log('[HomeContext] live location updated:', {
+        orderId,
+        latitude,
+        longitude,
+        flag,
+        response: response.data,
+      });
+
+      return response.data;
+    } catch (error) {
+      console.log(
+        '[HomeContext] live location update error:',
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  }, []);
+
   const fetchRiderProfile = useCallback(async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
@@ -862,6 +904,7 @@ export const HomeProvider = ({ children }) => {
         fetchRiderTripDetails,
         acceptRiderOrder,
         updateRiderOrderStatus,
+        updateRiderLiveLocation,
         fetchRiderProfile,
         fetchRiderStats,
         updateRiderOnlineStatus,

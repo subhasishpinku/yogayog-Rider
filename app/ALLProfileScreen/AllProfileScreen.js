@@ -1,5 +1,6 @@
 import React from 'react';
-import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert, Platform, Pressable, ScrollView, Text, ToastAndroid, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -10,6 +11,8 @@ import {
   startBackgroundLocation,
   stopBackgroundLocation,
 } from '../Services/BackgroundLocation';
+const LIVE_LOCATION_ORDER_ID_KEY = 'YOGAYOG_LIVE_LOCATION_ORDER_ID';
+const LIVE_LOCATION_FLAG_KEY = 'YOGAYOG_LIVE_LOCATION_FLAG';
 const profileItems = [
   { icon: '◉', title: 'Profile Info', subtitle: 'View and manage your rider profile', tone: 'green', route: navigationStrings.PROFILESCREEN },
   { icon: '✓', title: 'KYC Page & Verification', subtitle: 'Verify your identity and rider account', badge: 'New', tone: 'gold',route: navigationStrings.KYCVERIFICATION  },
@@ -26,15 +29,40 @@ const AllProfileScreen = () => {
   const navigation = useNavigation();
   const { isLoggingOut, logout } = useAuth();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const [liveLocationFlag, liveLocationOrderId] = await Promise.all([
+        AsyncStorage.getItem(LIVE_LOCATION_FLAG_KEY),
+        AsyncStorage.getItem(LIVE_LOCATION_ORDER_ID_KEY),
+      ]);
+
+      if (['start', 'on_the_way'].includes(liveLocationFlag)) {
+        const message = `Order #${liveLocationOrderId || ''} is still active. Complete delivery before logout.`.trim();
+
+        if (Platform.OS === 'android') {
+          ToastAndroid.show(message, ToastAndroid.LONG);
+        } else {
+          Alert.alert('Cannot logout', message);
+        }
+
+        return;
+      }
+    } catch (error) {
+      console.log('Live location status check error:', error);
+    }
+
     Alert.alert('Logout', 'Are you sure you want to logout?', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Logout',
         style: 'destructive',
         onPress: async () => {
-          stopTracking();
+          await stopTracking();
           await logout();
+          await AsyncStorage.multiRemove([
+            LIVE_LOCATION_ORDER_ID_KEY,
+            LIVE_LOCATION_FLAG_KEY,
+          ]);
           navigation.replace(navigationStrings.LOGINSCREEN);
         },
       },

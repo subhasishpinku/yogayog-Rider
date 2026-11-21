@@ -2,12 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, BackHandler, Linking, Platform, Pressable, Text, ToastAndroid, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
+import * as Location from 'expo-location';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 
 import colors from './styles/colors';
 import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings'; 
 import { useHome } from '../contexts/HomeContext';
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from '../Services/BackgroundLocation';
 const pickup = { latitude: 22.5096, longitude: 88.3456 };
 const drop = { latitude: 22.5198, longitude: 88.3469 };
 const STATUS_FLOW = [
@@ -33,7 +38,11 @@ const mapStyle = [
 
 const ActiveScreen = ({ route }) => {
   const navigation = useNavigation();
-  const { fetchRiderOrderById, updateRiderOrderStatus } = useHome();
+  const {
+    fetchRiderOrderById,
+    updateRiderOrderStatus,
+    updateRiderLiveLocation,
+  } = useHome();
   const orderId = route?.params?.orderId;
   const [order, setOrder] = useState(null);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
@@ -166,16 +175,50 @@ const ActiveScreen = ({ route }) => {
     Alert.alert('Map unavailable', 'Please install Google Maps or Apple Maps to navigate.');
   };
 
+  const syncLiveLocation = async (flag) => {
+    const liveOrderId = order?.id || order?.order_pk_id || orderId || order?.order_id;
+
+    if (!liveOrderId) {
+      throw new Error('Order ID is required to update live location.');
+    }
+
+    const currentLocation = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.High,
+    });
+    const { latitude, longitude } = currentLocation.coords;
+    await updateRiderLiveLocation({
+      orderId: liveOrderId,
+      latitude,
+      longitude,
+      flag,
+    });
+  };
+
+  const syncTrackingForStatus = async (statusKey) => {
+    const flag = statusKey === 'delivered'
+      ? 'stop'
+      : currentStatusKey === 'rider_accepted'
+        ? 'start'
+        : 'on_the_way';
+
+    try {
+      if (flag === 'start') {
+        await startBackgroundLocation();
+      }
+
+      await syncLiveLocation(flag);
+    } finally {
+      if (flag === 'stop') {
+        await stopBackgroundLocation();
+      }
+    }
+  };
+
   const handleStatusUpdate = async () => {
     if (!nextStatus || isUpdatingStatus) return;
 
-    if (
-      (nextStatus.key === 'at_your_door' || nextStatus.key === 'delivered')
-      && isCodOrder
-      && !isPaymentDone
-    ) {
-      const targetStatus = nextStatus.key === 'delivered' ? 'Delivered' : 'At Your Door';
-      const message = `Please complete COD collection before marking the order ${targetStatus}.`;
+    if (nextStatus.key === 'delivered' && isCodOrder && !isPaymentDone) {
+      const message = 'Please complete COD collection before marking the order Delivered.';
       if (Platform.OS === 'android') {
         ToastAndroid.show(message, ToastAndroid.LONG);
       } else {
@@ -190,6 +233,12 @@ const ActiveScreen = ({ route }) => {
     try {
       await updateRiderOrderStatus(statusOrderId, nextStatus.key);
       setOrder((previousOrder) => ({ ...previousOrder, status: nextStatus.key }));
+
+      try {
+        await syncTrackingForStatus(nextStatus.key);
+      } catch (locationError) {
+        console.log('[ActiveScreen] live location sync error:', locationError.message);
+      }
     } catch (error) {
       Alert.alert('Status update failed', error.message || 'Please try again.');
     } finally {
@@ -421,7 +470,11 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.deliveredText}>
               {isCodOrder && isPaymentDone
                 ? 'Collected Done'
-                : isDeliveryActionDisabled
+                : isAtYourDoor && (isWalletOrder || isPrepaidOrder)
+                  ? 'View payment ✓'
+                : isAtYourDoor
+                  ? 'Collected Not Done X'
+                  : isDeliveryActionDisabled
                   ? 'Collected Not Done X'
                   : isPaymentDone
                     ? 'View payment ✓'

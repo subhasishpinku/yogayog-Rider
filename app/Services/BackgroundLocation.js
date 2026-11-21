@@ -2,10 +2,13 @@
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import axiosInstance from '../contexts/axiosInstance';
 
 export const LOCATION_TASK_NAME = 'YOGAYOG_BACKGROUND_LOCATION';
 export const LAST_BACKGROUND_LOCATION_KEY = 'YOGAYOG_LAST_BACKGROUND_LOCATION';
 export const BACKGROUND_LOCATION_HISTORY_KEY = 'YOGAYOG_BACKGROUND_LOCATION_HISTORY';
+export const LIVE_LOCATION_ORDER_ID_KEY = 'YOGAYOG_LIVE_LOCATION_ORDER_ID';
+export const LIVE_LOCATION_FLAG_KEY = 'YOGAYOG_LIVE_LOCATION_FLAG';
 
 // Must be defined at module scope, not inside a component.
 TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
@@ -36,9 +39,42 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
       AsyncStorage.setItem(BACKGROUND_LOCATION_HISTORY_KEY, JSON.stringify(nextHistory)),
     ]);
 
+    const [liveLocationOrderId, liveLocationFlag, token] = await Promise.all([
+      AsyncStorage.getItem(LIVE_LOCATION_ORDER_ID_KEY),
+      AsyncStorage.getItem(LIVE_LOCATION_FLAG_KEY),
+      AsyncStorage.getItem('authToken'),
+    ]);
+
+    if (liveLocationOrderId && ['start', 'on_the_way'].includes(liveLocationFlag)) {
+      try {
+        const response = await axiosInstance.post('rider/update-live-location', null, {
+          params: {
+            order_id: liveLocationOrderId,
+            lat: latitude,
+            lon: longitude,
+            flag: liveLocationFlag,
+          },
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+
+        console.log('[BackgroundLocation] live location API updated:', {
+          orderId: liveLocationOrderId,
+          latitude,
+          longitude,
+          flag: liveLocationFlag,
+          response: response.data,
+        });
+      } catch (locationApiError) {
+        console.error(
+          '[BackgroundLocation] live location API error:',
+          locationApiError.response?.data || locationApiError.message
+        );
+      }
+    }
+
     console.log('Background Latitude:', latitude);
     console.log('Background Longitude:', longitude);
-      console.log('Background location trail points:', nextHistory.length);
+    console.log('Background location trail points:', nextHistory.length);
     }
   } catch (taskError) {
     console.error('Background location persistence error:', taskError.message);
