@@ -56,6 +56,8 @@ const NonDeliveryReportBottom = () => {
   const selectedOrderId = selectedOrder?.id || selectedOrder?.order_pk_id || selectedOrder?.order_id;
   const orderCode = selectedOrder?.code || selectedOrder?.order_no || selectedOrderId || 'Select order';
   const customerName = selectedOrder?.customer_name || selectedOrder?.customerName || 'Customer';
+  const pickupAddress = selectedOrder?.pickup_address || selectedOrder?.pickup_area || selectedOrder?.pickup_location_name || 'Pickup address unavailable';
+  const dropAddress = selectedOrder?.drop_address || selectedOrder?.drop_area || selectedOrder?.drop_location_name || 'Drop address unavailable';
 
   const showValidationToast = (message) => {
     if (Platform.OS === 'android') {
@@ -145,6 +147,10 @@ const NonDeliveryReportBottom = () => {
       id: selectedOrderId,
       orderId: orderCode,
       customerName,
+      pickupAddress,
+      dropAddress,
+      pickupArea: pickupAddress,
+      dropArea: dropAddress,
       reason: selected?.id,
       reasonId: selected?.reasonId,
       reasonTitle: selected?.title,
@@ -188,20 +194,20 @@ const NonDeliveryReportBottom = () => {
               style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
               resizeMode="contain"
             />
-            <Text style={homeStyles.greeting}>
+            {/* <Text style={homeStyles.greeting}>
               {getTimeBasedGreeting()}{' '}
               <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
                 ✋︎
               </Animated.Text>
-            </Text>
-            <Pressable
+            </Text> */}
+            {/* <Pressable
               style={homeStyles.walletButton}
               onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
             >
               <Text style={homeStyles.walletButtonText}>Wallet</Text>
-            </Pressable>
+            </Pressable> */}
             <Pressable
-              style={[homeStyles.avatar, homeStyles.headerAvatar]}
+              style={[homeStyles.avatar, homeStyles.headerAvatar, { marginLeft: 'auto', alignSelf: 'flex-end' }]}
               onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
             >
               <Text style={homeStyles.avatarText}>{riderInitials || 'SK'}</Text>
@@ -226,26 +232,31 @@ const NonDeliveryReportBottom = () => {
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Text style={homeStyles.greeting}>
+          {/* <Text style={homeStyles.greeting}>
             {getTimeBasedGreeting()}{' '}
             <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
               ✋︎
             </Animated.Text>
-          </Text>
-          <Pressable
+          </Text> */}
+          {/* <Pressable
             style={homeStyles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
             <Text style={homeStyles.walletButtonText}>Wallet</Text>
-          </Pressable>
+          </Pressable> */}
           <Pressable
-            style={[homeStyles.avatar, homeStyles.headerAvatar]}
+            style={[homeStyles.avatar, homeStyles.headerAvatar, { marginLeft: 'auto', alignSelf: 'flex-end' }]}
             onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
           >
             <Text style={homeStyles.avatarText}>{riderInitials || 'SK'}</Text>
           </Pressable>
         </View>
       </View>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 14 }}
+        showsVerticalScrollIndicator={false}
+      >
       <Modal
         visible={isOrderPickerVisible}
         transparent
@@ -313,7 +324,7 @@ const NonDeliveryReportBottom = () => {
           <Text style={reportStyles.warningText}>Select the reason why this shipment could not be{ '\n' }delivered</Text>
         </View>
       </View>
-      <ScrollView contentContainerStyle={[reportStyles.listContent, { paddingHorizontal: 10, paddingTop: 0, paddingBottom: 14 }]} showsVerticalScrollIndicator={false}>
+      <View style={[reportStyles.listContent, { paddingHorizontal: 10, paddingTop: 0, paddingBottom: 14 }]}>
         {reasons.map((reason) => {
           const isSelected = reason.id === selectedReason;
 
@@ -344,6 +355,7 @@ const NonDeliveryReportBottom = () => {
         >
           <Text style={reportStyles.continueText}>Continue with Selected Reason →</Text>
         </Pressable>
+      </View>
       </ScrollView>
     </View>
   );

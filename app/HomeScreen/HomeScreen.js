@@ -411,12 +411,12 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
             style={[styles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Text style={styles.greeting}>
+          {/* <Text style={styles.greeting}>
             {getTimeBasedGreeting()}{' '}
             <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
               ✋︎
             </Animated.Text>
-          </Text>
+          </Text> */}
            <Pressable
             style={styles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}

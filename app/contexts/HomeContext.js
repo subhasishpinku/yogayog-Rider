@@ -788,6 +788,100 @@ export const HomeProvider = ({ children }) => {
     }
   }, []);
 
+  const markItemMissing = useCallback(async ({ orderId, piece, notes = '' }) => {
+    if (!orderId || !piece) {
+      throw new Error('Order ID and missing piece count are required.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const response = await axiosInstance.post('rider/mark-item-missing', null, {
+        params: {
+          order_id: orderId,
+          piece,
+          notes,
+        },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      console.log('[HomeContext] rider/mark-item-missing response:', response.data);
+
+      const responseData = response.data || {};
+      const successMessage = String(responseData.message || '').toLowerCase();
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        responseData.status === true ||
+        responseData.status === 'true' ||
+        successMessage.includes('success');
+
+      if (!requestSucceeded) {
+        throw new Error(responseData.message || 'Unable to report missing item.');
+      }
+
+      return responseData;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/mark-item-missing error:',
+        error?.response?.data || error?.message
+      );
+      throw error;
+    }
+  }, []);
+
+  const reportDamagedItem = useCallback(async ({ orderId, notes = '', imageUris = [] }) => {
+    if (!orderId) {
+      throw new Error('Order ID is required to report damaged item.');
+    }
+
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      const formData = new FormData();
+
+      formData.append('order_id', String(orderId));
+      formData.append('notes', notes);
+      imageUris.slice(0, 4).forEach((uri, index) => {
+        const extension = String(uri).split('?')[0].split('.').pop()?.toLowerCase() || 'jpg';
+
+        formData.append(`image_${index + 1}`, {
+          uri,
+          name: `damaged-item-${index + 1}.${extension}`,
+          type: extension === 'png' ? 'image/png' : 'image/jpeg',
+        });
+      });
+
+      const response = await axiosInstance.post('rider/report-damaged-item', formData, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('[HomeContext] rider/report-damaged-item response:', response.data);
+
+      const responseData = response.data || {};
+      const successMessage = String(responseData.message || '').toLowerCase();
+      const requestSucceeded =
+        responseData.success === true ||
+        responseData.success === 'true' ||
+        responseData.status === true ||
+        responseData.status === 'true' ||
+        successMessage.includes('success');
+
+      if (!requestSucceeded) {
+        throw new Error(responseData.message || 'Unable to report damaged item.');
+      }
+
+      return responseData;
+    } catch (error) {
+      console.error(
+        '[HomeContext] rider/report-damaged-item error:',
+        error?.response?.data || error?.message
+      );
+      throw error;
+    }
+  }, []);
+
   const rescheduleRiderOrder = useCallback(async ({
     orderId,
     requestedDeliveryDate,
@@ -911,6 +1005,8 @@ export const HomeProvider = ({ children }) => {
         fetchRiderDocuments,
         fetchNonDeliveryReasons,
         cancelRiderDelivery,
+        markItemMissing,
+        reportDamagedItem,
         rescheduleRiderOrder,
         updateRiderProfile,
         uploadRiderDocument,

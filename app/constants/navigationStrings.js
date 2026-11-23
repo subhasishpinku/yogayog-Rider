@@ -35,5 +35,7 @@ export default {
   NETWORKSCREEN: 'NetworkScreen',
   GPSSCREEN: 'GpsScreen',
   CODLEDGERSCREEN: 'CodLedgerScreen',
+  ITEMMISSINGSCREEN: 'ItemMissingScreen',
+  SHIPMENTDAMAGEDSCREEN: 'ShipmentDamagedScreen',
 };
 

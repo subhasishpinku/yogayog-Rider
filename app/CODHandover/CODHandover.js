@@ -153,20 +153,20 @@ const CODHandover = () => {
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Text style={homeStyles.greeting}>
+          {/* <Text style={homeStyles.greeting}>
             {getTimeBasedGreeting()}{' '}
             <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
               ✋︎
             </Animated.Text>
-          </Text>
-          <Pressable
+          </Text> */}
+          {/* <Pressable
             style={homeStyles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
             <Text style={homeStyles.walletButtonText}>Wallet</Text>
-          </Pressable>
+          </Pressable> */}
           <Pressable
-            style={[homeStyles.avatar, homeStyles.headerAvatar]}
+            style={[homeStyles.avatar, homeStyles.headerAvatar, { marginLeft: 'auto', alignSelf: 'flex-end' }]}
             onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
           >
             <Text style={homeStyles.avatarText}>{riderInitials || 'SK'}</Text>

@@ -23,9 +23,9 @@ const styles = StyleSheet.create({
   greeting: { color: colors.white, fontSize: 17, left: 5 },
   nameRow: { flexDirection: 'row', alignItems: 'center', marginTop: 1, marginLeft: 5 },
   name: { flexShrink: 1, color: colors.white, fontSize: 21, fontWeight: '900' },
-  headerAvatar: { position: 'relative', top: 'auto', right: 'auto', width: 40, height: 40, marginLeft: 5 },
+  headerAvatar: { position: 'relative', top: 'auto', right: 'auto', width: 40, height: 40, marginLeft: 'auto', alignSelf: 'flex-end'},
   logo: { width: 72, height: 27, marginLeft: 8, borderRadius: 5 },
-  walletButton: { marginLeft: 'auto', paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.white },
+  walletButton: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 12, backgroundColor: colors.gold ,alignSelf: 'flex-start', marginTop: 10, marginLeft: 12},
   walletButtonText: { color: '#17120A', fontSize: 14, fontWeight: '900' },
   vehicle: { alignSelf: 'flex-start', marginTop: 7, paddingHorizontal: 13, paddingVertical: 6, borderRadius: 18, backgroundColor: '#29292B', color: colors.gold, fontSize: 12, fontWeight: '800' },
   headerCopy: {

@@ -149,18 +149,18 @@ const EarningsScreen = () => {
               style={[styles.logo, { transform: [{ scale: logoScale }] }]}
               resizeMode="contain"
             />
-            <Text style={styles.greeting}>
+            {/* <Text style={styles.greeting}>
               {getTimeBasedGreeting()}{' '}
               <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
                 ✋︎
               </Animated.Text>
-            </Text>
-            <Pressable
+            </Text> */}
+            {/* <Pressable
               style={styles.walletButton}
               onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
             >
               <Text style={styles.walletButtonText}>Wallet</Text>
-            </Pressable>
+            </Pressable> */}
             <Pressable
               style={[styles.avatar, styles.headerAvatar]}
               onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
@@ -176,14 +176,22 @@ const EarningsScreen = () => {
       
           
         </View>
-
-        <View style={styles.balanceCard}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 12 }}>
           <Pressable
-            style={[styles.headerAction, styles.balanceCardAction]}
+            style={styles.walletButton}
+            onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
+          >
+            <Text style={styles.walletButtonText}>Wallet</Text>
+          </Pressable>
+          <Pressable
+            style={styles.headerAction}
             onPress={() => navigation.navigate(navigationStrings.CODLEDGERSCREEN)}
           >
             <Text style={styles.headerActionText}>COD LEDGER</Text>
           </Pressable>
+        </View>
+
+        <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>{selectedPeriod.toUpperCase()} EARNINGS</Text>
           <Text style={styles.balanceValue}>₹{totalEarnings.toFixed(2)}</Text>
           <Text style={styles.payoutText}>

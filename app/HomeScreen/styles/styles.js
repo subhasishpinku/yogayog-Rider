@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   content: { paddingBottom: 100 },
   header: { height: 80, paddingHorizontal: 12, paddingTop: 30, backgroundColor: colors.gold },
   ring: { position: 'absolute', top: -30, right: -27, width: 118, height: 118, borderWidth: 14, borderColor: '#302812', borderRadius: 999 },
-  avatar: { position: 'absolute', top: 27, right: 21, zIndex: 10, elevation: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: '#473E17' },
+  avatar: { position: 'absolute', top: 27, right: 21, zIndex: 10, elevation: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: '#473E17' ,alignSelf: 'flex-end'},
   avatarText: { color: colors.gold, fontSize: 18, fontWeight: '900' },
   greetingRow: { flexDirection: 'row', alignItems: 'center' },
   greeting: { color: colors.white, fontSize: 18, left: 5 },

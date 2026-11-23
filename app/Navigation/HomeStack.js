@@ -37,6 +37,8 @@ import OrderChainScreen from '../AcceptRejectOrder/OrderChainScreen';
 import NetworkScreen from '../NetworkGps/NetworkScreen';
 import GpsScreen from '../NetworkGps/GpsScreen';
 import CodLedgerScreen from '../EarningsScreen/CodLedgerScreen';
+import ItemMissingScreen from '../RTODetails/ItemMissingScreen';
+import ShipmentDamagedScreen from '../RTODetails/ShipmentDamagedScreen';
 const Stack = createNativeStackNavigator();
 
 const HomeStack = () => {
@@ -182,6 +184,14 @@ const HomeStack = () => {
         <Stack.Screen
         name={navigationStrings.CODLEDGERSCREEN}
         component={CodLedgerScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.ITEMMISSINGSCREEN}
+        component={ItemMissingScreen}
+      />
+      <Stack.Screen
+        name={navigationStrings.SHIPMENTDAMAGEDSCREEN}
+        component={ShipmentDamagedScreen}
       />
     </Stack.Navigator>
   );

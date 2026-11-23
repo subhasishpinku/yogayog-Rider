@@ -49,6 +49,12 @@
         }
       ],
       [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow YogaYog Rider to capture shipment proof photos."
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "Allow YogaYog Rider to access your location.",

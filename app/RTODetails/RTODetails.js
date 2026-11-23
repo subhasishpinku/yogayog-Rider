@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -21,6 +21,16 @@ const RTODetails = () => {
   const deliveryArea = route.params?.dropArea || route.params?.pickupArea || 'Address unavailable';
   const paymentMethod = route.params?.paymentMethod || 'Payment';
   const amount = Number(route.params?.amount || 0);
+
+  useEffect(() => {
+    const reason = String(route.params?.reasonTitle || '').toLowerCase();
+
+    if (reason.includes('item missing')) {
+      navigation.replace(navigationStrings.ITEMMISSINGSCREEN, route.params);
+    } else if (reason.includes('shipment damaged')) {
+      navigation.replace(navigationStrings.SHIPMENTDAMAGEDSCREEN, route.params);
+    }
+  }, [navigation, route.params]);
 
   const confirmRto = async () => {
     if (submitting) return;
@@ -110,7 +120,7 @@ const RTODetails = () => {
         </View>
 
         <Pressable style={styles.confirmButton} onPress={confirmRto} disabled={submitting}>
-          <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '↩ Confirm RTO'}</Text>
+          <Text style={styles.confirmText}>{submitting ? 'Submitting...' : '↩ Return to branch'}</Text>
         </Pressable>
       </ScrollView>
     </View>

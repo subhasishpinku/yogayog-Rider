@@ -7,7 +7,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    minHeight: 118,
+    minHeight: 50,
     paddingHorizontal: 10,
     paddingTop: 16,
     backgroundColor: colors.header,

@@ -12,7 +12,7 @@ import homeStyles from '../HomeScreen/styles/styles';
 
 const statusTabs = [
   { key: 'all', label: 'All' },
-  { key: 'rider_accepted', label: 'Rider\nAccepted' },
+  // { key: 'rider_accepted', label: 'Rider\nAccepted' },
   { key: 'on_the_way', label: 'On the\nWay' },
   { key: 'reached', label: 'Reached' },
   { key: 'picked_up', label: 'Picked\nUp' },
@@ -198,20 +198,20 @@ const ActiveList = ({ initialStatus = 'all' }) => {
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
-          <Text style={homeStyles.greeting}>
+          {/* <Text style={homeStyles.greeting}>
             {getTimeBasedGreeting()}{' '}
             <Animated.Text style={{ marginLeft: 5, color: '#FFFFFF', fontSize: 25, transform: [{ rotate: handRotation }] }}>
               ✋︎
             </Animated.Text>
-          </Text>
-          <Pressable
+          </Text> */}
+          {/* <Pressable
             style={homeStyles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
           >
             <Text style={homeStyles.walletButtonText}>Wallet</Text>
-          </Pressable>
+          </Pressable> */}
           <Pressable
-            style={[homeStyles.avatar, homeStyles.headerAvatar]}
+            style={[homeStyles.avatar, homeStyles.headerAvatar, { marginLeft: 'auto', alignSelf: 'flex-end' }]}
             onPress={() => navigation.navigate(navigationStrings.ALLPROFILESCREEN)}
           >
             <Text style={homeStyles.avatarText}>{riderInitials || 'SK'}</Text>
@@ -257,12 +257,11 @@ const ActiveList = ({ initialStatus = 'all' }) => {
         })}
       </View>
       <ScrollView
-        horizontal
-        style={styles.statusTabsScroll}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.statusTabs}
+        style={[styles.statusTabsScroll, { height: 168 }]}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[styles.statusTabs, { minWidth: 0, height: 168, flexWrap: 'wrap' }]}
       >
-        {statusTabs.filter((tab) => countForStatus(tab.key) > 0).map((tab) => {
+      {statusTabs.map((tab) => {
           const selected = selectedStatus === tab.key;
           return (
             <Pressable
