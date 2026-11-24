@@ -149,7 +149,7 @@ const CODHandover = () => {
         <View style={homeStyles.ring} />
         <View style={homeStyles.greetingRow}>
           <Animated.Image
-            source={require('../../assets/yogayoglogo1.png')}
+            source={require('../../assets/yogayoglogo2.png')}
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
@@ -188,11 +188,11 @@ const CODHandover = () => {
           <Text style={styles.totalMeta}>{transactions.length} wallet transaction{transactions.length === 1 ? '' : 's'}</Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' , marginLeft: 15}}>
           <Text style={[styles.sectionTitle, { marginBottom: 8 }]}>Collected Breakdown</Text>
           {transactions.length > 2 ? (
             <Pressable onPress={() => setShowAllTransactions((current) => !current)}>
-              <Text style={{ marginTop: 16, marginBottom: 8, color: '#FFC800', fontSize: 13, fontWeight: '800' }}>
+              <Text style={{ marginTop: 16, marginBottom: 8, color: '#FFC800', fontSize: 13, fontWeight: '800', marginRight : 15}}>
                 {showAllTransactions ? 'Show less' : 'More'}
               </Text>
             </Pressable>

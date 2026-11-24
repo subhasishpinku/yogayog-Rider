@@ -190,7 +190,7 @@ const NonDeliveryReportBottom = () => {
           <View style={homeStyles.ring} />
           <View style={homeStyles.greetingRow}>
             <Animated.Image
-              source={require('../../assets/yogayoglogo1.png')}
+              source={require('../../assets/yogayoglogo2.png')}
               style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
               resizeMode="contain"
             />
@@ -228,7 +228,7 @@ const NonDeliveryReportBottom = () => {
         <View style={homeStyles.ring} />
         <View style={homeStyles.greetingRow}>
           <Animated.Image
-            source={require('../../assets/yogayoglogo1.png')}
+            source={require('../../assets/yogayoglogo2.png')}
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
@@ -263,10 +263,10 @@ const NonDeliveryReportBottom = () => {
         animationType="fade"
         onRequestClose={() => setIsOrderPickerVisible(false)}
       >
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, backgroundColor: 'rgba(0, 0, 0, 0.72)' }}>
-          <View style={{ width: '100%', maxHeight: '70%', padding: 18, borderWidth: 1, borderColor: '#FFC800', borderRadius: 20, backgroundColor: '#202022' }}>
-            <Text style={{ color: '#FFC800', fontSize: 20, fontWeight: '900' }}>Choose your order</Text>
-            <Text style={{ marginTop: 4, marginBottom: 14, color: '#A6A6AE', fontSize: 12 }}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 20, backgroundColor: 'rgba(0, 0, 0, 0.58)' }}>
+          <View style={{ width: '100%', maxHeight: '70%', padding: 18, borderWidth: 2, borderColor: '#FFC800', borderRadius: 20, backgroundColor: '#FFFFFF', elevation: 10, shadowColor: '#000000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.28, shadowRadius: 10 }}>
+            <Text style={{ color: '#111827', fontSize: 20, fontWeight: '900' }}>Choose your order</Text>
+            <Text style={{ marginTop: 4, marginBottom: 14, color: '#4B5563', fontSize: 12 }}>
               Select an order to continue
             </Text>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -277,15 +277,15 @@ const NonDeliveryReportBottom = () => {
                 return (
                   <Pressable
                     key={String(optionId)}
-                    style={{ minHeight: 48, justifyContent: 'center', marginBottom: 8, paddingHorizontal: 14, borderWidth: 1, borderColor: '#414145', borderRadius: 12, backgroundColor: '#303033' }}
+                    style={{ minHeight: 52, justifyContent: 'center', marginBottom: 8, paddingHorizontal: 14, borderWidth: 1, borderColor: '#FFC800', borderRadius: 12, backgroundColor: '#FFFDF0', elevation: 2, shadowColor: '#000000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 3 }}
                     onPress={() => {
                       setSelectedOrder(order);
                       setSelectedReason(null);
                       setIsOrderPickerVisible(false);
                     }}
                   >
-                    <Text style={{ color: '#FFFFFF', fontSize: 15, fontWeight: '700' }}>{optionCode}</Text>
-                    <Text style={{ marginTop: 2, color: '#A6A6AE', fontSize: 11 }}>
+                    <Text style={{ color: '#111827', fontSize: 15, fontWeight: '800' }}>{optionCode}</Text>
+                    <Text style={{ marginTop: 2, color: '#4B5563', fontSize: 11 }}>
                       {order.customer_name || order.customerName || 'Customer'} · {order.status}
                     </Text>
                   </Pressable>
@@ -293,24 +293,24 @@ const NonDeliveryReportBottom = () => {
               })}
             </ScrollView>
             <Pressable
-              style={{ alignItems: 'center', marginTop: 6, paddingVertical: 12, borderRadius: 12, backgroundColor: '#3A3A3D' }}
+              style={{ alignItems: 'center', marginTop: 6, paddingVertical: 12, borderRadius: 12, backgroundColor: '#FFC800', elevation: 3, shadowColor: '#000000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.16, shadowRadius: 3 }}
               onPress={() => setIsOrderPickerVisible(false)}
             >
-              <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '800' }}>Cancel</Text>
+              <Text style={{ color: '#111827', fontSize: 14, fontWeight: '900' }}>Cancel</Text>
             </Pressable>
           </View>
         </View>
       </Modal>
-      <View style={{ zIndex: 2, padding: 8, backgroundColor: '#202022' }}>
+    <View style={{ zIndex: 2, padding: 8, paddingHorizontal: 16, backgroundColor: '#FFFFFF' }}>
         <Pressable
-          style={{ minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, borderWidth: 1, borderColor: '#FFC800', borderRadius: 10, backgroundColor: '#303033' }}
+        style={{ minHeight: 40, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, borderWidth: 2, borderColor: '#FFC800', borderRadius: 10, backgroundColor: '#FFFFFF', elevation: 6, shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 6 }}
           onPress={handleOrderPickerPress}
           disabled={isOrdersLoading}
         >
           {isOrdersLoading ? (
             <ActivityIndicator color="#FFC800" />
           ) : (
-            <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700' }}>
+            <Text style={{ color: '#111827', fontSize: 14, fontWeight: '700' }}>
               {selectedOrder ? orderCode : 'Choose your order'}
             </Text>
           )}

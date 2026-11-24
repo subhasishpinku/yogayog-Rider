@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   titleBar: {
     height: 70,
@@ -12,7 +12,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: colors.ash,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
   },
   titleBarBack: {
     width: 36,
@@ -43,11 +48,11 @@ const styles = StyleSheet.create({
   mapArea: {
     height: 233,
     overflow: 'hidden',
-    backgroundColor: colors.map,
+    backgroundColor: colors.white,
   },
   fullMapScreen: {
     flex: 1,
-    backgroundColor: colors.map,
+    backgroundColor: colors.white,
   },
   fullMap: {
     ...StyleSheet.absoluteFillObject,
@@ -65,8 +70,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    color: colors.white,
-    backgroundColor: 'rgba(18, 18, 29, 0.9)',
+    color: '#111827',
+    backgroundColor: colors.white,
+    elevation: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
     fontSize: 16,
     fontWeight: '900',
   },
@@ -180,7 +190,7 @@ const styles = StyleSheet.create({
   orderSection: {
     flex: 1,
     paddingTop: 16,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   orderCard: {
     minHeight: 340,
@@ -191,7 +201,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.gold,
     borderRadius: 24,
-    backgroundColor: colors.card,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
   },
   orderTopRow: {
     flexDirection: 'row',
@@ -210,12 +225,12 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   orderMeta: {
-    color: colors.muted,
+    color: '#111827',
     fontSize: 14,
   },
   fare: {
     marginTop: 4,
-    color: colors.gold,
+    color: '#111827',
     fontSize: 21,
     fontWeight: '900',
   },
@@ -240,7 +255,7 @@ const styles = StyleSheet.create({
     marginTop: 15,
     paddingTop: 2,
     borderBottomWidth: 1,
-    borderBottomColor: '#333336',
+    borderBottomColor: '#E5E7EB',
   },
   locationIcon: {
     width: 24,
@@ -255,14 +270,14 @@ const styles = StyleSheet.create({
     marginLeft: 1,
   },
   locationLabel: {
-    color: colors.muted,
+    color: '#4B5563',
     fontSize: 12,
     fontWeight: '800',
     letterSpacing: 0.6,
   },
   locationAddress: {
     marginTop: 4,
-    color: colors.white,
+    color: '#111827',
     fontSize: 16,
     fontWeight: '800',
     lineHeight: 21,
@@ -278,24 +293,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     paddingVertical: 5,
     borderRadius: 12,
-    backgroundColor: colors.cardSoft,
+    backgroundColor: '#F3F4F6',
   },
   tagText: {
-    color: colors.mutedLight,
+    color: '#111827',
     fontSize: 12,
     fontWeight: '700',
   },
   goldTag: {
-    backgroundColor: '#51430D',
+    backgroundColor: '#FFF7CC',
   },
   goldTagText: {
-    color: colors.gold,
+    color: '#111827',
   },
   greenTag: {
-    backgroundColor: '#124B29',
+    backgroundColor: '#DCFCE7',
   },
   greenTagText: {
-    color: colors.green,
+    color: '#111827',
   },
   actionRow: {
     flexDirection: 'row',
@@ -315,7 +330,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.redDark,
   },
   acceptButton: {
-    width: '47%',
+    width: '100%',
     height: 58,
     alignItems: 'center',
     justifyContent: 'center',

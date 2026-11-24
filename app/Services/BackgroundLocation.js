@@ -56,6 +56,7 @@ TaskManager.defineTask(LOCATION_TASK_NAME, async ({ data, error }) => {
           },
           headers: token ? { Authorization: `Bearer ${token}` } : undefined,
         });
+     console.log('live location update called with Bg:', { liveLocationOrderId, latitude, longitude, liveLocationFlag });
 
         console.log('[BackgroundLocation] live location API updated:', {
           orderId: liveLocationOrderId,
@@ -109,7 +110,7 @@ export async function startBackgroundLocation() {
 
   await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
     accuracy: Location.Accuracy.High,
-    timeInterval: 5000,
+    timeInterval: 300000,
     distanceInterval: 5,
     pausesUpdatesAutomatically: false,
     foregroundService: {

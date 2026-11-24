@@ -534,6 +534,7 @@ export const HomeProvider = ({ children }) => {
   }, []);
 
   const updateRiderLiveLocation = useCallback(async ({ orderId, latitude, longitude, flag }) => {
+    console.log('live location update called with:', { orderId, latitude, longitude, flag });
     if (!orderId || !Number.isFinite(Number(latitude)) || !Number.isFinite(Number(longitude)) || !flag) {
       throw new Error('Order ID, latitude, longitude, and flag are required to update live location.');
     }

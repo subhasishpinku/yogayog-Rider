@@ -20,12 +20,12 @@ const drop = {
 };
 
 const mapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#12121d' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#77777d' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#12121d' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#242433' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#181824' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0c0c16' }] },
+  { elementType: 'geometry', stylers: [{ color: '#F8FAFC' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#374151' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#E5E7EB' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#D1D5DB' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#DBEAFE' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
 ];
 
@@ -250,9 +250,9 @@ const AcceptRejectOrder = ({ route }) => {
           {isAssigned && (
             <>
               <View style={styles.actionRow}>
-                <Pressable style={styles.rejectButton} onPress={() => navigation.goBack()}>
+                {/* <Pressable style={styles.rejectButton} onPress={() => navigation.goBack()}>
                   <Text style={styles.rejectText}>✕ Reject</Text>
-                </Pressable>
+                </Pressable> */}
                 <Pressable style={styles.acceptButton} onPress={handleAcceptOrder} disabled={isAccepting}>
                   <Text style={styles.acceptText}>{isAccepting ? 'Accepting...' : '✓ Accept'}</Text>
                 </Pressable>

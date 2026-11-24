@@ -194,7 +194,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
         <View style={homeStyles.ring} />
         <View style={homeStyles.greetingRow}>
           <Animated.Image
-            source={require('../../assets/yogayoglogo1.png')}
+            source={require('../../assets/yogayoglogo2.png')}
             style={[homeStyles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />
@@ -233,6 +233,15 @@ const ActiveList = ({ initialStatus = 'all' }) => {
           placeholderTextColor={colors.muted}
           style={styles.searchInput}
         />
+        <Pressable
+          onPress={() => setSearch('')}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel="Clear search"
+          style={styles.searchClearButton}
+        >
+          <Text style={styles.searchClearIcon}>×</Text>
+        </Pressable>
       </View>
 
       <View style={styles.listTabs}>
@@ -256,11 +265,14 @@ const ActiveList = ({ initialStatus = 'all' }) => {
           );
         })}
       </View>
-      <ScrollView
-        style={[styles.statusTabsScroll, { height: 168 }]}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.statusTabs, { minWidth: 0, height: 168, flexWrap: 'wrap' }]}
-      >
+      {listTab !== 'delivered' && (
+        <ScrollView
+          horizontal
+          style={[styles.statusTabsScroll, { height: 84 }]}
+          showsHorizontalScrollIndicator={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={[styles.statusTabs, { minWidth: 0, height: 84, flexWrap: 'nowrap' }]}
+        >
       {statusTabs.map((tab) => {
           const selected = selectedStatus === tab.key;
           return (
@@ -283,7 +295,8 @@ const ActiveList = ({ initialStatus = 'all' }) => {
             </Pressable>
           );
         })}
-      </ScrollView>
+        </ScrollView>
+      )}
 
       <ScrollView
         style={styles.orderScroll}

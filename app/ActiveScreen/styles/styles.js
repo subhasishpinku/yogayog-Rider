@@ -55,12 +55,12 @@ const styles = StyleSheet.create({
   },
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   mapArea: {
     height: '31%',
     overflow: 'hidden',
-    backgroundColor: colors.map,
+    backgroundColor: colors.white,
   },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -156,8 +156,16 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 23,
         marginLeft: 10,
     marginRight: 10,
-
-    backgroundColor: colors.background,
+    marginBottom: 60,
+    marginTop:10,
+    borderWidth: 2,
+    borderColor: colors.gold,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.22,
+    shadowRadius: 7,
+    backgroundColor: colors.white,
   },
   orderActionRow: {
     flexDirection: 'row',
@@ -201,13 +209,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   orderId: {
-    color: colors.muted,
+    color: '#111827',
     fontSize: 12,
     marginLeft: 10,
   },
   orderTitle: {
     marginTop: 2,
-    color: colors.white,
+    color: '#111827',
     fontSize: 18,
     fontWeight: '900',
         marginLeft: 10,
@@ -242,7 +250,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 13,
     borderRadius: 17,
-    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.14,
+    shadowRadius: 4,
   },
   routeRow: {
     flexDirection: 'row',
@@ -262,14 +277,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   routeLabel: {
-    color: colors.muted,
+    color: '#4B5563',
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.6,
   },
   routeAddress: {
     marginTop: 3,
-    color: colors.mutedLight,
+    color: '#111827',
     fontSize: 13,
     fontWeight: '800',
   },
@@ -277,7 +292,7 @@ const styles = StyleSheet.create({
     height: 1,
     marginVertical: 10,
     marginLeft: 20,
-    backgroundColor: colors.border,
+    backgroundColor: '#E5E7EB',
   },
   customerRow: {
     minHeight: 61,
@@ -303,13 +318,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   customerName: {
-    color: colors.white,
+    color: '#111827',
     fontSize: 14,
     fontWeight: '900',
   },
   customerPhone: {
     marginTop: 2,
-    color: colors.mutedLight,
+    color: '#4B5563',
     fontSize: 12,
   },
   callButton: {
@@ -347,7 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   summaryLabel: {
-    color: colors.muted,
+    color: '#4B5563',
     fontSize: 11,
   },
   summaryValueGold: {
@@ -358,7 +373,7 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     marginTop: 1,
-    color: colors.white,
+    color: '#111827',
     fontSize: 18,
     fontWeight: '900',
   },
@@ -387,7 +402,7 @@ const styles = StyleSheet.create({
     borderColor: colors.red,
   },
   deliveredText: {
-    color: '#ECE7E7',
+    color: '#111827',
     fontSize: 16,
     fontWeight: '900',
   },
@@ -397,7 +412,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
   },
   titleBarBack: {
     width: 36,

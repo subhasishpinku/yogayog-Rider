@@ -9,7 +9,7 @@ const colors = {
   green: '#2FD463',
   red: '#E05A5A',
   border: '#333336',
-  deepRed: '#FF0000'
-};
+  deepRed: '#FF0000',
+ash: '#FAF7F7',};
 
 export default colors;

@@ -10,6 +10,7 @@ const colors = {
   goldDark: '#8F7300',
   green: '#2FD463',
   border: '#4F4100',
+  ash: '#FAF7F7'
 };
 
 export default colors;

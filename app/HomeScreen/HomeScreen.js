@@ -407,7 +407,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
         <View style={styles.ring} />
         <View style={styles.greetingRow}>
           <Animated.Image
-            source={require('../../assets/yogayoglogo1.png')}
+            source={require('../../assets/yogayoglogo2.png')}
             style={[styles.logo, { transform: [{ scale: logoScale }] }]}
             resizeMode="contain"
           />

@@ -8,6 +8,8 @@ const styles = StyleSheet.create({
   },
   headerBackground: {
     minHeight: 100,
+    marginHorizontal: 12,
+    borderRadius: 5,
     overflow: 'hidden',
     paddingHorizontal: 16,
     paddingTop: 12,
@@ -73,7 +75,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     borderRadius: 15,
-    backgroundColor: colors.card,
+    backgroundColor: colors.white,
+    elevation: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   reasonCardSelected: {
     borderColor: colors.red,
@@ -98,13 +105,13 @@ const styles = StyleSheet.create({
     marginLeft: 13,
   },
   reasonTitle: {
-    color: colors.white,
+    color: '#111827',
     fontSize: 15,
     fontWeight: '900',
   },
   reasonSubtitle: {
     marginTop: 2,
-    color: colors.muted,
+    color: '#4B5563',
     fontSize: 11,
   },
   radio: {
@@ -114,7 +121,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: 8,
     borderWidth: 2,
-    borderColor: '#454549',
+    borderColor: '#9CA3AF',
     borderRadius: 10,
   },
   radioSelected: {

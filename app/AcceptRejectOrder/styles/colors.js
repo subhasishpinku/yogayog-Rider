@@ -11,6 +11,7 @@ const colors = {
   green: '#2FD463',
   red: '#FF4141',
   redDark: '#401E20',
+   ash: '#FAF7F7'
 };
 
 export default colors;

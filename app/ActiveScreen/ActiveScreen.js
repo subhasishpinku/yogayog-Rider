@@ -16,7 +16,7 @@ import {
 const pickup = { latitude: 22.5096, longitude: 88.3456 };
 const drop = { latitude: 22.5198, longitude: 88.3469 };
 const STATUS_FLOW = [
-  { key: 'rider_accepted', label: 'Rider Accepted' },
+  // { key: 'rider_accepted', label: 'Rider Accepted' },
   { key: 'on_the_way', label: 'On the Way' },
   { key: 'reached', label: 'Reached' },
   { key: 'picked_up', label: 'Picked Up' },
@@ -27,12 +27,12 @@ const STATUS_FLOW = [
 ];
 
 const mapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#12121d' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#77777d' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#12121d' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#242433' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#181824' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0c0c16' }] },
+  { elementType: 'geometry', stylers: [{ color: '#F8FAFC' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#374151' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#FFFFFF' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#E5E7EB' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#D1D5DB' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#DBEAFE' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
 ];
 
@@ -358,7 +358,9 @@ const ActiveScreen = ({ route }) => {
         <View style={styles.orderHeader}>
           <View>
             <Text style={styles.orderId}>Order #{orderCode}</Text>
-            <Text style={styles.orderTitle}>{orderStatus}</Text>
+            <Text style={styles.orderTitle}>
+              {orderStatus.charAt(0).toUpperCase() + orderStatus.slice(1)}
+            </Text>
           </View>
           {/* {!isDelivered && (
             <Pressable
@@ -379,7 +381,7 @@ const ActiveScreen = ({ route }) => {
           <View style={styles.routeRow}>
             <Text style={styles.pickupDot}>●</Text>
             <View style={styles.routeCopy}>
-              <Text style={styles.routeLabel}>{isPickedUp ? 'PICKED UP ✓' : 'PICKUP'}</Text>
+              <Text style={styles.routeLabel}>{isPickedUp ? 'PICKED UP ✓' : 'From Where'}</Text>
               <Text style={styles.routeAddress}>{order?.pickup_area || 'Pickup address unavailable'}</Text>
             </View>
           </View>
@@ -387,7 +389,7 @@ const ActiveScreen = ({ route }) => {
           <View style={styles.routeRow}>
             <Text style={styles.dropDot}>●</Text>
             <View style={styles.routeCopy}>
-              <Text style={styles.routeLabel}>DROPPING AT</Text>
+              <Text style={styles.routeLabel}>To Where</Text>
               <Text style={styles.routeAddress}>{order?.drop_area || 'Drop address unavailable'}</Text>
             </View>
           </View>
@@ -454,7 +456,7 @@ const ActiveScreen = ({ route }) => {
               {isUpdatingStatus ? (
                 <ActivityIndicator color="#080808" />
               ) : (
-                <Text style={styles.deliveredText}>{currentStatusStep?.label || 'Rider Accepted'}</Text>
+                <Text style={styles.deliveredText}>{currentStatusStep?.label || 'Assigned'}</Text>
               )}
           </Pressable>
 

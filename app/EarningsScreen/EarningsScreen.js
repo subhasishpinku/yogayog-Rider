@@ -137,15 +137,11 @@ const EarningsScreen = () => {
     <View style={styles.screen}>
       <StatusBar style="light" />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.header}>
+      <View style={styles.header}>
           <View style={styles.ring} />
           <View style={styles.greetingRow}>
             <Animated.Image
-              source={require('../../assets/yogayoglogo1.png')}
+              source={require('../../assets/yogayoglogo2.png')}
               style={[styles.logo, { transform: [{ scale: logoScale }] }]}
               resizeMode="contain"
             />
@@ -175,8 +171,13 @@ const EarningsScreen = () => {
           
       
           
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 12 }}>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 5 }}>
           <Pressable
             style={styles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}

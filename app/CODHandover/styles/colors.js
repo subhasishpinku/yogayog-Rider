@@ -7,6 +7,7 @@ const colors = {
   muted: '#77777F',
   green: '#2FD463',
   gold: '#FFC800',
+  ash: '#FAF7F7'
 };
 
 export default colors;
