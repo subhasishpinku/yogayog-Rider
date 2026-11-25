@@ -109,7 +109,7 @@ const confirmCashReceived = async () => {
           <Text style={styles.amount}>₹{amountToCollect.toFixed(2)}</Text>
         </View>
 
-        <Text style={styles.fieldLabel}>AMOUNT RECEIVED FROM CUSTOMER</Text>
+        <Text style={[styles.fieldLabel, styles.receivedFieldLabel]}>AMOUNT RECEIVED FROM CUSTOMER</Text>
         <View style={styles.inputContainer}>
           <Text style={styles.currency}>₹</Text>
           <TextInput
@@ -123,12 +123,12 @@ const confirmCashReceived = async () => {
           />
         </View>
 
-        <Text style={styles.fieldLabel}>CHANGE TO RETURN</Text>
+        <Text style={[styles.fieldLabel, styles.changeFieldLabel]}>CHANGE TO RETURN</Text>
         <View style={styles.changeCard}>
           <Text style={styles.changeAmount}>₹{changeToReturn}</Text>
         </View>
 
-        <Text style={styles.fieldLabel}>CUSTOMER SIGNATURE</Text>
+        <Text style={[styles.fieldLabel, styles.signatureFieldLabel]}>CUSTOMER SIGNATURE</Text>
         <Pressable style={styles.signatureBox} onPress={() => setIsSignatureModalVisible(true)}>
           {signatureData ? (
             <Image source={{ uri: signatureData }} style={styles.signaturePreview} resizeMode="contain" />

@@ -4,7 +4,7 @@ import colors from './ActiveDeliverycolors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flex: 1,
@@ -36,14 +36,15 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 24,
-    color: colors.white,
+    color: '#000000',
     fontSize: 28,
     fontWeight: '900',
   },
   orderText: {
     marginTop: 8,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 14,
+    fontWeight: '900',
     textAlign: 'center',
   },
   earnedCard: {

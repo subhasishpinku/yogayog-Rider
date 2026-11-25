@@ -9,6 +9,7 @@ const colors = {
   inputBackground: '#303033',
   gold: '#FFC800',
   green: '#2FD463',
-};
+  ash: '#FAF7F7',};
+
 
 export default colors;

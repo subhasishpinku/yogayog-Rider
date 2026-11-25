@@ -9,6 +9,6 @@ const colors = {
   gold: '#FFC800',
   qrBackground: '#F2F2F8',
   badgeBackground: '#F1F1F5',
-};
+ash: '#FAF7F7',};
 
 export default colors;

@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flexGrow: 1,
@@ -37,8 +37,9 @@ const styles = StyleSheet.create({
   },
   orderMeta: {
     marginTop: 3,
-    color: colors.muted,
-    fontSize: 13,
+    color: colors.background,
+    fontSize: 16,
+    fontWeight: '900',
   },
   amountCard: {
     alignItems: 'center',
@@ -48,24 +49,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.amountBorder,
     borderRadius: 19,
-    backgroundColor: colors.amountCard,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   amountLabel: {
-    color: '#B89400',
+    color: '#000000',
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   amount: {
     marginTop: 4,
-    color: colors.gold,
+    color: '#000000',
     fontSize: 48,
     fontWeight: '900',
     lineHeight: 57,
   },
   amountMeta: {
     marginTop: 2,
-    color: '#9C8000',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    color: '#000000',
     fontSize: 12,
   },
   sectionTitle: {
@@ -86,7 +94,12 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     borderRadius: 17,
-    backgroundColor: colors.card,
+    backgroundColor: colors.white,
+    elevation: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
   },
   methodCardSelected: {
     borderColor: colors.gold,
@@ -110,13 +123,13 @@ const styles = StyleSheet.create({
     marginLeft: 13,
   },
   methodTitle: {
-    color: colors.white,
+    color: '#000000',
     fontSize: 16,
     fontWeight: '900',
   },
   methodDescription: {
     marginTop: 2,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 12,
     lineHeight: 16,
   },
@@ -166,7 +179,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
   },
   titleBarBack: {
     width: 36,

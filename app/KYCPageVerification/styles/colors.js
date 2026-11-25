@@ -12,5 +12,6 @@ const colors = {
   pending: '#343437',
   purple: '#302844',
   border: '#6B5418',
-};
+  ash: '#FAF7F7',};
+
 export default colors;

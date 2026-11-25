@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import colors from './colors';
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
+  screen: { flex: 1, backgroundColor: colors.ash },
   content: { paddingBottom: 24 },
   header: { paddingHorizontal: 12, paddingTop: 14, paddingBottom: 12, backgroundColor: colors.header },
   backButton: { width: 37, height: 37, alignItems: 'center', justifyContent: 'center', borderRadius: 12, backgroundColor: '#262628' },
@@ -62,7 +62,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   titleBarBack: {
     width: 36,

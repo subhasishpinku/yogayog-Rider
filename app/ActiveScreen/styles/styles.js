@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   tabScreen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   statusTabs: {
     flexDirection: 'row',

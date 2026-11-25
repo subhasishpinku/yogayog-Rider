@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flexGrow: 1,
@@ -36,28 +36,31 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 3,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 13,
+    fontWeight: '900',
+    marginLeft: 15
   },
   amountCard: {
     alignItems: 'center',
     minHeight: 112,
     marginTop: 8,
+    marginHorizontal: 14,
     paddingTop: 20,
     borderWidth: 1,
     borderColor: colors.amountBorder,
     borderRadius: 19,
-    backgroundColor: colors.amountCard,
+    backgroundColor: colors.white,
   },
   amountLabel: {
-    color: '#B89400',
+    color: '#000000',
     fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.4,
   },
   amount: {
     marginTop: 3,
-    color: colors.gold,
+    color: '#000000',
     fontSize: 43,
     fontWeight: '900',
     lineHeight: 52,
@@ -65,23 +68,38 @@ const styles = StyleSheet.create({
   fieldLabel: {
     marginTop: 14,
     marginBottom: 6,
-    color: colors.muted,
+    color: colors.background,
     fontSize: 11,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
+  receivedFieldLabel: {
+    marginLeft: 15,
+    color: '#000000',
+    fontWeight: '900',
+  },
+  changeFieldLabel: {
+    marginLeft: 15,
+    color: '#000000',
+    fontWeight: '900',
+  },
+  signatureFieldLabel: {
+    marginHorizontal: 15,
+    fontWeight: '900',
+  },
   inputContainer: {
     height: 60,
+    marginHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
     borderWidth: 1,
     borderColor: colors.gold,
     borderRadius: 16,
-    backgroundColor: colors.inputBackground,
+    backgroundColor: colors.white,
   },
   currency: {
-    color: colors.inputText,
+    color: '#000000',
     fontSize: 20,
     fontWeight: '900',
   },
@@ -89,7 +107,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 58,
     marginLeft: 7,
-    color: colors.white,
+    color: '#000000',
     fontSize: 22,
     fontWeight: '900',
   },
@@ -98,10 +116,11 @@ const styles = StyleSheet.create({
   },
   changeCard: {
     height: 58,
+    marginHorizontal: 15,
     justifyContent: 'center',
     paddingHorizontal: 15,
     borderRadius: 13,
-    backgroundColor: colors.card,
+    backgroundColor: colors.white,
   },
   changeAmount: {
     color: colors.green,
@@ -110,6 +129,7 @@ const styles = StyleSheet.create({
   },
   signatureBox: {
     height: 139,
+    marginHorizontal: 15,
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
@@ -208,6 +228,7 @@ const styles = StyleSheet.create({
   },
   confirmButton: {
     height: 57,
+    marginHorizontal: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 14,
@@ -226,7 +247,12 @@ titleBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   titleBarBack: {
     width: 36,

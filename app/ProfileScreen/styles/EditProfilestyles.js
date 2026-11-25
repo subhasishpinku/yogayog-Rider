@@ -4,7 +4,7 @@ import colors from './EditProfileColors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flexGrow: 1,
@@ -58,10 +58,10 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.background,
     borderRadius: 14,
-    backgroundColor: colors.card,
-    color: colors.white,
+    backgroundColor: colors.white,
+    color: colors.background,
     fontSize: 15,
     fontWeight: '800',
   },
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.gold,
   },
   saveText: {
-    color: '#080808',
+    color:colors.background,
     fontSize: 16,
     fontWeight: '900',
   },
@@ -102,7 +102,12 @@ titleBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: colors.background,
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   titleBarBack: {
     width: 36,
@@ -111,14 +116,14 @@ titleBar: {
     justifyContent: 'center',
   },
   titleBarBackText: {
-    color: '#080808',
+    color: colors.background,
     fontSize: 34,
     lineHeight: 36,
   },
   titleBarText: {
     marginLeft: 8,
     marginTop:7,
-    color: '#080808',
+    color: colors.background,
     fontSize: 18,
     fontWeight: '900',
     alignItems: 'left',

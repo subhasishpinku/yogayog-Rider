@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flexGrow: 1,
@@ -38,8 +38,9 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 3,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 14,
+    fontWeight: '900',
     lineHeight: 20,
   },
   secureBadge: {
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#35353A',
     borderRadius: 18,
-    backgroundColor: colors.darkCard,
+    backgroundColor: colors.white,
   },
   loadingRing: {
     width: 42,
@@ -174,13 +175,13 @@ const styles = StyleSheet.create({
   },
   waitingTitle: {
     marginTop: 9,
-    color: colors.white,
+    color: '#000000',
     fontSize: 14,
     fontWeight: '900',
   },
   waitingSubtitle: {
     marginTop: 3,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 12,
     textAlign: 'center',
   },
@@ -222,7 +223,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    backgroundColor: colors.gold,
+    backgroundColor: colors.white,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
   },
   titleBarBack: {
     width: 36,

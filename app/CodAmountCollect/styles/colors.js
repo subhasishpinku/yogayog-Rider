@@ -10,6 +10,7 @@ const colors = {
   iconBackground: '#3A3827',
   cashIconBackground: '#203527',
   infoBackground: '#29271E',
-};
+  ash: '#FAF7F7',};
+
 
 export default colors;

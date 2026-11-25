@@ -4,7 +4,7 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.ash,
   },
   content: {
     flex: 1,
@@ -27,17 +27,19 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     marginTop: 21,
-    color: colors.white,
+    color: '#000000',
     fontSize: 27,
     fontWeight: '900',
   },
   successTitleAccent: {
-    color: colors.white,
+    color: '#000000',
+    fontWeight: '900',
   },
   subtitle: {
     marginTop: 5,
-    color: colors.muted,
+    color: '#000000',
     fontSize: 14,
+    fontWeight: '900',
   },
   detailsCard: {
     alignSelf: 'stretch',

@@ -10,6 +10,6 @@ const colors = {
   green: '#2FD463',
   greenDark: '#123D23',
   border: '#333336',
-};
+ash: '#FAF7F7',};
 
 export default colors;
