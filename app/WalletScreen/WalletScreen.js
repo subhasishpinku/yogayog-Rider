@@ -6,6 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import { useHome } from '../contexts/HomeContext';
 import colors from './styles/colors';
 import styles from './styles/styles';
+import navigationStrings from '../constants/navigationStrings';
 
 const WalletScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -39,19 +40,24 @@ const WalletScreen = ({ route }) => {
   }, [loadPaymentDetails]);
 
   const amount = Number(paymentDetails?.original_price || 0);
+  const paymentMethod = String(paymentDetails?.payment_method || route?.params?.paymentMethod || '').toLowerCase();
+  const paymentTitle = paymentMethod
+    ? paymentMethod.includes('wallet') ? 'Wallet' : 'Online'
+    : 'Wallet';
 
   return (
     <View style={styles.screen}>
       <StatusBar style="light" />
 
-      <View style={styles.headerRow}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backText}>‹</Text>
+      <View style={styles.titleBar}>
+        <Pressable
+          style={styles.titleBarBack}
+          onPress={() => navigation.goBack()}
+        >
+          <Text style={styles.titleBarBackText}>‹</Text>
         </Pressable>
-        <View>
-          <Text style={styles.eyebrow}>PAYMENT DETAILS</Text>
-          <Text style={styles.title}>Wallet</Text>
-        </View>
+        <Text style={styles.titleBarText}>{paymentTitle}</Text>
+        <View style={styles.titleBarSpacer} />
       </View>
 
       {loading ? (

@@ -6,6 +6,6 @@ const colors = {
   muted: '#77777F',
   gold: '#FFC800',
   goldDark: '#403619',
-};
+ash: '#FAF7F7',};
 
 export default colors;

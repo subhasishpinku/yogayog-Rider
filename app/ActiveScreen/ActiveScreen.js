@@ -73,7 +73,7 @@ const ActiveScreen = ({ route }) => {
     ? 'rider_accepted'
     : normalizedStatusKey;
   const currentStatusIndex = STATUS_FLOW.findIndex(({ key }) => key === currentStatusKey);
-  const currentStatusStep = STATUS_FLOW[currentStatusIndex];
+  const currentStatusStep = STATUS_FLOW[currentStatusIndex+ 1];
   const nextStatus = STATUS_FLOW[currentStatusIndex + 1];
   const pickupStatusesWithoutCheck = [
     'assigned',
@@ -84,6 +84,7 @@ const ActiveScreen = ({ route }) => {
   const isPickedUp = !pickupStatusesWithoutCheck.includes(normalizedOrderStatus);
   const isDelivered = normalizedOrderStatus === 'delivered';
   const isAtYourDoor = normalizedOrderStatus === 'at your door';
+  const isAtYourDoorStep = isAtYourDoor || currentStatusStep?.key === 'at_your_door';
   const isPaymentDone = String(order?.payment_status || '').trim().toLowerCase() === 'done';
   const orderStatus = isDelivered
     ? 'Delivered'
@@ -97,7 +98,7 @@ const ActiveScreen = ({ route }) => {
   const isCodOrder = ['cod', 'cashondelivery', 'cash'].includes(paymentMethod);
   const isPrepaidOrder = ['prepaid', 'online', 'upi', 'card', 'digital'].includes(paymentMethod);
   const isWalletOrder = paymentMethod === 'wallet';
-  const canUseDeliveryActions = isAtYourDoor && !(isCodOrder && isPaymentDone);
+  const canUseDeliveryActions = isAtYourDoorStep && !(isCodOrder && isPaymentDone);
   const isDeliveryActionDisabled = !canUseDeliveryActions;
   const deliveryParams = {
     orderId: orderCode,
@@ -472,9 +473,9 @@ const ActiveScreen = ({ route }) => {
             <Text style={styles.deliveredText}>
               {isCodOrder && isPaymentDone
                 ? 'Collected Done'
-                : isAtYourDoor && (isWalletOrder || isPrepaidOrder)
+                : isAtYourDoorStep && (isWalletOrder || isPrepaidOrder)
                   ? 'View payment ✓'
-                : isAtYourDoor
+                : isAtYourDoorStep
                   ? 'Collected Not Done X'
                   : isDeliveryActionDisabled
                   ? 'Collected Not Done X'

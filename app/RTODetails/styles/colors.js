@@ -6,6 +6,7 @@ const colors = {
   muted: '#77777F',
   red: '#FF3939',
   redDark: '#3A1D1D',
-};
+ash: '#FAF7F7',};
+
 
 export default colors;

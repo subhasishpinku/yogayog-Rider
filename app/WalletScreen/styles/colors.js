@@ -6,6 +6,6 @@ const colors = {
   goldSoft: '#3c2d14',
   text: '#ffffff',
   muted: '#9b9ba8',
-};
+ash: '#FAF7F7',};
 
 export default colors;

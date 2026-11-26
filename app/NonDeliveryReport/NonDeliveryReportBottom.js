@@ -317,10 +317,10 @@ const NonDeliveryReportBottom = () => {
           <Text style={{ color: '#FFC800', fontSize: 18 }}>⌄</Text>
         </Pressable>
       </View>
-      <View style={[reportStyles.headerBackground, { minHeight: 78, paddingHorizontal: 12, paddingTop: 8 }]}>
+      <View style={[reportStyles.headerBackground, { minHeight: 58, paddingHorizontal: 12, paddingTop: 3 }]}>
         <View style={reportStyles.headerOrb} />
         <Text style={reportStyles.orderMeta}>{orderCode} · {customerName}</Text>
-        <View style={[reportStyles.warningCard, { marginTop: 7, paddingVertical: 7 }]}>
+        <View style={[reportStyles.warningCard, { marginTop: 2, paddingVertical: 3 }]}>
           <Text style={reportStyles.warningText}>Select the reason why this shipment could not be{ '\n' }delivered</Text>
         </View>
       </View>

@@ -184,7 +184,7 @@ const CODHandover = () => {
 
         <View style={[styles.totalCard, { minHeight: 96, padding: 14 }]}>
           <Text style={styles.totalLabel}>TOTAL COD COLLECTED TODAY</Text>
-          <Text style={[styles.totalAmount, { marginTop: 0, fontSize: 32, lineHeight: 38 }]}>₹{totalAmount.toFixed(2)}</Text>
+        <Text style={[styles.totalAmount, { marginTop: 0, fontSize: 26, lineHeight: 32 }]}>₹{totalAmount.toFixed(2)}</Text>
           <Text style={styles.totalMeta}>{transactions.length} wallet transaction{transactions.length === 1 ? '' : 's'}</Text>
         </View>
 
@@ -213,7 +213,7 @@ const CODHandover = () => {
           </View>
         ) : (
           <View style={styles.deliveryList}>
-            {transactions.slice(0, showAllTransactions ? transactions.length : 2).map((transaction) => (
+            {transactions.slice(0, showAllTransactions ? transactions.length : 1).map((transaction) => (
                 <View key={transaction.id} style={[styles.deliveryCard, { minHeight: 92, paddingVertical: 12 }]}>
                 <View>
                     <Text style={styles.deliveryAwb}>{transaction.description || 'COD Transaction'}</Text>

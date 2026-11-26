@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import colors from './colors';
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.ash },
-  content: { paddingBottom: 100 },
+  content: { paddingHorizontal: 1, paddingBottom: 120 },
   header: { height: 80, paddingHorizontal: 12, paddingTop: 30, backgroundColor: colors.white, elevation: 8, shadowColor: '#000000', shadowOffset: { width: 0, height: 5 }, shadowOpacity: 0.22, shadowRadius: 7, borderBottomWidth: 2, borderBottomColor: '#E5E7EB' },
   ring: { position: 'absolute', top: -30, right: -27, width: 118, height: 118, borderWidth: 14, borderColor: '#FFFFFF', borderRadius: 999 },
   avatar: { position: 'absolute', top: 27, right: 21, zIndex: 10, elevation: 2, width: 48, height: 48, alignItems: 'center', justifyContent: 'center', borderRadius: 24, backgroundColor: '#473E17' ,alignSelf: 'flex-end'},
