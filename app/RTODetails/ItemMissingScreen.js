@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Dimensions, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useHome } from '../contexts/HomeContext';
@@ -8,6 +8,10 @@ import styles from './styles/styles';
 
 const  ItemMissingScreen =() => {
   const navigation = useNavigation();
+  const { width: windowWidth } = useWindowDimensions();
+  const deviceWidth = windowWidth || Dimensions.get('window').width;
+  const isCompactWidth = deviceWidth <= 360;
+  const responsiveContentStyle = { paddingHorizontal: isCompactWidth ? 6 : 10 };
   const route = useRoute();
   console.log('ItemMissingScreen route.params:', route.params);
   const { markItemMissing } = useHome();
@@ -139,7 +143,7 @@ const  ItemMissingScreen =() => {
         <Text style={styles.subtitle}>{reasonTitle}</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, responsiveContentStyle]} showsVerticalScrollIndicator={false}>
         <View style={styles.shipmentCard}>
           <Text style={styles.cardLabel}>SHIPMENT</Text>
           <Text style={styles.shipmentId}>{shipmentId}</Text>

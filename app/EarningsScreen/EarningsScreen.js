@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Easing, Pressable, ScrollView, Text, View } from 'react-native';
+import { Animated, Dimensions, Easing, Pressable, ScrollView, Text, useWindowDimensions, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -22,6 +22,10 @@ const getTimeBasedGreeting = () => {
 
 const EarningsScreen = () => {
   const navigation = useNavigation();
+  const { width: windowWidth } = useWindowDimensions();
+  const deviceWidth = windowWidth || Dimensions.get('window').width;
+  const isCompactWidth = deviceWidth <= 360;
+  const responsiveContentStyle = { paddingHorizontal: isCompactWidth ? 6 : 10 };
   const [selectedPeriod, setSelectedPeriod] = useState('Today');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -177,7 +181,8 @@ const EarningsScreen = () => {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingHorizontal: 5 }}>
+      <View style={responsiveContentStyle}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 5, paddingHorizontal: 10 }}>
           <Pressable
             style={styles.walletButton}
             onPress={() => navigation.navigate(navigationStrings.WITHDRAWEARNINGS)}
@@ -263,6 +268,7 @@ const EarningsScreen = () => {
             ))}
           </View>
         </View>
+      </View>
       </ScrollView>
     </View>
   );

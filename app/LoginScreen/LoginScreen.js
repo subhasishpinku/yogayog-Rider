@@ -7,7 +7,7 @@ import styles from './styles/styles';
 import navigationStrings from '../constants/navigationStrings';
 import { useAuth } from '../contexts/AuthContext';
 
-const yogayogLogo = require('../../assets/yogayoglogo1.png');
+const yogayogLogo = require('../../assets/yogayoglogo2.png');
 
 const LoginScreen = ({ navigation }) => {
   const [phone, setPhone] = useState('');
@@ -97,7 +97,7 @@ const LoginScreen = ({ navigation }) => {
       <StatusBar style="light" />
 
       <View style={styles.header}>
-        <View style={styles.headerRing} />
+        {/* <View style={styles.headerRing} /> */}
         <View style={styles.headerRoad} />
         <Animated.View
           style={[
@@ -117,7 +117,7 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.heroVehicleIcon}>🛵</Text>
         </View>
         <View style={styles.heroCopy}>
-          <Text style={styles.welcomeEmoji}>👋</Text>
+          <Text style={styles.welcomeEmoji}>👋︎</Text>
           <Text style={styles.title}>Welcome, Rider!</Text>
           <Text style={styles.description}>Enter your mobile number to{`\n`}continue</Text>
         </View>

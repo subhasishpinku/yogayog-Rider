@@ -78,7 +78,7 @@ const AllProfileScreen = () => {
   };
   return (
   <View style={styles.screen}>
-    <StatusBar style="light" />
+    <StatusBar style="dark" />
       <View style={styles.titleBar}>
         <Pressable style={styles.titleBarBack} onPress={() => navigation.goBack()}>
           <Text style={styles.titleBarBackText}>‹</Text>

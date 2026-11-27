@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     overflow: 'hidden',
-    backgroundColor: colors.background,
+    backgroundColor: colors.goldDeep,
   },
   ring: {
     position: 'absolute',
@@ -37,16 +37,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   riderLogo: {
-    width: 72,
-    height: 72,
-    marginBottom: 24,
+    width: 140,
+    height: 120,
+    marginBottom: 5,
   },
   wordmarkFrame: {
     width: 220,
     height: 72,
     borderRadius: 24,
     overflow: 'hidden',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.goldDeep,
   },
   wordmarkImage: {
     width: '100%',
@@ -54,16 +54,18 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     marginTop: 9,
-    color: colors.muted,
-    fontSize: 13,
+    color: colors.white,
+    fontSize: 20,
     fontWeight: '700',
     letterSpacing: 2.2,
   },
   footer: {
+    fontSize: 15,
     position: 'absolute',
     right: 0,
-    bottom: 44,
+    bottom: 60,
     left: 0,
+    color: colors.white,
     alignItems: 'center',
   },
   accent: {
@@ -71,11 +73,16 @@ const styles = StyleSheet.create({
     height: 4,
     marginBottom: 10,
     borderRadius: 4,
-    backgroundColor: colors.gold,
+    backgroundColor: colors.goldDeep,
   },
   tagline: {
-    color: colors.muted,
+    color: colors.white,
     fontSize: 12,
+  },
+  runningBike: {
+    width: 82,
+    height: 70,
+    marginTop: 8,
   },
 });
 

@@ -7,6 +7,8 @@ const colors = {
   white: '#FFFFFF',
   gold: '#FFC800',
   goldSoft: '#D9B83E',
+  goldDeep: '#E6A900',
+
   muted: '#77777D',
   mutedLight: '#9A9A9F',
   divider: '#343437',

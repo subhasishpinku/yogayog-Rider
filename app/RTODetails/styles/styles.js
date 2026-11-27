@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 6,
-    paddingTop: 24,
+    paddingTop: 5,
     paddingBottom: 28,
   },
   shipmentCard: {

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Modal, Platform, Pressable, RefreshControl, Switch, Text, ToastAndroid, View } from 'react-native';
+import { Alert, Animated, Dimensions, Modal, Platform, Pressable, RefreshControl, Switch, Text, ToastAndroid, View, useWindowDimensions } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import MapView, { Callout, Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -100,6 +100,10 @@ const AnimatedOrderCard = ({ order, navigation, assignedBlinkOpacity }) => {
 };
 
 const HomeScreen = ({ navigation, onNavigateToTab }) => {
+  const { width: windowWidth } = useWindowDimensions();
+  const deviceWidth = windowWidth || Dimensions.get('window').width;
+  const isCompactWidth = deviceWidth <= 360;
+  const responsiveContentStyle = { paddingHorizontal: isCompactWidth ? 6 : 10 };
   const mapRef = useRef(null);
   const riderMarkerRef = useRef(null);
   const [latitude, setLatitude] = useState(null);
@@ -107,6 +111,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
   const [riderAddress, setRiderAddress] = useState('');
   const [isAddressLoading, setIsAddressLoading] = useState(false);
   const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
+  const [isOnlineUpdating, setIsOnlineUpdating] = useState(false);
   const assignedBlinkOpacity = useRef(new Animated.Value(1)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
   const handWave = useRef(new Animated.Value(0)).current;
@@ -168,6 +173,14 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     earningsByPeriod,
   } = useHome();
   const isOnline = riderOnlineStatus;
+  const [optimisticOnlineStatus, setOptimisticOnlineStatus] = useState(null);
+  const displayedOnlineStatus = optimisticOnlineStatus ?? isOnline;
+
+  useEffect(() => {
+    if (optimisticOnlineStatus !== null && optimisticOnlineStatus === isOnline) {
+      setOptimisticOnlineStatus(null);
+    }
+  }, [isOnline, optimisticOnlineStatus]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -360,7 +373,13 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
     }
   };
   const handleOnlineToggle = async (nextIsOnline) => {
-    if (!nextIsOnline) {
+    if (isOnlineUpdating || nextIsOnline === displayedOnlineStatus) return;
+
+    setIsOnlineUpdating(true);
+    setOptimisticOnlineStatus(nextIsOnline);
+
+    try {
+      if (!nextIsOnline) {
       try {
         const [liveLocationFlag, liveLocationOrderId] = await Promise.all([
           AsyncStorage.getItem(LIVE_LOCATION_FLAG_KEY),
@@ -376,6 +395,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
             Alert.alert('Cannot go offline', message);
           }
 
+          setOptimisticOnlineStatus(null);
           return;
         }
       } catch (error) {
@@ -391,15 +411,19 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       );
     } catch (error) {
       console.log('Online status update error:', error);
+      setOptimisticOnlineStatus(null);
       return;
     }
 
-    if (nextIsOnline) {
-      await startTracking();
-      return;
-    }
+      if (nextIsOnline) {
+        await startTracking();
+        return;
+      }
 
-    await stopTracking();
+      await stopTracking();
+    } finally {
+      setIsOnlineUpdating(false);
+    }
   };
   return (
     <View style={styles.screen}>
@@ -436,7 +460,7 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
 
       <Animated.ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, responsiveContentStyle]}
         refreshControl={(
           <RefreshControl
             refreshing={isRefreshing}
@@ -458,34 +482,39 @@ const HomeScreen = ({ navigation, onNavigateToTab }) => {
       )}
       <View style={styles.statusCard}>
         <View>
-          <Text style={styles.statusTitle}>Status: <Text style={isOnline ? styles.online : styles.offline}>{isOnline ? 'Online' : 'Offline'}</Text></Text>
+          <Text style={styles.statusTitle}>Status: <Text style={displayedOnlineStatus ? styles.online : styles.offline}>{displayedOnlineStatus ? 'Online' : 'Offline'}</Text></Text>
           <Text style={styles.statusSubtext}>
-            {isOnline ? 'You are receiving new orders' : 'You are offline and not receiving new orders'}
+            {displayedOnlineStatus ? 'You are receiving new orders' : 'You are offline and not receiving new orders'}
           </Text>
         </View>
         <Switch
-          value={isOnline}
+          value={displayedOnlineStatus}
           onValueChange={handleOnlineToggle}
           thumbColor={colors.white}
-          trackColor={{ false: '#505055', true: colors.gold }}
+          trackColor={{ false: '#F54927', true: colors.green }}
+          style={{ transform: [{ scaleX: 1.20 }, { scaleY: 1.20 }] }}
         />
       </View>
 
       <Text style={styles.sectionTitle}>Today&apos;s Working Details</Text>
       <View style={styles.metrics}>
-        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('earnings')}>
-          <Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text>
-          <Text style={styles.metricLabel}>Today&apos;s Earnings</Text>
-        </Pressable>
-        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('active', 'today_payment_done')}>
-          <Text style={styles.deliveries}>{todayDelivered}</Text>
-          <Text style={styles.metricLabel}>Deliveries Done</Text>
-        </Pressable>
-        <View style={styles.metricCard}><Text style={styles.codCollected}>₹{todayCodAmount.toFixed(2)}</Text><Text style={styles.metricLabel}>COD Collected</Text></View>
-        <Pressable style={styles.metricCard} onPress={() => onNavigateToTab('active', 'order_in_queue')}>
-          <Text style={styles.activeOrders}>{activeOrdersCount}</Text>
-          <Text style={styles.metricLabel}>Orders in Queue</Text>
-        </Pressable>
+        <View style={styles.metricRow}>
+          <Pressable style={[styles.metricCard, styles.metricCardRow]} onPress={() => onNavigateToTab('earnings')}>
+            <Text style={styles.earnings}>₹{todayEarnings.toFixed(2)}</Text>
+            <Text style={styles.metricLabel}>Today&apos;s Earnings</Text>
+          </Pressable>
+          <Pressable style={[styles.metricCard, styles.metricCardRow]} onPress={() => onNavigateToTab('active', 'today_payment_done')}>
+            <Text style={styles.deliveries}>{todayDelivered}</Text>
+            <Text style={styles.metricLabel}>Deliveries Done</Text>
+          </Pressable>
+        </View>
+        <View style={styles.metricRow}>
+          <View style={[styles.metricCard, styles.metricCardRow]}><Text style={styles.codCollected}>₹{todayCodAmount.toFixed(2)}</Text><Text style={styles.metricLabel}>COD Collected</Text></View>
+          <Pressable style={[styles.metricCard, styles.metricCardRow]} onPress={() => onNavigateToTab('active', 'order_in_queue')}>
+            <Text style={styles.activeOrders}>{activeOrdersCount}</Text>
+            <Text style={styles.metricLabel}>Orders in Queue</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* <Text style={styles.sectionTitle}>Your Location</Text> */}

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Animated, Image, Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Dimensions, Image, Modal, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import SignatureCanvas from 'react-native-signature-canvas';
@@ -21,6 +21,10 @@ const getTimeBasedGreeting = () => {
 
 const CODHandover = () => {
   const navigation = useNavigation();
+  const { width: windowWidth } = useWindowDimensions();
+  const deviceWidth = windowWidth || Dimensions.get('window').width;
+  const isCompactWidth = deviceWidth <= 360;
+  const responsiveContentStyle = { paddingHorizontal: isCompactWidth ? 6 : 10 };
   const { riderProfile } = useAuth();
   const { fetchRiderWalletLedger, submitRiderCod } = useHome();
   const [transactions, setTransactions] = useState([]);
@@ -173,7 +177,7 @@ const CODHandover = () => {
           </Pressable>
         </View>
       </View>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={[styles.content, responsiveContentStyle]} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           {/* <Pressable accessibilityLabel="Go back" hitSlop={8} style={styles.backButton} onPress={() => navigation.goBack()}>
             <Text style={styles.backText}>←</Text>

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Pressable, RefreshControl, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, Pressable, RefreshControl, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 
@@ -60,6 +60,10 @@ const isOrderToday = (createdAt) => {
 
 const ActiveList = ({ initialStatus = 'all' }) => {
   const navigation = useNavigation();
+  const { width: windowWidth } = useWindowDimensions();
+  const deviceWidth = windowWidth || Dimensions.get('window').width;
+  const isCompactWidth = deviceWidth <= 360;
+  const responsiveContentStyle = { paddingHorizontal: isCompactWidth ? 6 : 10 };
   const { riderProfile } = useAuth();
   const { fetchRiderOrders, riderOrders } = useHome();
   const [selectedStatus, setSelectedStatus] = useState(initialStatus);
@@ -271,7 +275,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
           style={[styles.statusTabsScroll, { height: 84 }]}
           showsHorizontalScrollIndicator={false}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={[styles.statusTabs, { minWidth: 0, height: 84, flexWrap: 'nowrap' }]}
+          contentContainerStyle={[styles.statusTabs, { minWidth: 0, height: 84, flexWrap: 'nowrap', paddingHorizontal: isCompactWidth ? 4 : 12 }]}
         >
       {statusTabs.map((tab) => {
           const selected = selectedStatus === tab.key;
@@ -283,7 +287,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
                 setSelectedStatus(tab.key);
                 setListTab('all');
               }}
-              style={[styles.statusTab, selected && activeTabGroup === 'status' && styles.selectedStatusTab]}
+            style={[styles.statusTab, { width: isCompactWidth ? 45 : 53 }, selected && activeTabGroup === 'status' && styles.selectedStatusTab]}
             >
               <View style={[styles.statusCount, selected && activeTabGroup === 'status' && styles.selectedStatusCount]}>
                 <Text style={[styles.statusCountText, selected && activeTabGroup === 'status' && styles.selectedStatusCountText]}>
@@ -300,7 +304,7 @@ const ActiveList = ({ initialStatus = 'all' }) => {
 
       <ScrollView
         style={styles.orderScroll}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, responsiveContentStyle]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => loadOrders(true)} tintColor={colors.gold} />}
         showsVerticalScrollIndicator
         persistentScrollbar

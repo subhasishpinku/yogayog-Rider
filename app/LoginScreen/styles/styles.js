@@ -5,13 +5,13 @@ import colors from './colors';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#121317',
+    backgroundColor: colors.goldDeep,
   },
   header: {
     height: 238,
     paddingHorizontal: 26,
     paddingTop: 22,
-    backgroundColor: '#121317',
+    backgroundColor: colors.goldDeep,
     overflow: 'hidden',
   },
   headerRing: {
@@ -21,32 +21,33 @@ const styles = StyleSheet.create({
     width: 255,
     height: 255,
     borderWidth: 50,
-    borderColor: '#29240F',
+    backgroundColor: colors.goldDeep,
     borderRadius: 999,
   },
   headerRoad: { position: 'absolute', top: 132, right: -25, width: 230, borderTopWidth: 1, borderColor: '#6E5A09', borderStyle: 'dashed', transform: [{ rotate: '-28deg' }], opacity: 0.72 },
-  logoBadge: { width: 146, height: 46, alignItems: 'center', justifyContent: 'center', marginTop: 7, borderRadius: 15, backgroundColor: colors.white },
+  logoBadge: { width: 190, height: 60, alignItems: 'center', justifyContent: 'center', marginTop: 7, borderRadius: 15, backgroundColor: 'transparent' },
   heroCopy: { position: 'absolute', left: 26, bottom: 31 },
   welcomeEmoji: {
+    color: '#ffff',
     fontSize: 27,
     lineHeight: 31,
   },
   title: {
     marginTop: 5,
-    color: colors.white,
+    color: '#000000',
     fontSize: 27,
     fontWeight: '900',
   },
   description: {
     marginTop: 6,
-    color: '#F4F5F7',
+    color: '#000000',
     fontSize: 14,
     fontWeight: '600',
     lineHeight: 20,
   },
   headerLogo: {
-    width: 118,
-    height: 31,
+    width: 170,
+    height: 45,
     
   },
   heroVehicle: { position: 'absolute', right: 28, bottom: 48, width: 66, height: 66, alignItems: 'center', justifyContent: 'center' },
